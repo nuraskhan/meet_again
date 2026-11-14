@@ -14,6 +14,7 @@ import kz.nuraskhan.meet_again.model.entity.EventSuggestion;
 import kz.nuraskhan.meet_again.model.entity.EventTimeOption;
 import kz.nuraskhan.meet_again.model.entity.Friendship;
 import kz.nuraskhan.meet_again.model.entity.Invitation;
+import kz.nuraskhan.meet_again.model.entity.Notification;
 import kz.nuraskhan.meet_again.model.entity.ParticipantPreference;
 import kz.nuraskhan.meet_again.model.entity.Place;
 import kz.nuraskhan.meet_again.model.entity.Profile;
@@ -26,6 +27,7 @@ import kz.nuraskhan.meet_again.model.enums.EventType;
 import kz.nuraskhan.meet_again.model.enums.EventVisibility;
 import kz.nuraskhan.meet_again.model.enums.FriendshipStatus;
 import kz.nuraskhan.meet_again.model.enums.InvitationStatus;
+import kz.nuraskhan.meet_again.model.enums.NotificationKind;
 import kz.nuraskhan.meet_again.model.enums.Privilege;
 
 /**
@@ -274,6 +276,17 @@ public final class RND {
     x.position = position;
     x.question = "Question " + str(12) + "?";
     x.answer = "Answer " + str(30);
+    return x;
+  }
+
+  /** Unread, about no event in particular. */
+  public static Notification notification(Long userAccountId, Long actorUserAccountId) {
+    Notification x = new Notification();
+    x.userAccountId = userAccountId;
+    x.kind = oneOf(NotificationKind.class);
+    x.actorUserAccountId = actorUserAccountId;
+    x.text = "Notification " + str(20);
+    x.createdAt = now();
     return x;
   }
 

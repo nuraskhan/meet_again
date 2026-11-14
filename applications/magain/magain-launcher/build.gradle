@@ -6,6 +6,7 @@ plugins {
 }
 
 dependencies {
+    implementation project(':applications:magain:magain-mod:notification')
     implementation project(':applications:magain:magain-mod:auth')
     implementation project(':applications:magain:magain-mod:profile')
     implementation project(':applications:magain:magain-mod:friend')

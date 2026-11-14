@@ -1,0 +1,1 @@
+now lets add new featur: make backend send signal to frontend and add notification service (which will do it)

@@ -1,0 +1,5 @@
+// Friend requests and the friend list. Tells people about requests and answers.
+
+dependencies {
+    implementation project(':applications:magain:magain-mod:notification')
+}

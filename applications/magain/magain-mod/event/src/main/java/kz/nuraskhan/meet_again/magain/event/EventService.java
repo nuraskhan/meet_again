@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import kz.nuraskhan.meet_again.magain.chat.ChatService;
 import kz.nuraskhan.meet_again.magain.event.dto.CreateEventRequest;
+import kz.nuraskhan.meet_again.magain.notification.NotificationService;
 import kz.nuraskhan.meet_again.magain.event.dto.SavePreferenceRequest;
 import kz.nuraskhan.meet_again.model.entity.Event;
 import kz.nuraskhan.meet_again.model.entity.EventTimeOption;
@@ -19,6 +20,7 @@ import kz.nuraskhan.meet_again.model.enums.EventStatus;
 import kz.nuraskhan.meet_again.model.enums.EventType;
 import kz.nuraskhan.meet_again.model.enums.EventVisibility;
 import kz.nuraskhan.meet_again.model.enums.InvitationStatus;
+import kz.nuraskhan.meet_again.model.enums.NotificationKind;
 import kz.nuraskhan.meet_again.model.repository.EventRepository;
 import kz.nuraskhan.meet_again.model.repository.EventTimeOptionRepository;
 import kz.nuraskhan.meet_again.model.repository.FriendshipRepository;
@@ -50,6 +52,7 @@ public class EventService {
   private final ParticipantPreferenceRepository participantPreferenceRepository;
   private final ChatService chatService;
   private final SuggestionService suggestionService;
+  private final NotificationService notificationService;
 
   public EventService(EventRepository eventRepository,
                       EventTimeOptionRepository eventTimeOptionRepository,
@@ -57,7 +60,8 @@ public class EventService {
                       FriendshipRepository friendshipRepository,
                       ParticipantPreferenceRepository participantPreferenceRepository,
                       ChatService chatService,
-                      SuggestionService suggestionService) {
+                      SuggestionService suggestionService,
+                      NotificationService notificationService) {
     this.eventRepository = eventRepository;
     this.eventTimeOptionRepository = eventTimeOptionRepository;
     this.invitationRepository = invitationRepository;
@@ -65,6 +69,7 @@ public class EventService {
     this.participantPreferenceRepository = participantPreferenceRepository;
     this.chatService = chatService;
     this.suggestionService = suggestionService;
+    this.notificationService = notificationService;
   }
 
   /**
@@ -145,6 +150,8 @@ public class EventService {
       invitation.status = InvitationStatus.PENDING;
       invitation.createdAt = now;
       invitationRepository.save(invitation);
+
+      notificationService.tell(inviteeId, NotificationKind.EVENT_INVITATION, me, event.id);
     }
 
     return event.id;
@@ -216,6 +223,8 @@ public class EventService {
     invitationRepository.save(invitation);
 
     chatService.join(event.chatId, me);
+
+    notificationService.tell(event.creatorUserAccountId, NotificationKind.GUEST_JOINED, me, event.id);
   }
 
   /**
@@ -237,6 +246,8 @@ public class EventService {
     invitation.status = InvitationStatus.DECLINED;
     invitation.respondedAt = Instant.now();
     chatService.leave(event.chatId, me);
+
+    notificationService.tell(event.creatorUserAccountId, NotificationKind.GUEST_LEFT, me, event.id);
   }
 
   /**
@@ -261,6 +272,8 @@ public class EventService {
     invitation.status = InvitationStatus.REMOVED;
     invitation.respondedAt = Instant.now();
     chatService.leave(event.chatId, guestId);
+
+    notificationService.tell(guestId, NotificationKind.REMOVED_FROM_EVENT, me, event.id);
   }
 
   /**
@@ -335,6 +348,11 @@ public class EventService {
     requireActive(event);
 
     event.status = EventStatus.CANCELLED;
+
+    // Everyone who is part of it - invited and not answered, or coming - learns that it is off.
+    for (Long guestId : invitationRepository.findGuestIds(eventId)) {
+      notificationService.tell(guestId, NotificationKind.EVENT_CANCELLED, me, eventId);
+    }
   }
 
   /**
@@ -377,6 +395,12 @@ public class EventService {
 
     invitation.status = answer;
     invitation.respondedAt = Instant.now();
+
+    notificationService.tell(event.creatorUserAccountId,
+        answer == InvitationStatus.ACCEPTED
+            ? NotificationKind.INVITATION_ACCEPTED
+            : NotificationKind.INVITATION_DECLINED,
+        me, event.id);
 
     return event;
   }

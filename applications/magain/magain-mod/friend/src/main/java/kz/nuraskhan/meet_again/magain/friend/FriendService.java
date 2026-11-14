@@ -2,9 +2,11 @@ package kz.nuraskhan.meet_again.magain.friend;
 
 import java.time.Instant;
 import java.util.List;
+import kz.nuraskhan.meet_again.magain.notification.NotificationService;
 import kz.nuraskhan.meet_again.model.entity.Friendship;
 import kz.nuraskhan.meet_again.model.entity.UserAccount;
 import kz.nuraskhan.meet_again.model.enums.FriendshipStatus;
+import kz.nuraskhan.meet_again.model.enums.NotificationKind;
 import kz.nuraskhan.meet_again.model.repository.FriendshipRepository;
 import kz.nuraskhan.meet_again.model.repository.UserAccountRepository;
 import kz.nuraskhan.meet_again.web.ApiException;
@@ -19,11 +21,14 @@ public class FriendService {
 
   private final FriendshipRepository friendshipRepository;
   private final UserAccountRepository userAccountRepository;
+  private final NotificationService notificationService;
 
   public FriendService(FriendshipRepository friendshipRepository,
-                       UserAccountRepository userAccountRepository) {
+                       UserAccountRepository userAccountRepository,
+                       NotificationService notificationService) {
     this.friendshipRepository = friendshipRepository;
     this.userAccountRepository = userAccountRepository;
+    this.notificationService = notificationService;
   }
 
   /** @return id of the created request */
@@ -52,7 +57,11 @@ public class FriendService {
     friendship.status = FriendshipStatus.PENDING;
     friendship.createdAt = Instant.now();
 
-    return friendshipRepository.save(friendship).id;
+    Long requestId = friendshipRepository.save(friendship).id;
+
+    notificationService.tell(userId, NotificationKind.FRIEND_REQUEST, me, null);
+
+    return requestId;
   }
 
   @Transactional
@@ -92,6 +101,10 @@ public class FriendService {
     }
 
     friendship.status = answer;
+    // The one who asked learns of a yes. A no is not announced.
+    if (answer == FriendshipStatus.ACCEPTED) {
+      notificationService.tell(friendship.requesterUserAccountId, NotificationKind.FRIEND_ACCEPTED, me, null);
+    }
     friendship.respondedAt = Instant.now();
   }
 }

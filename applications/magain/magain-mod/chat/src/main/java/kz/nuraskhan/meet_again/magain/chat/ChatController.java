@@ -3,6 +3,8 @@ package kz.nuraskhan.meet_again.magain.chat;
 import jakarta.validation.Valid;
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
+import kz.nuraskhan.meet_again.magain.notification.signal.SignalHub;
 import kz.nuraskhan.meet_again.magain.chat.dto.ChatDto;
 import kz.nuraskhan.meet_again.magain.chat.dto.ChatMemberDto;
 import kz.nuraskhan.meet_again.magain.chat.dto.ChatMessageDto;
@@ -22,12 +24,17 @@ public class ChatController {
 
   private static final int MAX_PAGE = 100;
 
+  /** The type of the signal that carries a new chat message; the page listens for this name. */
+  static final String SIGNAL_CHAT_MESSAGE = "chat.message";
+
   private final ChatService chatService;
   private final ChatQuery chatQuery;
+  private final SignalHub signalHub;
 
-  public ChatController(ChatService chatService, ChatQuery chatQuery) {
+  public ChatController(ChatService chatService, ChatQuery chatQuery, SignalHub signalHub) {
     this.chatService = chatService;
     this.chatQuery = chatQuery;
+    this.signalHub = signalHub;
   }
 
   @GetMapping("/list")
@@ -56,7 +63,20 @@ public class ChatController {
   public ChatMessageDto postMessage(Principal principal,
                                     @PathVariable("chatId") Long chatId,
                                     @Valid @RequestBody PostMessageRequest request) {
-    Long messageId = chatService.postMessage(CurrentUser.id(principal), chatId, request.text());
-    return chatQuery.message(messageId).orElseThrow();
+    Long me = CurrentUser.id(principal);
+    Long messageId = chatService.postMessage(me, chatId, request.text());
+    ChatMessageDto message = chatQuery.message(messageId).orElseThrow();
+
+    // The others in the chat get the message itself, pushed, so an open chat shows it at once.
+    // The author already has it: it is the answer to this request. A message is not a
+    // notification - nothing is stored for it beyond the message.
+    Map<String, Object> signal = Map.of("chatId", chatId, "message", message);
+    for (ChatMemberDto member : chatQuery.members(chatId)) {
+      if (!member.userId().equals(me)) {
+        signalHub.send(member.userId(), SIGNAL_CHAT_MESSAGE, signal);
+      }
+    }
+
+    return message;
   }
 }

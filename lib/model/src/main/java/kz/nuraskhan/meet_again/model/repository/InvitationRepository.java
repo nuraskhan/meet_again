@@ -18,4 +18,14 @@ public interface InvitationRepository extends JpaRepository<Invitation, Long> {
                          kz.nuraskhan.meet_again.model.enums.InvitationStatus.ACCEPTED)
       """)
   long countGuests(@Param("eventId") Long eventId);
+
+  /** The user ids of the guests an event has now: invited and not yet answered, or coming. */
+  @Query("""
+      select i.inviteeUserAccountId from Invitation i
+      where i.eventId = :eventId
+        and i.status in (kz.nuraskhan.meet_again.model.enums.InvitationStatus.PENDING,
+                         kz.nuraskhan.meet_again.model.enums.InvitationStatus.ACCEPTED)
+      order by i.id
+      """)
+  java.util.List<Long> findGuestIds(@Param("eventId") Long eventId);
 }

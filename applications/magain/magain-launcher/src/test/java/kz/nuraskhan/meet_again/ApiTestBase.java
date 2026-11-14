@@ -128,6 +128,106 @@ public abstract class ApiTestBase {
     assertThat(accept.status()).isEqualTo(200);
   }
 
+  /** One event that came through a signal stream. */
+  public record Signal(String type, JsonNode data) {
+  }
+
+  /**
+   * A page listening: the stream of signals of one person, read in a thread of its own, the way
+   * the front end reads it. Close it when the test is over.
+   */
+  public final class SignalStream implements AutoCloseable {
+
+    private final java.util.concurrent.BlockingQueue<Signal> received =
+        new java.util.concurrent.LinkedBlockingQueue<>();
+    private final Thread reader;
+    private volatile java.io.InputStream body;
+
+    private SignalStream(TestUser as) {
+      reader = new Thread(() -> read(as), "signal-stream-test");
+      reader.setDaemon(true);
+      reader.start();
+    }
+
+    private void read(TestUser as) {
+      try {
+        HttpResponse<java.io.InputStream> response = HTTP.send(
+            HttpRequest.newBuilder(URI.create("http://localhost:" + port + "/signal/stream"))
+                .header("Authorization", "Bearer " + as.token())
+                .header("Accept", "text/event-stream")
+                .GET().build(),
+            HttpResponse.BodyHandlers.ofInputStream());
+        body = response.body();
+
+        java.io.BufferedReader lines = new java.io.BufferedReader(
+            new java.io.InputStreamReader(body, java.nio.charset.StandardCharsets.UTF_8));
+        String type = null;
+        StringBuilder data = new StringBuilder();
+        for (String line = lines.readLine(); line != null; line = lines.readLine()) {
+          if (line.startsWith("event:")) {
+            type = line.substring(6).trim();
+          } else if (line.startsWith("data:")) {
+            data.append(line.substring(5).trim());
+          } else if (line.isEmpty() && type != null) {
+            // An empty line ends an event.
+            received.add(new Signal(type, JSON.readTree(data.isEmpty() ? "{}" : data.toString())));
+            type = null;
+            data.setLength(0);
+          }
+        }
+      } catch (java.io.IOException e) {
+        // The test closed the stream.
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+      }
+    }
+
+    /** The next signal; fails the test if none comes in five seconds. */
+    public Signal next() {
+      try {
+        Signal signal = received.poll(5, java.util.concurrent.TimeUnit.SECONDS);
+        assertThat(signal).as("a signal within five seconds").isNotNull();
+        return signal;
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        throw new IllegalStateException(e);
+      }
+    }
+
+    /** True if nothing comes for half a second: for "this person is not signalled". */
+    public boolean staysSilent() {
+      try {
+        return received.poll(500, java.util.concurrent.TimeUnit.MILLISECONDS) == null;
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        throw new IllegalStateException(e);
+      }
+    }
+
+    @Override
+    public void close() {
+      reader.interrupt();
+      java.io.InputStream open = body;
+      if (open != null) {
+        try {
+          open.close();
+        } catch (java.io.IOException e) {
+          // Closing is all that was wanted.
+        }
+      }
+    }
+  }
+
+  /**
+   * Opens the signal stream of a person and waits for its greeting, so that whatever the test does
+   * next happens while the person is surely listening.
+   */
+  protected SignalStream listen(TestUser as) {
+    SignalStream stream = new SignalStream(as);
+    assertThat(stream.next().type()).isEqualTo("hello");
+    return stream;
+  }
+
   /** The values of one field of every element of a JSON array. */
   protected static List<Long> longs(JsonNode array, String field) {
     return array.valueStream().map(node -> node.get(field).asLong()).toList();

@@ -1,6 +1,7 @@
 package kz.nuraskhan.meet_again.magain.auth;
 
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
+import jakarta.servlet.DispatcherType;
 import java.nio.charset.StandardCharsets;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -36,6 +37,12 @@ public class SecurityConfig {
         .csrf(csrf -> csrf.disable())
         .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(auth -> auth
+            // WHY the ASYNC dispatch is let through: a request that stays open (the stream of
+            // signals) is handed back to the server a second time, internally, when it ends. That
+            // second pass carries no token - the token filter runs once per request - so checking
+            // it would log "access denied" for every stream that closes. The first pass, the one
+            // from outside, was checked like any other.
+            .dispatcherTypeMatchers(DispatcherType.ASYNC).permitAll()
             .requestMatchers("/auth/**", "/public/**", "/actuator/health/**", "/actuator/health")
             .permitAll()
             .anyRequest().authenticated())

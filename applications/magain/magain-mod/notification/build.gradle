@@ -1,0 +1,5 @@
+// Telling people what happened:
+//   - signals: the server pushes a small message to the pages a person has open (SignalHub);
+//   - notifications: what happened is also written down, to be read later (NotificationService).
+//
+// The other feature modules depend on this one and call it; it depends on none of them.

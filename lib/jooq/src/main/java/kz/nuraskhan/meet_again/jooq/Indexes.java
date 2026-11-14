@@ -10,6 +10,7 @@ import kz.nuraskhan.meet_again.jooq.tables.EmailVerification;
 import kz.nuraskhan.meet_again.jooq.tables.Event;
 import kz.nuraskhan.meet_again.jooq.tables.Friendship;
 import kz.nuraskhan.meet_again.jooq.tables.Invitation;
+import kz.nuraskhan.meet_again.jooq.tables.Notification;
 import kz.nuraskhan.meet_again.jooq.tables.Place;
 
 import org.jooq.Index;
@@ -37,5 +38,7 @@ public class Indexes {
     public static final Index EVENT__STATUS = Internal.createIndex(DSL.name("event__status"), Event.EVENT, new OrderField[] { Event.EVENT.STATUS }, false);
     public static final Index FRIENDSHIP__ADDRESSEE = Internal.createIndex(DSL.name("friendship__addressee"), Friendship.FRIENDSHIP, new OrderField[] { Friendship.FRIENDSHIP.ADDRESSEE__USER_ACCOUNT_ID }, false);
     public static final Index INVITATION__INVITEE = Internal.createIndex(DSL.name("invitation__invitee"), Invitation.INVITATION, new OrderField[] { Invitation.INVITATION.INVITEE__USER_ACCOUNT_ID }, false);
+    public static final Index NOTIFICATION__RECIPIENT = Internal.createIndex(DSL.name("notification__recipient"), Notification.NOTIFICATION, new OrderField[] { Notification.NOTIFICATION.USER_ACCOUNT_ID, Notification.NOTIFICATION.ID.desc() }, false);
+    public static final Index NOTIFICATION__UNREAD = Internal.createIndex(DSL.name("notification__unread"), Notification.NOTIFICATION, new OrderField[] { Notification.NOTIFICATION.USER_ACCOUNT_ID }, false);
     public static final Index PLACE__SEARCH = Internal.createIndex(DSL.name("place__search"), Place.PLACE, new OrderField[] { Place.PLACE.CATEGORY, Place.PLACE.LATITUDE, Place.PLACE.LONGITUDE }, false);
 }

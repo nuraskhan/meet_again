@@ -15,6 +15,7 @@ import kz.nuraskhan.meet_again.model.entity.EventSuggestion;
 import kz.nuraskhan.meet_again.model.entity.EventTimeOption;
 import kz.nuraskhan.meet_again.model.entity.Friendship;
 import kz.nuraskhan.meet_again.model.entity.Invitation;
+import kz.nuraskhan.meet_again.model.entity.Notification;
 import kz.nuraskhan.meet_again.model.entity.ParticipantPreference;
 import kz.nuraskhan.meet_again.model.entity.Place;
 import kz.nuraskhan.meet_again.model.entity.Profile;
@@ -34,6 +35,7 @@ import kz.nuraskhan.meet_again.model.repository.EventSuggestionRepository;
 import kz.nuraskhan.meet_again.model.repository.EventTimeOptionRepository;
 import kz.nuraskhan.meet_again.model.repository.FriendshipRepository;
 import kz.nuraskhan.meet_again.model.repository.InvitationRepository;
+import kz.nuraskhan.meet_again.model.repository.NotificationRepository;
 import kz.nuraskhan.meet_again.model.repository.ParticipantPreferenceRepository;
 import kz.nuraskhan.meet_again.model.repository.PlaceRepository;
 import kz.nuraskhan.meet_again.model.repository.ProfileRepository;
@@ -65,6 +67,7 @@ class RndPersistenceTest extends ApiTestBase {
   @Autowired PlaceRepository placeRepository;
   @Autowired EventSuggestionRepository eventSuggestionRepository;
   @Autowired ParticipantPreferenceRepository participantPreferenceRepository;
+  @Autowired NotificationRepository notificationRepository;
 
   @Test
   void everyRndEntity__isSavedAndReadBackUnchanged() {
@@ -95,6 +98,7 @@ class RndPersistenceTest extends ApiTestBase {
         eventSuggestionRepository.save(RND.eventSuggestion(event.id, place.id, 1));
     ParticipantPreference preference =
         participantPreferenceRepository.save(RND.participantPreference(event.id, user2.id));
+    Notification notification = notificationRepository.save(RND.notification(user1.id, user2.id));
     //
     //
 
@@ -133,6 +137,8 @@ class RndPersistenceTest extends ApiTestBase {
         .usingRecursiveComparison().isEqualTo(suggestion);
     assertThat(participantPreferenceRepository.findById(preference.id).orElseThrow())
         .usingRecursiveComparison().isEqualTo(preference);
+    assertThat(notificationRepository.findById(notification.id).orElseThrow())
+        .usingRecursiveComparison().isEqualTo(notification);
 
     assertThat(friendshipRepository.countFriendsAmong(user1.id, java.util.List.of(user2.id)))
         .isEqualTo(1);

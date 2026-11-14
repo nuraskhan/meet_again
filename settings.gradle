@@ -11,6 +11,7 @@ include 'migration'
 
 // Application "magain": the launcher builds the boot-jar, every feature is a module.
 include 'applications:magain:magain-launcher'
+include 'applications:magain:magain-mod:notification'
 include 'applications:magain:magain-mod:auth'
 include 'applications:magain:magain-mod:profile'
 include 'applications:magain:magain-mod:friend'
