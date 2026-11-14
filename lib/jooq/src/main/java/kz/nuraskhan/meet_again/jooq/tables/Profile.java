@@ -13,7 +13,9 @@ import java.util.List;
 import kz.nuraskhan.meet_again.jooq.Keys;
 import kz.nuraskhan.meet_again.jooq.Public;
 import kz.nuraskhan.meet_again.jooq.tables.records.ProfileRecord;
+import kz.nuraskhan.meet_again.model.enums.Privilege;
 
+import org.jooq.Check;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.ForeignKey;
@@ -29,6 +31,7 @@ import org.jooq.TableLike;
 import org.jooq.TableOptions;
 import org.jooq.UniqueKey;
 import org.jooq.impl.DSL;
+import org.jooq.impl.EnumConverter;
 import org.jooq.impl.Internal;
 import org.jooq.impl.SQLDataType;
 import org.jooq.impl.TableImpl;
@@ -90,6 +93,36 @@ public class Profile extends TableImpl<ProfileRecord> {
      */
     public final TableField<ProfileRecord, Instant> UPDATED_AT = createField(DSL.name("updated_at"), SQLDataType.INSTANT.nullable(false), this, "");
 
+    /**
+     * The column <code>public.profile.privilege</code>.
+     */
+    public final TableField<ProfileRecord, Privilege> PRIVILEGE = createField(DSL.name("privilege"), SQLDataType.CLOB.nullable(false).defaultValue(DSL.field(DSL.raw("'STANDARD'::text"), SQLDataType.CLOB)), this, "", new EnumConverter<String, Privilege>(String.class, Privilege.class));
+
+    /**
+     * The column <code>public.profile.occupation</code>.
+     */
+    public final TableField<ProfileRecord, String> OCCUPATION = createField(DSL.name("occupation"), SQLDataType.CLOB, this, "");
+
+    /**
+     * The column <code>public.profile.education</code>.
+     */
+    public final TableField<ProfileRecord, String> EDUCATION = createField(DSL.name("education"), SQLDataType.CLOB, this, "");
+
+    /**
+     * The column <code>public.profile.hometown</code>.
+     */
+    public final TableField<ProfileRecord, String> HOMETOWN = createField(DSL.name("hometown"), SQLDataType.CLOB, this, "");
+
+    /**
+     * The column <code>public.profile.pronouns</code>.
+     */
+    public final TableField<ProfileRecord, String> PRONOUNS = createField(DSL.name("pronouns"), SQLDataType.CLOB, this, "");
+
+    /**
+     * The column <code>public.profile.languages</code>.
+     */
+    public final TableField<ProfileRecord, String> LANGUAGES = createField(DSL.name("languages"), SQLDataType.CLOB, this, "");
+
     private Profile(Name alias, Table<ProfileRecord> aliased) {
         this(alias, aliased, (Field<?>[]) null, null);
     }
@@ -132,6 +165,13 @@ public class Profile extends TableImpl<ProfileRecord> {
     @Override
     public List<ForeignKey<ProfileRecord, ?>> getReferences() {
         return Arrays.asList(Keys.PROFILE__PROFILE_USER_ACCOUNT_ID_FKEY);
+    }
+
+    @Override
+    public List<Check<ProfileRecord>> getChecks() {
+        return Arrays.asList(
+            Internal.createCheck(this, DSL.name("profile_privilege_check"), "((privilege = ANY (ARRAY['STANDARD'::text, 'PRO'::text, 'MAX'::text])))", true)
+        );
     }
 
     @Override

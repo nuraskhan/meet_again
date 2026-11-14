@@ -7,7 +7,6 @@ package kz.nuraskhan.meet_again.jooq;
 import java.util.Arrays;
 import java.util.List;
 
-import kz.nuraskhan.meet_again.jooq.tables.Avatar;
 import kz.nuraskhan.meet_again.jooq.tables.Chat;
 import kz.nuraskhan.meet_again.jooq.tables.ChatMember;
 import kz.nuraskhan.meet_again.jooq.tables.ChatMessage;
@@ -21,6 +20,9 @@ import kz.nuraskhan.meet_again.jooq.tables.Invitation;
 import kz.nuraskhan.meet_again.jooq.tables.ParticipantPreference;
 import kz.nuraskhan.meet_again.jooq.tables.Place;
 import kz.nuraskhan.meet_again.jooq.tables.Profile;
+import kz.nuraskhan.meet_again.jooq.tables.ProfileInterest;
+import kz.nuraskhan.meet_again.jooq.tables.ProfilePhoto;
+import kz.nuraskhan.meet_again.jooq.tables.ProfilePrompt;
 import kz.nuraskhan.meet_again.jooq.tables.UserAccount;
 
 import org.jooq.Catalog;
@@ -41,11 +43,6 @@ public class Public extends SchemaImpl {
      * The reference instance of <code>public</code>
      */
     public static final Public PUBLIC = new Public();
-
-    /**
-     * The table <code>public.avatar</code>.
-     */
-    public final Avatar AVATAR = Avatar.AVATAR;
 
     /**
      * The table <code>public.chat</code>.
@@ -113,6 +110,21 @@ public class Public extends SchemaImpl {
     public final Profile PROFILE = Profile.PROFILE;
 
     /**
+     * The table <code>public.profile_interest</code>.
+     */
+    public final ProfileInterest PROFILE_INTEREST = ProfileInterest.PROFILE_INTEREST;
+
+    /**
+     * The table <code>public.profile_photo</code>.
+     */
+    public final ProfilePhoto PROFILE_PHOTO = ProfilePhoto.PROFILE_PHOTO;
+
+    /**
+     * The table <code>public.profile_prompt</code>.
+     */
+    public final ProfilePrompt PROFILE_PROMPT = ProfilePrompt.PROFILE_PROMPT;
+
+    /**
      * The table <code>public.user_account</code>.
      */
     public final UserAccount USER_ACCOUNT = UserAccount.USER_ACCOUNT;
@@ -133,7 +145,6 @@ public class Public extends SchemaImpl {
     @Override
     public final List<Table<?>> getTables() {
         return Arrays.asList(
-            Avatar.AVATAR,
             Chat.CHAT,
             ChatMember.CHAT_MEMBER,
             ChatMessage.CHAT_MESSAGE,
@@ -147,6 +158,9 @@ public class Public extends SchemaImpl {
             ParticipantPreference.PARTICIPANT_PREFERENCE,
             Place.PLACE,
             Profile.PROFILE,
+            ProfileInterest.PROFILE_INTEREST,
+            ProfilePhoto.PROFILE_PHOTO,
+            ProfilePrompt.PROFILE_PROMPT,
             UserAccount.USER_ACCOUNT
         );
     }

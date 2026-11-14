@@ -4,7 +4,6 @@
 package kz.nuraskhan.meet_again.jooq;
 
 
-import kz.nuraskhan.meet_again.jooq.tables.Avatar;
 import kz.nuraskhan.meet_again.jooq.tables.Chat;
 import kz.nuraskhan.meet_again.jooq.tables.ChatMember;
 import kz.nuraskhan.meet_again.jooq.tables.ChatMessage;
@@ -18,6 +17,9 @@ import kz.nuraskhan.meet_again.jooq.tables.Invitation;
 import kz.nuraskhan.meet_again.jooq.tables.ParticipantPreference;
 import kz.nuraskhan.meet_again.jooq.tables.Place;
 import kz.nuraskhan.meet_again.jooq.tables.Profile;
+import kz.nuraskhan.meet_again.jooq.tables.ProfileInterest;
+import kz.nuraskhan.meet_again.jooq.tables.ProfilePhoto;
+import kz.nuraskhan.meet_again.jooq.tables.ProfilePrompt;
 import kz.nuraskhan.meet_again.jooq.tables.UserAccount;
 
 
@@ -26,11 +28,6 @@ import kz.nuraskhan.meet_again.jooq.tables.UserAccount;
  */
 @SuppressWarnings({ "all", "unchecked", "rawtypes", "this-escape" })
 public class Tables {
-
-    /**
-     * The table <code>public.avatar</code>.
-     */
-    public static final Avatar AVATAR = Avatar.AVATAR;
 
     /**
      * The table <code>public.chat</code>.
@@ -96,6 +93,21 @@ public class Tables {
      * The table <code>public.profile</code>.
      */
     public static final Profile PROFILE = Profile.PROFILE;
+
+    /**
+     * The table <code>public.profile_interest</code>.
+     */
+    public static final ProfileInterest PROFILE_INTEREST = ProfileInterest.PROFILE_INTEREST;
+
+    /**
+     * The table <code>public.profile_photo</code>.
+     */
+    public static final ProfilePhoto PROFILE_PHOTO = ProfilePhoto.PROFILE_PHOTO;
+
+    /**
+     * The table <code>public.profile_prompt</code>.
+     */
+    public static final ProfilePrompt PROFILE_PROMPT = ProfilePrompt.PROFILE_PROMPT;
 
     /**
      * The table <code>public.user_account</code>.

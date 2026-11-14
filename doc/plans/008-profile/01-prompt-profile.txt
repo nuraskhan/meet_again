@@ -1,0 +1,1 @@
+now add edits into profile section and let them say more about person and add multi profile-photo support and like tinder/bereal profile (but UI stay as usual, later I will remake whoole UI with real design) and add privilleges into profile entity and it will be base for future subscription polytic as "STANDARD", "PRO", "MAX"

@@ -8,6 +8,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 
 import kz.nuraskhan.meet_again.jooq.tables.Profile;
+import kz.nuraskhan.meet_again.model.enums.Privilege;
 
 import org.jooq.Record1;
 import org.jooq.impl.UpdatableRecordImpl;
@@ -119,6 +120,90 @@ public class ProfileRecord extends UpdatableRecordImpl<ProfileRecord> {
         return (Instant) get(6);
     }
 
+    /**
+     * Setter for <code>public.profile.privilege</code>.
+     */
+    public void setPrivilege(Privilege value) {
+        set(7, value);
+    }
+
+    /**
+     * Getter for <code>public.profile.privilege</code>.
+     */
+    public Privilege getPrivilege() {
+        return (Privilege) get(7);
+    }
+
+    /**
+     * Setter for <code>public.profile.occupation</code>.
+     */
+    public void setOccupation(String value) {
+        set(8, value);
+    }
+
+    /**
+     * Getter for <code>public.profile.occupation</code>.
+     */
+    public String getOccupation() {
+        return (String) get(8);
+    }
+
+    /**
+     * Setter for <code>public.profile.education</code>.
+     */
+    public void setEducation(String value) {
+        set(9, value);
+    }
+
+    /**
+     * Getter for <code>public.profile.education</code>.
+     */
+    public String getEducation() {
+        return (String) get(9);
+    }
+
+    /**
+     * Setter for <code>public.profile.hometown</code>.
+     */
+    public void setHometown(String value) {
+        set(10, value);
+    }
+
+    /**
+     * Getter for <code>public.profile.hometown</code>.
+     */
+    public String getHometown() {
+        return (String) get(10);
+    }
+
+    /**
+     * Setter for <code>public.profile.pronouns</code>.
+     */
+    public void setPronouns(String value) {
+        set(11, value);
+    }
+
+    /**
+     * Getter for <code>public.profile.pronouns</code>.
+     */
+    public String getPronouns() {
+        return (String) get(11);
+    }
+
+    /**
+     * Setter for <code>public.profile.languages</code>.
+     */
+    public void setLanguages(String value) {
+        set(12, value);
+    }
+
+    /**
+     * Getter for <code>public.profile.languages</code>.
+     */
+    public String getLanguages() {
+        return (String) get(12);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -142,7 +227,7 @@ public class ProfileRecord extends UpdatableRecordImpl<ProfileRecord> {
     /**
      * Create a detached, initialised ProfileRecord
      */
-    public ProfileRecord(Long userAccountId, String displayName, String bio, String city, LocalDate birthDate, String avatarUrl, Instant updatedAt) {
+    public ProfileRecord(Long userAccountId, String displayName, String bio, String city, LocalDate birthDate, String avatarUrl, Instant updatedAt, Privilege privilege, String occupation, String education, String hometown, String pronouns, String languages) {
         super(Profile.PROFILE);
 
         setUserAccountId(userAccountId);
@@ -152,6 +237,12 @@ public class ProfileRecord extends UpdatableRecordImpl<ProfileRecord> {
         setBirthDate(birthDate);
         setAvatarUrl(avatarUrl);
         setUpdatedAt(updatedAt);
+        setPrivilege(privilege);
+        setOccupation(occupation);
+        setEducation(education);
+        setHometown(hometown);
+        setPronouns(pronouns);
+        setLanguages(languages);
         resetTouchedOnNotNull();
     }
 }

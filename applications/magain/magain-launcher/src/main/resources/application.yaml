@@ -7,7 +7,7 @@ server:
   tomcat:
     # How much of a refused (too large) upload is still read, so that the client gets our answer
     # instead of a broken connection. Larger than that - the connection is cut.
-    max-swallow-size: 8MB
+    max-swallow-size: 16MB
 
 spring:
   application:
@@ -26,10 +26,10 @@ spring:
     sql-dialect: postgres
   servlet:
     multipart:
-      # The only upload is a profile picture. The same 2 MB is AvatarService.MAX_UPLOAD_BYTES;
+      # The only upload is a profile photo. The same 6 MB is PhotoService.MAX_UPLOAD_BYTES;
       # the request may be a little larger than the file (the form around it).
-      max-file-size: 2MB
-      max-request-size: 3MB
+      max-file-size: 6MB
+      max-request-size: 7MB
 
 magain:
   jwt:

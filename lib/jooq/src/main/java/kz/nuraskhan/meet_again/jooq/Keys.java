@@ -4,7 +4,6 @@
 package kz.nuraskhan.meet_again.jooq;
 
 
-import kz.nuraskhan.meet_again.jooq.tables.Avatar;
 import kz.nuraskhan.meet_again.jooq.tables.Chat;
 import kz.nuraskhan.meet_again.jooq.tables.ChatMember;
 import kz.nuraskhan.meet_again.jooq.tables.ChatMessage;
@@ -18,8 +17,10 @@ import kz.nuraskhan.meet_again.jooq.tables.Invitation;
 import kz.nuraskhan.meet_again.jooq.tables.ParticipantPreference;
 import kz.nuraskhan.meet_again.jooq.tables.Place;
 import kz.nuraskhan.meet_again.jooq.tables.Profile;
+import kz.nuraskhan.meet_again.jooq.tables.ProfileInterest;
+import kz.nuraskhan.meet_again.jooq.tables.ProfilePhoto;
+import kz.nuraskhan.meet_again.jooq.tables.ProfilePrompt;
 import kz.nuraskhan.meet_again.jooq.tables.UserAccount;
-import kz.nuraskhan.meet_again.jooq.tables.records.AvatarRecord;
 import kz.nuraskhan.meet_again.jooq.tables.records.ChatMemberRecord;
 import kz.nuraskhan.meet_again.jooq.tables.records.ChatMessageRecord;
 import kz.nuraskhan.meet_again.jooq.tables.records.ChatRecord;
@@ -32,6 +33,9 @@ import kz.nuraskhan.meet_again.jooq.tables.records.FriendshipRecord;
 import kz.nuraskhan.meet_again.jooq.tables.records.InvitationRecord;
 import kz.nuraskhan.meet_again.jooq.tables.records.ParticipantPreferenceRecord;
 import kz.nuraskhan.meet_again.jooq.tables.records.PlaceRecord;
+import kz.nuraskhan.meet_again.jooq.tables.records.ProfileInterestRecord;
+import kz.nuraskhan.meet_again.jooq.tables.records.ProfilePhotoRecord;
+import kz.nuraskhan.meet_again.jooq.tables.records.ProfilePromptRecord;
 import kz.nuraskhan.meet_again.jooq.tables.records.ProfileRecord;
 import kz.nuraskhan.meet_again.jooq.tables.records.UserAccountRecord;
 
@@ -54,8 +58,6 @@ public class Keys {
     // UNIQUE and PRIMARY KEY definitions
     // -------------------------------------------------------------------------
 
-    public static final UniqueKey<AvatarRecord> AVATAR_PKEY = Internal.createUniqueKey(Avatar.AVATAR, DSL.name("avatar_pkey"), new TableField[] { Avatar.AVATAR.USER_ACCOUNT_ID }, true);
-    public static final UniqueKey<AvatarRecord> AVATAR_TOKEN_KEY = Internal.createUniqueKey(Avatar.AVATAR, DSL.name("avatar_token_key"), new TableField[] { Avatar.AVATAR.TOKEN }, true);
     public static final UniqueKey<ChatRecord> CHAT_PKEY = Internal.createUniqueKey(Chat.CHAT, DSL.name("chat_pkey"), new TableField[] { Chat.CHAT.ID }, true);
     public static final UniqueKey<ChatMemberRecord> CHAT_MEMBER_CHAT_ID_USER_ACCOUNT_ID_KEY = Internal.createUniqueKey(ChatMember.CHAT_MEMBER, DSL.name("chat_member_chat_id_user_account_id_key"), new TableField[] { ChatMember.CHAT_MEMBER.CHAT_ID, ChatMember.CHAT_MEMBER.USER_ACCOUNT_ID }, true);
     public static final UniqueKey<ChatMemberRecord> CHAT_MEMBER_PKEY = Internal.createUniqueKey(ChatMember.CHAT_MEMBER, DSL.name("chat_member_pkey"), new TableField[] { ChatMember.CHAT_MEMBER.ID }, true);
@@ -77,6 +79,13 @@ public class Keys {
     public static final UniqueKey<ParticipantPreferenceRecord> PARTICIPANT_PREFERENCE_PKEY = Internal.createUniqueKey(ParticipantPreference.PARTICIPANT_PREFERENCE, DSL.name("participant_preference_pkey"), new TableField[] { ParticipantPreference.PARTICIPANT_PREFERENCE.ID }, true);
     public static final UniqueKey<PlaceRecord> PLACE_PKEY = Internal.createUniqueKey(Place.PLACE, DSL.name("place_pkey"), new TableField[] { Place.PLACE.ID }, true);
     public static final UniqueKey<ProfileRecord> PROFILE_PKEY = Internal.createUniqueKey(Profile.PROFILE, DSL.name("profile_pkey"), new TableField[] { Profile.PROFILE.USER_ACCOUNT_ID }, true);
+    public static final UniqueKey<ProfileInterestRecord> PROFILE_INTEREST_PKEY = Internal.createUniqueKey(ProfileInterest.PROFILE_INTEREST, DSL.name("profile_interest_pkey"), new TableField[] { ProfileInterest.PROFILE_INTEREST.ID }, true);
+    public static final UniqueKey<ProfileInterestRecord> PROFILE_INTEREST_USER_ACCOUNT_ID_POSITION_KEY = Internal.createUniqueKey(ProfileInterest.PROFILE_INTEREST, DSL.name("profile_interest_user_account_id_position_key"), new TableField[] { ProfileInterest.PROFILE_INTEREST.USER_ACCOUNT_ID, ProfileInterest.PROFILE_INTEREST.POSITION }, true);
+    public static final UniqueKey<ProfilePhotoRecord> PROFILE_PHOTO__ORDER = Internal.createUniqueKey(ProfilePhoto.PROFILE_PHOTO, DSL.name("profile_photo__order"), new TableField[] { ProfilePhoto.PROFILE_PHOTO.USER_ACCOUNT_ID, ProfilePhoto.PROFILE_PHOTO.POSITION }, true);
+    public static final UniqueKey<ProfilePhotoRecord> PROFILE_PHOTO_PKEY = Internal.createUniqueKey(ProfilePhoto.PROFILE_PHOTO, DSL.name("profile_photo_pkey"), new TableField[] { ProfilePhoto.PROFILE_PHOTO.ID }, true);
+    public static final UniqueKey<ProfilePhotoRecord> PROFILE_PHOTO_TOKEN_KEY = Internal.createUniqueKey(ProfilePhoto.PROFILE_PHOTO, DSL.name("profile_photo_token_key"), new TableField[] { ProfilePhoto.PROFILE_PHOTO.TOKEN }, true);
+    public static final UniqueKey<ProfilePromptRecord> PROFILE_PROMPT_PKEY = Internal.createUniqueKey(ProfilePrompt.PROFILE_PROMPT, DSL.name("profile_prompt_pkey"), new TableField[] { ProfilePrompt.PROFILE_PROMPT.ID }, true);
+    public static final UniqueKey<ProfilePromptRecord> PROFILE_PROMPT_USER_ACCOUNT_ID_POSITION_KEY = Internal.createUniqueKey(ProfilePrompt.PROFILE_PROMPT, DSL.name("profile_prompt_user_account_id_position_key"), new TableField[] { ProfilePrompt.PROFILE_PROMPT.USER_ACCOUNT_ID, ProfilePrompt.PROFILE_PROMPT.POSITION }, true);
     public static final UniqueKey<UserAccountRecord> USER_ACCOUNT_EMAIL_KEY = Internal.createUniqueKey(UserAccount.USER_ACCOUNT, DSL.name("user_account_email_key"), new TableField[] { UserAccount.USER_ACCOUNT.EMAIL }, true);
     public static final UniqueKey<UserAccountRecord> USER_ACCOUNT_PKEY = Internal.createUniqueKey(UserAccount.USER_ACCOUNT, DSL.name("user_account_pkey"), new TableField[] { UserAccount.USER_ACCOUNT.ID }, true);
 
@@ -84,7 +93,6 @@ public class Keys {
     // FOREIGN KEY definitions
     // -------------------------------------------------------------------------
 
-    public static final ForeignKey<AvatarRecord, UserAccountRecord> AVATAR__AVATAR_USER_ACCOUNT_ID_FKEY = Internal.createForeignKey(Avatar.AVATAR, DSL.name("avatar_user_account_id_fkey"), new TableField[] { Avatar.AVATAR.USER_ACCOUNT_ID }, Keys.USER_ACCOUNT_PKEY, new TableField[] { UserAccount.USER_ACCOUNT.ID }, true, ForeignKeyRule.NO_ACTION, ForeignKeyRule.NO_ACTION);
     public static final ForeignKey<ChatMemberRecord, ChatRecord> CHAT_MEMBER__CHAT_MEMBER_CHAT_ID_FKEY = Internal.createForeignKey(ChatMember.CHAT_MEMBER, DSL.name("chat_member_chat_id_fkey"), new TableField[] { ChatMember.CHAT_MEMBER.CHAT_ID }, Keys.CHAT_PKEY, new TableField[] { Chat.CHAT.ID }, true, ForeignKeyRule.NO_ACTION, ForeignKeyRule.NO_ACTION);
     public static final ForeignKey<ChatMemberRecord, UserAccountRecord> CHAT_MEMBER__CHAT_MEMBER_USER_ACCOUNT_ID_FKEY = Internal.createForeignKey(ChatMember.CHAT_MEMBER, DSL.name("chat_member_user_account_id_fkey"), new TableField[] { ChatMember.CHAT_MEMBER.USER_ACCOUNT_ID }, Keys.USER_ACCOUNT_PKEY, new TableField[] { UserAccount.USER_ACCOUNT.ID }, true, ForeignKeyRule.NO_ACTION, ForeignKeyRule.NO_ACTION);
     public static final ForeignKey<ChatMessageRecord, UserAccountRecord> CHAT_MESSAGE__CHAT_MESSAGE_AUTHOR__USER_ACCOUNT_ID_FKEY = Internal.createForeignKey(ChatMessage.CHAT_MESSAGE, DSL.name("chat_message_author__user_account_id_fkey"), new TableField[] { ChatMessage.CHAT_MESSAGE.AUTHOR__USER_ACCOUNT_ID }, Keys.USER_ACCOUNT_PKEY, new TableField[] { UserAccount.USER_ACCOUNT.ID }, true, ForeignKeyRule.NO_ACTION, ForeignKeyRule.NO_ACTION);
@@ -104,4 +112,7 @@ public class Keys {
     public static final ForeignKey<ParticipantPreferenceRecord, EventRecord> PARTICIPANT_PREFERENCE__PARTICIPANT_PREFERENCE_EVENT_ID_FKEY = Internal.createForeignKey(ParticipantPreference.PARTICIPANT_PREFERENCE, DSL.name("participant_preference_event_id_fkey"), new TableField[] { ParticipantPreference.PARTICIPANT_PREFERENCE.EVENT_ID }, Keys.EVENT_PKEY, new TableField[] { Event.EVENT.ID }, true, ForeignKeyRule.NO_ACTION, ForeignKeyRule.NO_ACTION);
     public static final ForeignKey<ParticipantPreferenceRecord, UserAccountRecord> PARTICIPANT_PREFERENCE__PARTICIPANT_PREFERENCE_USER_ACCOUNT_ID_FKEY = Internal.createForeignKey(ParticipantPreference.PARTICIPANT_PREFERENCE, DSL.name("participant_preference_user_account_id_fkey"), new TableField[] { ParticipantPreference.PARTICIPANT_PREFERENCE.USER_ACCOUNT_ID }, Keys.USER_ACCOUNT_PKEY, new TableField[] { UserAccount.USER_ACCOUNT.ID }, true, ForeignKeyRule.NO_ACTION, ForeignKeyRule.NO_ACTION);
     public static final ForeignKey<ProfileRecord, UserAccountRecord> PROFILE__PROFILE_USER_ACCOUNT_ID_FKEY = Internal.createForeignKey(Profile.PROFILE, DSL.name("profile_user_account_id_fkey"), new TableField[] { Profile.PROFILE.USER_ACCOUNT_ID }, Keys.USER_ACCOUNT_PKEY, new TableField[] { UserAccount.USER_ACCOUNT.ID }, true, ForeignKeyRule.NO_ACTION, ForeignKeyRule.NO_ACTION);
+    public static final ForeignKey<ProfileInterestRecord, UserAccountRecord> PROFILE_INTEREST__PROFILE_INTEREST_USER_ACCOUNT_ID_FKEY = Internal.createForeignKey(ProfileInterest.PROFILE_INTEREST, DSL.name("profile_interest_user_account_id_fkey"), new TableField[] { ProfileInterest.PROFILE_INTEREST.USER_ACCOUNT_ID }, Keys.USER_ACCOUNT_PKEY, new TableField[] { UserAccount.USER_ACCOUNT.ID }, true, ForeignKeyRule.NO_ACTION, ForeignKeyRule.NO_ACTION);
+    public static final ForeignKey<ProfilePhotoRecord, UserAccountRecord> PROFILE_PHOTO__PROFILE_PHOTO_USER_ACCOUNT_ID_FKEY = Internal.createForeignKey(ProfilePhoto.PROFILE_PHOTO, DSL.name("profile_photo_user_account_id_fkey"), new TableField[] { ProfilePhoto.PROFILE_PHOTO.USER_ACCOUNT_ID }, Keys.USER_ACCOUNT_PKEY, new TableField[] { UserAccount.USER_ACCOUNT.ID }, true, ForeignKeyRule.NO_ACTION, ForeignKeyRule.NO_ACTION);
+    public static final ForeignKey<ProfilePromptRecord, UserAccountRecord> PROFILE_PROMPT__PROFILE_PROMPT_USER_ACCOUNT_ID_FKEY = Internal.createForeignKey(ProfilePrompt.PROFILE_PROMPT, DSL.name("profile_prompt_user_account_id_fkey"), new TableField[] { ProfilePrompt.PROFILE_PROMPT.USER_ACCOUNT_ID }, Keys.USER_ACCOUNT_PKEY, new TableField[] { UserAccount.USER_ACCOUNT.ID }, true, ForeignKeyRule.NO_ACTION, ForeignKeyRule.NO_ACTION);
 }

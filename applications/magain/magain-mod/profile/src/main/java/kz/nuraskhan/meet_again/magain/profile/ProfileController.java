@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import java.security.Principal;
 import java.util.List;
 import kz.nuraskhan.meet_again.magain.profile.dto.MyProfileDto;
+import kz.nuraskhan.meet_again.magain.profile.dto.ProfileCardDto;
 import kz.nuraskhan.meet_again.magain.profile.dto.ProfileDto;
 import kz.nuraskhan.meet_again.magain.profile.dto.UpdateProfileRequest;
 import kz.nuraskhan.meet_again.web.ApiException;
@@ -41,7 +42,7 @@ public class ProfileController {
   }
 
   @GetMapping("/search")
-  public List<ProfileDto> search(Principal principal, @RequestParam("text") String text) {
+  public List<ProfileCardDto> search(Principal principal, @RequestParam("text") String text) {
     return profileQuery.search(CurrentUser.id(principal), text);
   }
 

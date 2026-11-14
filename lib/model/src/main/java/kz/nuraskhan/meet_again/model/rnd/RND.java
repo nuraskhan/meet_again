@@ -4,7 +4,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.ThreadLocalRandom;
-import kz.nuraskhan.meet_again.model.entity.Avatar;
 import kz.nuraskhan.meet_again.model.entity.Chat;
 import kz.nuraskhan.meet_again.model.entity.ChatMember;
 import kz.nuraskhan.meet_again.model.entity.ChatMessage;
@@ -18,11 +17,15 @@ import kz.nuraskhan.meet_again.model.entity.Invitation;
 import kz.nuraskhan.meet_again.model.entity.ParticipantPreference;
 import kz.nuraskhan.meet_again.model.entity.Place;
 import kz.nuraskhan.meet_again.model.entity.Profile;
+import kz.nuraskhan.meet_again.model.entity.ProfileInterest;
+import kz.nuraskhan.meet_again.model.entity.ProfilePhoto;
+import kz.nuraskhan.meet_again.model.entity.ProfilePrompt;
 import kz.nuraskhan.meet_again.model.entity.UserAccount;
 import kz.nuraskhan.meet_again.model.enums.EventStatus;
 import kz.nuraskhan.meet_again.model.enums.EventType;
 import kz.nuraskhan.meet_again.model.enums.FriendshipStatus;
 import kz.nuraskhan.meet_again.model.enums.InvitationStatus;
+import kz.nuraskhan.meet_again.model.enums.Privilege;
 
 /**
  * Random values and entities filled with them, for tests and demo data.
@@ -112,7 +115,13 @@ public final class RND {
     x.bio = "Bio " + str(30);
     x.city = "City " + str(6);
     x.birthDate = birthDate();
-    x.avatarUrl = "/public/avatar/" + str(24); // the address of an uploaded picture, never a link
+    x.privilege = oneOf(Privilege.class);
+    x.hometown = "Hometown " + str(6);
+    x.pronouns = oneOf("she/her", "he/him", "they/them");
+    x.occupation = "Job " + str(8);
+    x.education = "School " + str(8);
+    x.languages = "English, " + str(6);
+    x.avatarUrl = "/public/photo/" + str(24); // the address of an uploaded photo, never a link
     x.updatedAt = pastInstant();
     return x;
   }
@@ -237,14 +246,32 @@ public final class RND {
   }
 
   /** The content is random bytes, not a picture: enough for storing and reading back. */
-  public static Avatar avatar(Long userAccountId) {
-    Avatar x = new Avatar();
+  public static ProfilePhoto profilePhoto(Long userAccountId, int position) {
+    ProfilePhoto x = new ProfilePhoto();
     x.userAccountId = userAccountId;
+    x.position = position;
     x.token = str(32);
     x.contentType = oneOf("image/jpeg", "image/png");
     x.content = new byte[intBetween(1, 64)];
     random().nextBytes(x.content);
-    x.updatedAt = now();
+    x.createdAt = now();
+    return x;
+  }
+
+  public static ProfileInterest profileInterest(Long userAccountId, int position) {
+    ProfileInterest x = new ProfileInterest();
+    x.userAccountId = userAccountId;
+    x.position = position;
+    x.label = "interest " + str(6);
+    return x;
+  }
+
+  public static ProfilePrompt profilePrompt(Long userAccountId, int position) {
+    ProfilePrompt x = new ProfilePrompt();
+    x.userAccountId = userAccountId;
+    x.position = position;
+    x.question = "Question " + str(12) + "?";
+    x.answer = "Answer " + str(30);
     return x;
   }
 
