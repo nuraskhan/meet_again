@@ -90,6 +90,20 @@ public class ChatMemberRecord extends UpdatableRecordImpl<ChatMemberRecord> {
         return (Instant) get(4);
     }
 
+    /**
+     * Setter for <code>public.chat_member.last_read__chat_message_id</code>.
+     */
+    public void setLastRead_ChatMessageId(Long value) {
+        set(5, value);
+    }
+
+    /**
+     * Getter for <code>public.chat_member.last_read__chat_message_id</code>.
+     */
+    public Long getLastRead_ChatMessageId() {
+        return (Long) get(5);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -113,7 +127,7 @@ public class ChatMemberRecord extends UpdatableRecordImpl<ChatMemberRecord> {
     /**
      * Create a detached, initialised ChatMemberRecord
      */
-    public ChatMemberRecord(Long id, Long chatId, Long userAccountId, Instant joinedAt, Instant leftAt) {
+    public ChatMemberRecord(Long id, Long chatId, Long userAccountId, Instant joinedAt, Instant leftAt, Long lastRead_ChatMessageId) {
         super(ChatMember.CHAT_MEMBER);
 
         setId(id);
@@ -121,6 +135,7 @@ public class ChatMemberRecord extends UpdatableRecordImpl<ChatMemberRecord> {
         setUserAccountId(userAccountId);
         setJoinedAt(joinedAt);
         setLeftAt(leftAt);
+        setLastRead_ChatMessageId(lastRead_ChatMessageId);
         resetTouchedOnNotNull();
     }
 }

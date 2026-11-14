@@ -82,6 +82,11 @@ public class ChatMember extends TableImpl<ChatMemberRecord> {
      */
     public final TableField<ChatMemberRecord, Instant> LEFT_AT = createField(DSL.name("left_at"), SQLDataType.INSTANT, this, "");
 
+    /**
+     * The column <code>public.chat_member.last_read__chat_message_id</code>.
+     */
+    public final TableField<ChatMemberRecord, Long> LAST_READ__CHAT_MESSAGE_ID = createField(DSL.name("last_read__chat_message_id"), SQLDataType.BIGINT, this, "");
+
     private ChatMember(Name alias, Table<ChatMemberRecord> aliased) {
         this(alias, aliased, (Field<?>[]) null, null);
     }
@@ -138,7 +143,7 @@ public class ChatMember extends TableImpl<ChatMemberRecord> {
 
     @Override
     public List<ForeignKey<ChatMemberRecord, ?>> getReferences() {
-        return Arrays.asList(Keys.CHAT_MEMBER__CHAT_MEMBER_CHAT_ID_FKEY, Keys.CHAT_MEMBER__CHAT_MEMBER_USER_ACCOUNT_ID_FKEY);
+        return Arrays.asList(Keys.CHAT_MEMBER__CHAT_MEMBER_CHAT_ID_FKEY, Keys.CHAT_MEMBER__CHAT_MEMBER_LAST_READ__CHAT_MESSAGE_ID_FKEY, Keys.CHAT_MEMBER__CHAT_MEMBER_USER_ACCOUNT_ID_FKEY);
     }
 
     @Override

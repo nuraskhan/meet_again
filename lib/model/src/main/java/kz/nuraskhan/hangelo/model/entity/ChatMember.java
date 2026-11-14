@@ -28,4 +28,11 @@ public class ChatMember {
   /** Filled = no longer in the chat. */
   @Column(name = "left_at")
   public Instant leftAt;
+
+  /**
+   * The last message of the chat this member has seen; null = none. What others wrote after it is
+   * unread for the member.
+   */
+  @Column(name = "last_read__chat_message_id")
+  public Long lastReadChatMessageId;
 }

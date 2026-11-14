@@ -8,6 +8,8 @@ import kz.nuraskhan.hangelo.model.enums.EventType;
  * @param eventId     the event the chat belongs to, so a page can lead from the chat to its plan;
  *                    null for a chat without an event
  * @param eventType   the kind of that event (FOOD, WALK, ...), for its icon; null with eventId
+ * @param lastMessage the newest message of the chat; null while nobody has written
+ * @param unreadCount how many messages others wrote after the last one the caller has seen
  */
 public record ChatDto(
     Long id,
@@ -15,6 +17,8 @@ public record ChatDto(
     Instant createdAt,
     Integer memberCount,
     Long eventId,
-    EventType eventType
+    EventType eventType,
+    ChatMessageDto lastMessage,
+    Integer unreadCount
 ) {
 }

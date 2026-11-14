@@ -1,0 +1,1 @@
+now, change in chats list should be shown message with "HI, How are you?" (as the last message) and near 1 as count of upcoming message counts also sort all chats in order of last message and put time

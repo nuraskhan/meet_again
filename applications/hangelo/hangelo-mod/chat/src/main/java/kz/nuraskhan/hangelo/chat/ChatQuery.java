@@ -9,6 +9,7 @@ import static kz.nuraskhan.hangelo.jooq.Tables.PROFILE;
 import java.util.List;
 import java.util.Optional;
 import kz.nuraskhan.hangelo.jooq.tables.ChatMember;
+import kz.nuraskhan.hangelo.jooq.tables.ChatMessage;
 import kz.nuraskhan.hangelo.chat.dto.ChatDto;
 import kz.nuraskhan.hangelo.chat.dto.ChatMemberDto;
 import kz.nuraskhan.hangelo.chat.dto.ChatMessageDto;
@@ -29,10 +30,17 @@ public class ChatQuery {
     this.dsl = dsl;
   }
 
-  /** Chats the caller is in now, newest first. */
+  /**
+   * Chats the caller is in now, the one written in most recently first; a chat nobody has written
+   * in stands by the moment it was created. Each carries its newest message and how many messages
+   * are new for the caller.
+   */
   public List<ChatDto> myChats(Long me) {
     ChatMember mine = CHAT_MEMBER.as("mine");
     ChatMember anyone = CHAT_MEMBER.as("anyone");
+    ChatMessage last = CHAT_MESSAGE.as("last");
+    ChatMessage newer = CHAT_MESSAGE.as("newer");
+    ChatMessage unread = CHAT_MESSAGE.as("unread");
 
     Field<Integer> memberCount = DSL
         .selectCount()
@@ -41,16 +49,45 @@ public class ChatQuery {
         .and(anyone.LEFT_AT.isNull())
         .asField("member_count");
 
+    // New for the caller: written by someone else after the last message the caller has seen.
+    Field<Integer> unreadCount = DSL
+        .selectCount()
+        .from(unread)
+        .where(unread.CHAT_ID.eq(CHAT.ID))
+        .and(unread.AUTHOR__USER_ACCOUNT_ID.ne(me))
+        .and(unread.ID.gt(DSL.coalesce(mine.LAST_READ__CHAT_MESSAGE_ID, 0L)))
+        .asField("unread_count");
+
     return dsl
-        .select(CHAT.ID, CHAT.TITLE, CHAT.CREATED_AT, memberCount, EVENT.ID, EVENT.EVENT_TYPE)
+        .select(CHAT.ID, CHAT.TITLE, CHAT.CREATED_AT, memberCount, EVENT.ID, EVENT.EVENT_TYPE,
+            last.ID, last.AUTHOR__USER_ACCOUNT_ID, PROFILE.DISPLAY_NAME, last.TEXT, last.CREATED_AT,
+            unreadCount)
         .from(CHAT)
         .join(mine).on(mine.CHAT_ID.eq(CHAT.ID))
         // Every chat is created with an event and belongs to exactly one.
         .leftJoin(EVENT).on(EVENT.CHAT_ID.eq(CHAT.ID))
+        // The newest message: the one with no newer message in the same chat.
+        .leftJoin(last).on(last.CHAT_ID.eq(CHAT.ID))
+        .and(DSL.notExists(DSL.selectOne().from(newer)
+            .where(newer.CHAT_ID.eq(last.CHAT_ID)).and(newer.ID.gt(last.ID))))
+        .leftJoin(PROFILE).on(PROFILE.USER_ACCOUNT_ID.eq(last.AUTHOR__USER_ACCOUNT_ID))
         .where(mine.USER_ACCOUNT_ID.eq(me))
         .and(mine.LEFT_AT.isNull())
-        .orderBy(CHAT.ID.desc())
-        .fetch(Records.mapping(ChatDto::new));
+        .orderBy(DSL.coalesce(last.CREATED_AT, CHAT.CREATED_AT).desc(), CHAT.ID.desc())
+        .fetch(row -> new ChatDto(
+            row.get(CHAT.ID),
+            row.get(CHAT.TITLE),
+            row.get(CHAT.CREATED_AT),
+            row.get(memberCount),
+            row.get(EVENT.ID),
+            row.get(EVENT.EVENT_TYPE),
+            row.get(last.ID) == null ? null : new ChatMessageDto(
+                row.get(last.ID),
+                row.get(last.AUTHOR__USER_ACCOUNT_ID),
+                row.get(PROFILE.DISPLAY_NAME),
+                row.get(last.TEXT),
+                row.get(last.CREATED_AT)),
+            row.get(unreadCount)));
   }
 
   /** People in the chat now. */

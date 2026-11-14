@@ -59,6 +59,12 @@ public class ChatController {
     return chatQuery.messages(chatId, beforeId, Math.clamp(limit, 1, MAX_PAGE));
   }
 
+  /** The caller has seen the chat up to its newest message: its unread count becomes zero. */
+  @PostMapping("/{chatId}/read")
+  public void markRead(Principal principal, @PathVariable("chatId") Long chatId) {
+    chatService.markRead(CurrentUser.id(principal), chatId);
+  }
+
   @PostMapping("/{chatId}/message")
   public ChatMessageDto postMessage(Principal principal,
                                     @PathVariable("chatId") Long chatId,

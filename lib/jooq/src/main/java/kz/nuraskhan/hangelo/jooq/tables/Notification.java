@@ -157,7 +157,7 @@ public class Notification extends TableImpl<NotificationRecord> {
     @Override
     public List<Check<NotificationRecord>> getChecks() {
         return Arrays.asList(
-            Internal.createCheck(this, DSL.name("notification_kind_check"), "((kind = ANY (ARRAY['FRIEND_REQUEST'::text, 'FRIEND_ACCEPTED'::text, 'EVENT_INVITATION'::text, 'INVITATION_ACCEPTED'::text, 'INVITATION_DECLINED'::text, 'GUEST_JOINED'::text, 'GUEST_LEFT'::text, 'REMOVED_FROM_EVENT'::text, 'EVENT_CANCELLED'::text])))", true)
+            Internal.createCheck(this, DSL.name("notification_kind_check"), "((kind = ANY (ARRAY['FRIEND_REQUEST'::text, 'FRIEND_ACCEPTED'::text, 'EVENT_INVITATION'::text, 'INVITATION_ACCEPTED'::text, 'INVITATION_DECLINED'::text, 'GUEST_JOINED'::text, 'GUEST_LEFT'::text, 'REMOVED_FROM_EVENT'::text, 'EVENT_CANCELLED'::text, 'JOIN_REQUESTED'::text, 'JOIN_APPROVED'::text, 'JOIN_DECLINED'::text])))", true)
         );
     }
 

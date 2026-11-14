@@ -63,10 +63,23 @@ public class ChatService {
       member.chatId = chatId;
       member.userAccountId = userId;
       member.joinedAt = Instant.now();
+      // What was written before they came is history, not news: nothing is unread at the door.
+      member.lastReadChatMessageId = chatMessageRepository.findNewestId(chatId);
       chatMemberRepository.save(member);
     } else if (member.leftAt != null) {
       member.leftAt = null;
+      member.lastReadChatMessageId = chatMessageRepository.findNewestId(chatId);
     }
+  }
+
+  /**
+   * The caller has seen the chat up to its newest message: nothing in it is unread for them now.
+   * Called by the page when the chat is opened and when a message arrives while it is open.
+   */
+  @Transactional
+  public void markRead(Long me, Long chatId) {
+    ChatMember member = requireMember(me, chatId);
+    member.lastReadChatMessageId = chatMessageRepository.findNewestId(chatId);
   }
 
   /** Takes the person out of the chat. Does nothing if they are not in it. */
@@ -82,24 +95,33 @@ public class ChatService {
   /** @return id of the message */
   @Transactional
   public Long postMessage(Long me, Long chatId, String text) {
-    requireMember(me, chatId);
+    ChatMember author = requireMember(me, chatId);
 
     ChatMessage message = new ChatMessage();
     message.chatId = chatId;
     message.authorUserAccountId = me;
     message.text = text;
     message.createdAt = Instant.now();
+    message = chatMessageRepository.save(message);
 
-    return chatMessageRepository.save(message).id;
+    // Whoever writes has read what stands above their own words.
+    author.lastReadChatMessageId = message.id;
+
+    return message.id;
   }
 
-  /** A chat the caller is not in "does not exist" for them. */
+  /**
+   * A chat the caller is not in "does not exist" for them.
+   *
+   * @return the caller's membership
+   */
   @Transactional(readOnly = true)
-  public void requireMember(Long me, Long chatId) {
+  public ChatMember requireMember(Long me, Long chatId) {
     ChatMember member = chatMemberRepository.findByChatIdAndUserAccountId(chatId, me).orElse(null);
 
     if (member == null || member.leftAt != null) {
       throw ApiException.notFound("chat_not_found", "Chat not found");
     }
+    return member;
   }
 }

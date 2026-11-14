@@ -126,7 +126,7 @@ public class Invitation extends TableImpl<InvitationRecord> {
 
     @Override
     public List<Index> getIndexes() {
-        return Arrays.asList(Indexes.INVITATION__INVITEE);
+        return Arrays.asList(Indexes.INVITATION__INVITEE, Indexes.INVITATION__REQUESTED);
     }
 
     @Override
@@ -152,7 +152,7 @@ public class Invitation extends TableImpl<InvitationRecord> {
     @Override
     public List<Check<InvitationRecord>> getChecks() {
         return Arrays.asList(
-            Internal.createCheck(this, DSL.name("invitation_status_check"), "((status = ANY (ARRAY['PENDING'::text, 'ACCEPTED'::text, 'DECLINED'::text, 'REMOVED'::text])))", true)
+            Internal.createCheck(this, DSL.name("invitation_status_check"), "((status = ANY (ARRAY['PENDING'::text, 'ACCEPTED'::text, 'DECLINED'::text, 'REMOVED'::text, 'REQUESTED'::text])))", true)
         );
     }
 
