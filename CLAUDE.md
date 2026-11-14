@@ -142,5 +142,5 @@ point of the check.
 - **No co-author tag in commit messages**: never add `Co-Authored-By:` (or any other AI attribution
   line) to commits or pull request descriptions.
 - **The remote is GitHub over HTTPS** (`origin` = the private repository `meet_again`).
-  Authentication is the token in the environment variable `ZIMRAN_KEY`, read at run time by the
+  Authentication is the token in the environment variable `MEET_AGAIN_KEY`, read at run time by the
   repository's credential helper. The token is never written into a file, a URL or a command line.
