@@ -1,0 +1,3 @@
+now lets create one-big feature :
+
+adding feed page where we will have public invitaions for all who wants to join and avaialbility to check profile and see who is inviter and in other hand somehow it will public messager

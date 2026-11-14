@@ -11,6 +11,7 @@ import jakarta.persistence.Table;
 import java.time.Instant;
 import kz.nuraskhan.meet_again.model.enums.EventStatus;
 import kz.nuraskhan.meet_again.model.enums.EventType;
+import kz.nuraskhan.meet_again.model.enums.EventVisibility;
 
 /**
  * The invitation form as its creator filled it. The people invited are {@link Invitation}s, the
@@ -41,6 +42,11 @@ public class Event {
   @Enumerated(EnumType.STRING)
   @Column(name = "event_type", nullable = false)
   public EventType eventType;
+
+  /** Who the event is for: only the invited, or everyone (shown in the feed). */
+  @Enumerated(EnumType.STRING)
+  @Column(name = "visibility", nullable = false)
+  public EventVisibility visibility = EventVisibility.PRIVATE;
 
   @Column(name = "title", nullable = false)
   public String title;

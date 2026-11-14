@@ -107,7 +107,9 @@ public class EventQuery {
             .selectOne()
             .from(INVITATION)
             .where(INVITATION.EVENT_ID.eq(EVENT.ID))
-            .and(INVITATION.INVITEE__USER_ACCOUNT_ID.eq(me))));
+            .and(INVITATION.INVITEE__USER_ACCOUNT_ID.eq(me))
+            // Someone the creator removed is out: the event is no longer theirs to open.
+            .and(INVITATION.STATUS.ne(InvitationStatus.REMOVED))));
   }
 
   /**
@@ -221,6 +223,7 @@ public class EventQuery {
           row.get(EVENT.PRICE_MAX),
           timesByEventId.getOrDefault(eventId, List.of()),
           row.get(EVENT.STATUS),
+          row.get(EVENT.VISIBILITY),
           row.get(EVENT.CREATED_AT),
           row.get(EVENT.CHAT_ID),
           // The link is the creator's to hand out.
@@ -236,7 +239,7 @@ public class EventQuery {
   }
 
   /** The proposed dates of each event, earliest first. Events without dates are absent. */
-  private Map<Long, List<Instant>> proposedTimes(Collection<Long> eventIds) {
+  Map<Long, List<Instant>> proposedTimes(Collection<Long> eventIds) {
     return dsl
         .select(EVENT_TIME_OPTION.EVENT_ID, EVENT_TIME_OPTION.STARTS_AT)
         .from(EVENT_TIME_OPTION)

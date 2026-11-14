@@ -4,11 +4,13 @@ import java.time.Instant;
 import java.util.List;
 import kz.nuraskhan.meet_again.model.enums.EventStatus;
 import kz.nuraskhan.meet_again.model.enums.EventType;
+import kz.nuraskhan.meet_again.model.enums.EventVisibility;
 
 /**
  * An event as its participants see it.
  *
  * @param proposedTimes the dates the creator offers, earliest first; empty = to be agreed
+ * @param visibility    PRIVATE - only the invited; PUBLIC - shown in the feed, anyone can join
  * @param chatId        the group chat of the event
  * @param shareToken    the secret part of the link to the event; only the creator gets it, null
  *                      for everyone else
@@ -30,6 +32,7 @@ public record EventDto(
     Integer priceMax,
     List<Instant> proposedTimes,
     EventStatus status,
+    EventVisibility visibility,
     Instant createdAt,
     Long chatId,
     String shareToken,

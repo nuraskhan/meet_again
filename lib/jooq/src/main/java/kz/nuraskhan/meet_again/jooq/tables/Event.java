@@ -15,6 +15,7 @@ import kz.nuraskhan.meet_again.jooq.Public;
 import kz.nuraskhan.meet_again.jooq.tables.records.EventRecord;
 import kz.nuraskhan.meet_again.model.enums.EventStatus;
 import kz.nuraskhan.meet_again.model.enums.EventType;
+import kz.nuraskhan.meet_again.model.enums.EventVisibility;
 
 import org.jooq.Check;
 import org.jooq.Condition;
@@ -136,6 +137,11 @@ public class Event extends TableImpl<EventRecord> {
      */
     public final TableField<EventRecord, Instant> SUGGESTED_AT = createField(DSL.name("suggested_at"), SQLDataType.INSTANT, this, "");
 
+    /**
+     * The column <code>public.event.visibility</code>.
+     */
+    public final TableField<EventRecord, EventVisibility> VISIBILITY = createField(DSL.name("visibility"), SQLDataType.CLOB.nullable(false).defaultValue(DSL.field(DSL.raw("'PRIVATE'::text"), SQLDataType.CLOB)), this, "", new EnumConverter<String, EventVisibility>(String.class, EventVisibility.class));
+
     private Event(Name alias, Table<EventRecord> aliased) {
         this(alias, aliased, (Field<?>[]) null, null);
     }
@@ -172,7 +178,7 @@ public class Event extends TableImpl<EventRecord> {
 
     @Override
     public List<Index> getIndexes() {
-        return Arrays.asList(Indexes.EVENT__CREATOR, Indexes.EVENT__SHARE_TOKEN, Indexes.EVENT__STATUS);
+        return Arrays.asList(Indexes.EVENT__CREATOR, Indexes.EVENT__FEED, Indexes.EVENT__SHARE_TOKEN, Indexes.EVENT__STATUS);
     }
 
     @Override
@@ -196,7 +202,8 @@ public class Event extends TableImpl<EventRecord> {
             Internal.createCheck(this, DSL.name("event_check"), "(((0 <= distance_min_mi) AND (distance_min_mi <= distance_max_mi)))", true),
             Internal.createCheck(this, DSL.name("event_check1"), "(((0 <= price_min) AND (price_min <= price_max)))", true),
             Internal.createCheck(this, DSL.name("event_event_type_check"), "((event_type = ANY (ARRAY['BATH'::text, 'FOOD'::text, 'COFFEE'::text, 'BAR'::text, 'WALK'::text, 'CINEMA'::text, 'SPORT'::text, 'BOARD_GAMES'::text, 'OTHER'::text])))", true),
-            Internal.createCheck(this, DSL.name("event_status_check"), "((status = ANY (ARRAY['ACTIVE'::text, 'CANCELLED'::text, 'EXPIRED'::text])))", true)
+            Internal.createCheck(this, DSL.name("event_status_check"), "((status = ANY (ARRAY['ACTIVE'::text, 'CANCELLED'::text, 'EXPIRED'::text])))", true),
+            Internal.createCheck(this, DSL.name("event_visibility_check"), "((visibility = ANY (ARRAY['PRIVATE'::text, 'PUBLIC'::text])))", true)
         );
     }
 

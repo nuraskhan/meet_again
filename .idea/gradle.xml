@@ -19,6 +19,7 @@
             <option value="$PROJECT_DIR$/applications/magain/magain-mod/profile" />
             <option value="$PROJECT_DIR$/lib" />
             <option value="$PROJECT_DIR$/lib/jooq" />
+            <option value="$PROJECT_DIR$/lib/mail" />
             <option value="$PROJECT_DIR$/lib/model" />
             <option value="$PROJECT_DIR$/lib/web" />
             <option value="$PROJECT_DIR$/migration" />

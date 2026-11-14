@@ -57,6 +57,33 @@ public class EventController {
     return eventQuery.get(me, eventId).orElseThrow();
   }
 
+  /**
+   * Joining a public event from the feed: no link needed. For a private event this answers "not
+   * found" - its id is not an invitation.
+   */
+  @PostMapping("/{eventId}/join")
+  public EventDto joinPublic(Principal principal, @PathVariable("eventId") Long eventId) {
+    Long me = CurrentUser.id(principal);
+    eventService.joinPublic(me, eventId);
+    return eventQuery.get(me, eventId).orElseThrow();
+  }
+
+  /** A guest who said yes is not coming after all, and leaves the chat. They may join again. */
+  @PostMapping("/{eventId}/leave")
+  public void leave(Principal principal, @PathVariable("eventId") Long eventId) {
+    eventService.leave(CurrentUser.id(principal), eventId);
+  }
+
+  /** The creator takes a guest out of the event and its chat. That person cannot join again. */
+  @PostMapping("/{eventId}/guest/{userId}/remove")
+  public EventDto removeGuest(Principal principal,
+                              @PathVariable("eventId") Long eventId,
+                              @PathVariable("userId") Long userId) {
+    Long me = CurrentUser.id(principal);
+    eventService.removeGuest(me, eventId, userId);
+    return eventQuery.get(me, eventId).orElseThrow();
+  }
+
   @GetMapping("/list")
   public List<EventDto> list(Principal principal) {
     return eventQuery.list(CurrentUser.id(principal));

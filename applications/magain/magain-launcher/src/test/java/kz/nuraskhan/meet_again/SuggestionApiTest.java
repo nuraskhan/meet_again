@@ -1,5 +1,6 @@
 package kz.nuraskhan.meet_again;
 
+import static kz.nuraskhan.meet_again.jooq.Tables.PLACE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
 
@@ -10,6 +11,7 @@ import kz.nuraskhan.meet_again.model.entity.Place;
 import kz.nuraskhan.meet_again.model.enums.EventType;
 import kz.nuraskhan.meet_again.model.repository.PlaceRepository;
 import kz.nuraskhan.meet_again.model.rnd.RND;
+import org.jooq.DSLContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,10 +34,27 @@ class SuggestionApiTest extends ApiTestBase {
   private double baseLatitude;
   private double baseLongitude;
 
+  @Autowired DSLContext dsl;
+
+  /**
+   * WHY the spot is emptied and not just picked at random: the test database is never cleaned, so
+   * the places of earlier runs pile up in this part of the ocean. A random spot was empty at first
+   * and, a few hundred places later, sometimes had a stranger's place next to it - a test that
+   * failed once in a while. Now whatever is left around the spot is switched off before the test
+   * puts its own places there. Only this stretch of ocean is touched; nothing real lives in it.
+   */
   @BeforeEach
-  void pickAnEmptySpot() {
+  void pickASpotAndEmptyIt() {
     baseLatitude = -30 - RND.intBetween(0, 20_000) / 1000.0;
     baseLongitude = -90 - RND.intBetween(0, 60_000) / 1000.0;
+
+    // Five degrees each way: far more than any place or person of a test is from its spot.
+    dsl.update(PLACE)
+        .set(PLACE.DEACTIVATED_AT, Instant.now())
+        .where(PLACE.DEACTIVATED_AT.isNull())
+        .and(PLACE.LATITUDE.between(baseLatitude - 5, baseLatitude + 5))
+        .and(PLACE.LONGITUDE.between(baseLongitude - 5, baseLongitude + 5))
+        .execute();
   }
 
   @Test

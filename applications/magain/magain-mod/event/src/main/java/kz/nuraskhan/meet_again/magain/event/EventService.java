@@ -17,6 +17,7 @@ import kz.nuraskhan.meet_again.model.entity.Invitation;
 import kz.nuraskhan.meet_again.model.entity.ParticipantPreference;
 import kz.nuraskhan.meet_again.model.enums.EventStatus;
 import kz.nuraskhan.meet_again.model.enums.EventType;
+import kz.nuraskhan.meet_again.model.enums.EventVisibility;
 import kz.nuraskhan.meet_again.model.enums.InvitationStatus;
 import kz.nuraskhan.meet_again.model.repository.EventRepository;
 import kz.nuraskhan.meet_again.model.repository.EventTimeOptionRepository;
@@ -34,6 +35,13 @@ public class EventService {
   private static final int SHARE_TOKEN_BYTES = 18;
 
   private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
+  /**
+   * The most guests an event holds - invited and not yet answered, or coming. The same number
+   * limits how many people can be invited by name at once (CreateEventRequest.inviteeIds). It keeps
+   * a public event, and its chat, from growing without end.
+   */
+  static final int MAX_GUESTS = 50;
 
   private final EventRepository eventRepository;
   private final EventTimeOptionRepository eventTimeOptionRepository;
@@ -110,6 +118,7 @@ public class EventService {
     event.chatId = chatId;
     event.shareToken = newShareToken();
     event.timeZone = timeZone;
+    event.visibility = request.visibility() == null ? EventVisibility.PRIVATE : request.visibility();
     event.eventType = type;
     event.title = title;
     event.description = request.description();
@@ -153,9 +162,29 @@ public class EventService {
     Event event = eventRepository.findByShareToken(shareToken)
         .orElseThrow(() -> ApiException.notFound("event_not_found", "Event not found"));
 
+    join(me, event);
+    return event.id;
+  }
+
+  /**
+   * Joining from the feed: the same as by the link, but needs no link - the event is public.
+   * A private event "does not exist" here, whoever asks: its id is not an invitation.
+   */
+  @Transactional
+  public void joinPublic(Long me, Long eventId) {
+    Event event = eventRepository.findById(eventId).orElse(null);
+    if (event == null || event.visibility != EventVisibility.PUBLIC) {
+      throw ApiException.notFound("event_not_found", "Event not found");
+    }
+
+    join(me, event);
+  }
+
+  /** The caller becomes a guest who said yes and enters the chat. Calling it again changes nothing. */
+  private void join(Long me, Event event) {
     requireActive(event);
     if (event.creatorUserAccountId.equals(me)) {
-      return event.id; // the creator is in already
+      return; // the creator is in already
     }
 
     Instant now = Instant.now();
@@ -163,22 +192,75 @@ public class EventService {
     Invitation invitation =
         invitationRepository.findByEventIdAndInviteeUserAccountId(event.id, me).orElse(null);
 
+    if (invitation != null && invitation.status == InvitationStatus.ACCEPTED) {
+      return;
+    }
+    // Shown the door by the creator: neither the feed nor the link lets them back in.
+    if (invitation != null && invitation.status == InvitationStatus.REMOVED) {
+      throw ApiException.conflict("removed_from_event", "You were removed from this event");
+    }
+    // Someone invited by name and not answered yet already has a place; anyone else needs one.
+    boolean takesNewPlace = invitation == null || invitation.status == InvitationStatus.DECLINED;
+    if (takesNewPlace && invitationRepository.countGuests(event.id) >= MAX_GUESTS) {
+      throw ApiException.conflict("event_full", "This event is full");
+    }
+
     if (invitation == null) {
       invitation = new Invitation();
       invitation.eventId = event.id;
       invitation.inviteeUserAccountId = me;
-      invitation.status = InvitationStatus.ACCEPTED;
       invitation.createdAt = now;
-      invitation.respondedAt = now;
-      invitationRepository.save(invitation);
-    } else if (invitation.status != InvitationStatus.ACCEPTED) {
-      invitation.status = InvitationStatus.ACCEPTED;
-      invitation.respondedAt = now;
     }
+    invitation.status = InvitationStatus.ACCEPTED;
+    invitation.respondedAt = now;
+    invitationRepository.save(invitation);
 
     chatService.join(event.chatId, me);
+  }
 
-    return event.id;
+  /**
+   * A guest who said yes changes their mind: they are no longer coming and leave the chat. They
+   * may join again later. (Someone who has not answered yet declines instead.)
+   */
+  @Transactional
+  public void leave(Long me, Long eventId) {
+    Invitation invitation =
+        invitationRepository.findByEventIdAndInviteeUserAccountId(eventId, me).orElse(null);
+
+    if (invitation == null || invitation.status != InvitationStatus.ACCEPTED) {
+      throw ApiException.notFound("event_not_found", "Event not found");
+    }
+
+    Event event = eventRepository.findById(eventId).orElseThrow();
+    requireActive(event);
+
+    invitation.status = InvitationStatus.DECLINED;
+    invitation.respondedAt = Instant.now();
+    chatService.leave(event.chatId, me);
+  }
+
+  /**
+   * The creator takes a guest out of the event and of its chat. Unlike a guest who left, a removed
+   * one cannot join again - this is the creator's only tool against an unwanted person in an event
+   * anyone can join.
+   */
+  @Transactional
+  public void removeGuest(Long me, Long eventId, Long guestId) {
+    Event event = eventRepository.findById(eventId).orElse(null);
+    if (event == null || !event.creatorUserAccountId.equals(me)) {
+      throw ApiException.notFound("event_not_found", "Event not found");
+    }
+    requireActive(event);
+
+    Invitation invitation =
+        invitationRepository.findByEventIdAndInviteeUserAccountId(eventId, guestId).orElse(null);
+    if (invitation == null || !invitation.status.isIn()) {
+      throw ApiException.notFound("guest_not_found", "This person is not a guest of the event");
+    }
+
+    invitation.status = InvitationStatus.REMOVED;
+    invitation.respondedAt = Instant.now();
+    chatService.leave(event.chatId, guestId);
   }
 
   /**
@@ -204,8 +286,8 @@ public class EventService {
       if (invitation == null) {
         throw ApiException.notFound("event_not_found", "Event not found");
       }
-      if (invitation.status == InvitationStatus.DECLINED) {
-        throw ApiException.conflict("invitation_declined", "You declined this invitation");
+      if (!invitation.status.isIn()) {
+        throw ApiException.conflict("invitation_declined", "You are not part of this event any more");
       }
     }
 

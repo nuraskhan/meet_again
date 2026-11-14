@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Size;
 import java.time.Instant;
 import java.util.List;
 import kz.nuraskhan.meet_again.model.enums.EventType;
+import kz.nuraskhan.meet_again.model.enums.EventVisibility;
 
 /**
  * The invitation form. Only the type is mandatory: title, distance and price left out are taken
@@ -15,6 +16,8 @@ import kz.nuraskhan.meet_again.model.enums.EventType;
  *                      none = to be agreed in the chat
  * @param timeZone      the time zone the dates are meant in, an IANA name from the creator's
  *                      browser (America/New_York); a reminder shows the time in it; may be left out
+ * @param visibility    who the event is for; left out = PRIVATE. PUBLIC shows it in the feed, where
+ *                      anyone can join
  * @param inviteeIds    friends of the caller; may be empty - then people come by the link of the
  *                      event
  */
@@ -28,6 +31,7 @@ public record CreateEventRequest(
     @Min(0) Integer priceMax,
     @Size(max = 10) List<@NotNull Instant> proposedTimes,
     @Size(max = 64) String timeZone,
+    EventVisibility visibility,
     @Size(max = 50) List<@NotNull Long> inviteeIds
 ) {
 }

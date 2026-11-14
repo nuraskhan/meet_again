@@ -41,6 +41,11 @@
           <includeExpression>public\.invitation\.status</includeExpression>
         </forcedType>
         <forcedType>
+          <userType>kz.nuraskhan.meet_again.model.enums.EventVisibility</userType>
+          <enumConverter>true</enumConverter>
+          <includeExpression>public\.event\.visibility</includeExpression>
+        </forcedType>
+        <forcedType>
           <userType>kz.nuraskhan.meet_again.model.enums.Privilege</userType>
           <enumConverter>true</enumConverter>
           <includeExpression>public\.profile\.privilege</includeExpression>

@@ -9,6 +9,7 @@ import java.time.Instant;
 import kz.nuraskhan.meet_again.jooq.tables.Event;
 import kz.nuraskhan.meet_again.model.enums.EventStatus;
 import kz.nuraskhan.meet_again.model.enums.EventType;
+import kz.nuraskhan.meet_again.model.enums.EventVisibility;
 
 import org.jooq.Record1;
 import org.jooq.impl.UpdatableRecordImpl;
@@ -232,6 +233,20 @@ public class EventRecord extends UpdatableRecordImpl<EventRecord> {
         return (Instant) get(14);
     }
 
+    /**
+     * Setter for <code>public.event.visibility</code>.
+     */
+    public void setVisibility(EventVisibility value) {
+        set(15, value);
+    }
+
+    /**
+     * Getter for <code>public.event.visibility</code>.
+     */
+    public EventVisibility getVisibility() {
+        return (EventVisibility) get(15);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -255,7 +270,7 @@ public class EventRecord extends UpdatableRecordImpl<EventRecord> {
     /**
      * Create a detached, initialised EventRecord
      */
-    public EventRecord(Long id, Long creator_UserAccountId, Long chatId, EventType eventType, String title, String description, Integer distanceMinMi, Integer distanceMaxMi, Integer priceMin, Integer priceMax, EventStatus status, Instant createdAt, String shareToken, String timeZone, Instant suggestedAt) {
+    public EventRecord(Long id, Long creator_UserAccountId, Long chatId, EventType eventType, String title, String description, Integer distanceMinMi, Integer distanceMaxMi, Integer priceMin, Integer priceMax, EventStatus status, Instant createdAt, String shareToken, String timeZone, Instant suggestedAt, EventVisibility visibility) {
         super(Event.EVENT);
 
         setId(id);
@@ -273,6 +288,7 @@ public class EventRecord extends UpdatableRecordImpl<EventRecord> {
         setShareToken(shareToken);
         setTimeZone(timeZone);
         setSuggestedAt(suggestedAt);
+        setVisibility(visibility);
         resetTouchedOnNotNull();
     }
 }

@@ -23,6 +23,7 @@ import kz.nuraskhan.meet_again.model.entity.ProfilePrompt;
 import kz.nuraskhan.meet_again.model.entity.UserAccount;
 import kz.nuraskhan.meet_again.model.enums.EventStatus;
 import kz.nuraskhan.meet_again.model.enums.EventType;
+import kz.nuraskhan.meet_again.model.enums.EventVisibility;
 import kz.nuraskhan.meet_again.model.enums.FriendshipStatus;
 import kz.nuraskhan.meet_again.model.enums.InvitationStatus;
 import kz.nuraskhan.meet_again.model.enums.Privilege;
@@ -166,6 +167,7 @@ public final class RND {
     x.creatorUserAccountId = creatorUserAccountId;
     x.chatId = chatId;
     x.shareToken = str(32);
+    x.visibility = oneOf(EventVisibility.class);
     x.timeZone = oneOf("America/New_York", "America/Los_Angeles", "Asia/Almaty");
     x.eventType = oneOf(EventType.class);
     x.title = "Event " + str(10);

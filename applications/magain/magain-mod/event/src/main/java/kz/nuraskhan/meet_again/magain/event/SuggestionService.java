@@ -240,6 +240,6 @@ public class SuggestionService {
     }
     Invitation invitation =
         invitationRepository.findByEventIdAndInviteeUserAccountId(event.id, userId).orElse(null);
-    return invitation != null && invitation.status != InvitationStatus.DECLINED;
+    return invitation != null && invitation.status.isIn();
   }
 }
