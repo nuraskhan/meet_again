@@ -22,7 +22,10 @@ public class Migrate {
 
     MigrateResult result = flyway.migrate();
 
-    System.out.println(args[0] + " : " + (result.migrationsExecuted == 0
+    // Never print the url as given: on Heroku it carries the user and the password in its query.
+    String urlWithoutQuery = args[0].split("\\?", 2)[0];
+
+    System.out.println(urlWithoutQuery + " : " + (result.migrationsExecuted == 0
         ? "already up to date"
         : "applied " + result.migrationsExecuted + ", now at version " + result.targetSchemaVersion));
   }
