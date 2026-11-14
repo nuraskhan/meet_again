@@ -174,17 +174,110 @@ public class EventService {
   }
 
   /**
-   * Joining from the feed: the same as by the link, but needs no link - the event is public.
-   * A private event "does not exist" here, whoever asks: its id is not an invitation.
+   * Asking to join from the feed. A public event is open to be asked about, not open to walk
+   * into: the caller's request waits for the creator, who approves or declines it
+   * ({@link #approveRequest}, {@link #declineRequest}). Until then the caller is not in the chat
+   * and does not see the event.
+   *
+   * <p>WHY not at once, as by the link: a link is handed by the creator to someone they chose; the
+   * feed is read by everyone. The creator decides who comes to their event.
+   *
+   * <p>Someone the creator invited by name does not ask - for them this is saying yes. A private
+   * event "does not exist" here, whoever asks: its id is not an invitation.
+   *
+   * @return where the caller stands now: REQUESTED, or ACCEPTED (was invited, or is in already);
+   *         null for the creator
    */
   @Transactional
-  public void joinPublic(Long me, Long eventId) {
+  public InvitationStatus joinPublic(Long me, Long eventId) {
     Event event = eventRepository.findById(eventId).orElse(null);
     if (event == null || event.visibility != EventVisibility.PUBLIC) {
       throw ApiException.notFound("event_not_found", "Event not found");
     }
+    requireActive(event);
+    if (event.creatorUserAccountId.equals(me)) {
+      return null;
+    }
 
-    join(me, event);
+    Invitation invitation =
+        invitationRepository.findByEventIdAndInviteeUserAccountId(event.id, me).orElse(null);
+
+    if (invitation != null && invitation.status.isIn()) {
+      join(me, event); // invited by name: this is their yes; already coming: nothing changes
+      return InvitationStatus.ACCEPTED;
+    }
+    if (invitation != null && invitation.status == InvitationStatus.REMOVED) {
+      throw ApiException.conflict("removed_from_event", "You were removed from this event");
+    }
+    if (invitation != null && invitation.status == InvitationStatus.REQUESTED) {
+      return InvitationStatus.REQUESTED; // asked already; asking twice is one request
+    }
+    // No point in asking for a place that does not exist.
+    if (invitationRepository.countGuests(event.id) >= MAX_GUESTS) {
+      throw ApiException.conflict("event_full", "This event is full");
+    }
+
+    if (invitation == null) {
+      invitation = new Invitation();
+      invitation.eventId = event.id;
+      invitation.inviteeUserAccountId = me;
+      invitation.createdAt = Instant.now();
+    }
+    invitation.status = InvitationStatus.REQUESTED;
+    invitation.respondedAt = null;
+    invitationRepository.save(invitation);
+
+    notificationService.tell(event.creatorUserAccountId, NotificationKind.JOIN_REQUESTED, me, event.id);
+    return InvitationStatus.REQUESTED;
+  }
+
+  /** The creator lets in someone who asked to join: they become a guest and enter the chat. */
+  @Transactional
+  public void approveRequest(Long me, Long eventId, Long userId) {
+    Event event = requireOwnActiveEvent(me, eventId);
+    Invitation request = requireRequest(eventId, userId);
+
+    // Places may have filled up while the request waited.
+    if (invitationRepository.countGuests(eventId) >= MAX_GUESTS) {
+      throw ApiException.conflict("event_full", "This event is full");
+    }
+
+    request.status = InvitationStatus.ACCEPTED;
+    request.respondedAt = Instant.now();
+    chatService.join(event.chatId, userId);
+
+    notificationService.tell(userId, NotificationKind.JOIN_APPROVED, me, eventId);
+  }
+
+  /** The creator says no to someone who asked to join. They may ask again. */
+  @Transactional
+  public void declineRequest(Long me, Long eventId, Long userId) {
+    requireOwnActiveEvent(me, eventId);
+    Invitation request = requireRequest(eventId, userId);
+
+    request.status = InvitationStatus.DECLINED;
+    request.respondedAt = Instant.now();
+
+    notificationService.tell(userId, NotificationKind.JOIN_DECLINED, me, eventId);
+  }
+
+  /** The caller's own active event; for anyone else it "does not exist". */
+  private Event requireOwnActiveEvent(Long me, Long eventId) {
+    Event event = eventRepository.findById(eventId).orElse(null);
+    if (event == null || !event.creatorUserAccountId.equals(me)) {
+      throw ApiException.notFound("event_not_found", "Event not found");
+    }
+    requireActive(event);
+    return event;
+  }
+
+  private Invitation requireRequest(Long eventId, Long userId) {
+    Invitation request =
+        invitationRepository.findByEventIdAndInviteeUserAccountId(eventId, userId).orElse(null);
+    if (request == null || request.status != InvitationStatus.REQUESTED) {
+      throw ApiException.notFound("request_not_found", "This person has not asked to join");
+    }
+    return request;
   }
 
   /** The caller becomes a guest who said yes and enters the chat. Calling it again changes nothing. */
@@ -207,7 +300,9 @@ public class EventService {
       throw ApiException.conflict("removed_from_event", "You were removed from this event");
     }
     // Someone invited by name and not answered yet already has a place; anyone else needs one.
-    boolean takesNewPlace = invitation == null || invitation.status == InvitationStatus.DECLINED;
+    // (Someone whose request from the feed is still waiting and who then got the link: the link
+    // is the creator's yes.)
+    boolean takesNewPlace = invitation == null || !invitation.status.isIn();
     if (takesNewPlace && invitationRepository.countGuests(event.id) >= MAX_GUESTS) {
       throw ApiException.conflict("event_full", "This event is full");
     }
@@ -230,12 +325,20 @@ public class EventService {
   /**
    * A guest who said yes changes their mind: they are no longer coming and leave the chat. They
    * may join again later. (Someone who has not answered yet declines instead.)
+   *
+   * <p>Someone whose request to join is still waiting takes it back the same way; the creator is
+   * not told - nothing they had has changed.
    */
   @Transactional
   public void leave(Long me, Long eventId) {
     Invitation invitation =
         invitationRepository.findByEventIdAndInviteeUserAccountId(eventId, me).orElse(null);
 
+    if (invitation != null && invitation.status == InvitationStatus.REQUESTED) {
+      invitation.status = InvitationStatus.DECLINED;
+      invitation.respondedAt = Instant.now();
+      return;
+    }
     if (invitation == null || invitation.status != InvitationStatus.ACCEPTED) {
       throw ApiException.notFound("event_not_found", "Event not found");
     }

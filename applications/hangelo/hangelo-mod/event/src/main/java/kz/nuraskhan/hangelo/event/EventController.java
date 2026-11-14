@@ -4,12 +4,14 @@ import jakarta.validation.Valid;
 import java.security.Principal;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import kz.nuraskhan.hangelo.event.dto.CreateEventRequest;
 import kz.nuraskhan.hangelo.event.dto.SavePreferenceRequest;
 import kz.nuraskhan.hangelo.event.dto.EventDto;
 import kz.nuraskhan.hangelo.event.dto.EventTypeDto;
 import kz.nuraskhan.hangelo.model.enums.EventType;
 import kz.nuraskhan.hangelo.web.ApiException;
+import kz.nuraskhan.hangelo.model.enums.InvitationStatus;
 import kz.nuraskhan.hangelo.web.CurrentUser;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -58,17 +60,43 @@ public class EventController {
   }
 
   /**
-   * Joining a public event from the feed: no link needed. For a private event this answers "not
-   * found" - its id is not an invitation.
+   * Asking to join a public event from the feed. The answer says where the caller stands now:
+   * REQUESTED - the request waits for the creator; ACCEPTED - they were invited by name (or are
+   * in already) and are coming; CREATOR - it is their own event. For a private event this answers
+   * "not found" - its id is not an invitation.
+   *
+   * <p>The event itself is not returned: someone who only asked does not see it yet.
    */
   @PostMapping("/{eventId}/join")
-  public EventDto joinPublic(Principal principal, @PathVariable("eventId") Long eventId) {
+  public Map<String, String> joinPublic(Principal principal, @PathVariable("eventId") Long eventId) {
+    InvitationStatus standing = eventService.joinPublic(CurrentUser.id(principal), eventId);
+    return Map.of("standing", standing == null ? "CREATOR" : standing.name());
+  }
+
+  /** The creator lets in someone who asked to join. */
+  @PostMapping("/{eventId}/request/{userId}/approve")
+  public EventDto approveRequest(Principal principal,
+                                 @PathVariable("eventId") Long eventId,
+                                 @PathVariable("userId") Long userId) {
     Long me = CurrentUser.id(principal);
-    eventService.joinPublic(me, eventId);
+    eventService.approveRequest(me, eventId, userId);
     return eventQuery.get(me, eventId).orElseThrow();
   }
 
-  /** A guest who said yes is not coming after all, and leaves the chat. They may join again. */
+  /** The creator says no to someone who asked to join. They may ask again. */
+  @PostMapping("/{eventId}/request/{userId}/decline")
+  public EventDto declineRequest(Principal principal,
+                                 @PathVariable("eventId") Long eventId,
+                                 @PathVariable("userId") Long userId) {
+    Long me = CurrentUser.id(principal);
+    eventService.declineRequest(me, eventId, userId);
+    return eventQuery.get(me, eventId).orElseThrow();
+  }
+
+  /**
+   * A guest who said yes is not coming after all, and leaves the chat. They may join again.
+   * Someone whose request to join is still waiting takes it back with the same call.
+   */
   @PostMapping("/{eventId}/leave")
   public void leave(Principal principal, @PathVariable("eventId") Long eventId) {
     eventService.leave(CurrentUser.id(principal), eventId);

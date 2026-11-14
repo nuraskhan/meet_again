@@ -109,6 +109,9 @@ public class NotificationService {
       case GUEST_LEFT -> actor + " left " + title;
       case REMOVED_FROM_EVENT -> "You were removed from " + title;
       case EVENT_CANCELLED -> actor + " cancelled " + title;
+      case JOIN_REQUESTED -> actor + " asks to join " + title;
+      case JOIN_APPROVED -> actor + " approved your request to join " + title;
+      case JOIN_DECLINED -> actor + " declined your request to join " + title;
     };
   }
 }

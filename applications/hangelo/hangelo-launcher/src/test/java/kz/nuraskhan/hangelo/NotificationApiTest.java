@@ -110,36 +110,90 @@ class NotificationApiTest extends ApiTestBase {
   }
 
   @Test
-  void publicPlan__joiningAndLeavingTellTheCreator_andRemovingTellsTheGuest() {
+  void publicPlan__askingTellsTheCreator_andTheAnswerTellsTheOneWhoAsked() {
     TestUser creator = register();
-    TestUser leaver = register();
-    TestUser removed = register();
+    TestUser welcome = register();
+    TestUser unwelcome = register();
     long eventId = post("/event/create", creator,
         Map.of("eventType", "BAR", "title", "Open bar night", "visibility", "PUBLIC"))
         .body().get("id").asLong();
 
     //
     //
-    post("/event/" + eventId + "/join", leaver);
-    post("/event/" + eventId + "/leave", leaver);
-    post("/event/" + eventId + "/join", removed);
-    post("/event/" + eventId + "/guest/" + removed.id() + "/remove", creator);
+    post("/event/" + eventId + "/join", welcome);
+    post("/event/" + eventId + "/join", unwelcome);
+    post("/event/" + eventId + "/request/" + welcome.id() + "/approve", creator);
+    post("/event/" + eventId + "/request/" + unwelcome.id() + "/decline", creator);
     //
     //
 
     JsonNode forCreator = get("/notification/list", creator).body();
     assertThat(forCreator.valueStream().map(n -> n.get("kind").asString()).toList())
-        .containsExactly("GUEST_JOINED", "GUEST_LEFT", "GUEST_JOINED");
+        .containsExactly("JOIN_REQUESTED", "JOIN_REQUESTED");
     assertThat(forCreator.get(1).get("text").asString())
-        .isEqualTo(leaver.displayName() + " left Open bar night");
-    assertThat(forCreator.get(2).get("text").asString())
-        .isEqualTo(leaver.displayName() + " joined Open bar night");
+        .isEqualTo(welcome.displayName() + " asks to join Open bar night");
+    assertThat(forCreator.get(1).get("eventId").asLong()).isEqualTo(eventId);
 
-    JsonNode forRemoved = get("/notification/list", removed).body();
-    assertThat(forRemoved.size()).isEqualTo(1);
-    assertThat(forRemoved.get(0).get("kind").asString()).isEqualTo("REMOVED_FROM_EVENT");
-    assertThat(forRemoved.get(0).get("text").asString())
+    JsonNode forWelcome = get("/notification/list", welcome).body();
+    assertThat(forWelcome.size()).isEqualTo(1);
+    assertThat(forWelcome.get(0).get("kind").asString()).isEqualTo("JOIN_APPROVED");
+    assertThat(forWelcome.get(0).get("text").asString())
+        .isEqualTo(creator.displayName() + " approved your request to join Open bar night");
+
+    JsonNode forUnwelcome = get("/notification/list", unwelcome).body();
+    assertThat(forUnwelcome.size()).isEqualTo(1);
+    assertThat(forUnwelcome.get(0).get("kind").asString()).isEqualTo("JOIN_DECLINED");
+    assertThat(forUnwelcome.get(0).get("text").asString())
+        .isEqualTo(creator.displayName() + " declined your request to join Open bar night");
+  }
+
+  @Test
+  void publicPlan__leavingTellsTheCreator_andRemovingTellsTheGuest() {
+    TestUser creator = register();
+    TestUser leaver = register();
+    TestUser removed = register();
+    long eventId = post("/event/create", creator,
+        Map.of("eventType", "BAR", "title", "Open bar night", "visibility", "PUBLIC"))
+        .body().get("id").asLong();
+    for (TestUser guest : List.of(leaver, removed)) {
+      post("/event/" + eventId + "/join", guest);
+      post("/event/" + eventId + "/request/" + guest.id() + "/approve", creator);
+    }
+
+    //
+    //
+    post("/event/" + eventId + "/leave", leaver);
+    post("/event/" + eventId + "/guest/" + removed.id() + "/remove", creator);
+    //
+    //
+
+    JsonNode newestForCreator = get("/notification/list", creator).body().get(0);
+    assertThat(newestForCreator.get("kind").asString()).isEqualTo("GUEST_LEFT");
+    assertThat(newestForCreator.get("text").asString())
+        .isEqualTo(leaver.displayName() + " left Open bar night");
+
+    JsonNode newestForRemoved = get("/notification/list", removed).body().get(0);
+    assertThat(newestForRemoved.get("kind").asString()).isEqualTo("REMOVED_FROM_EVENT");
+    assertThat(newestForRemoved.get("text").asString())
         .isEqualTo("You were removed from Open bar night");
+  }
+
+  @Test
+  void joiningByTheLink__tellsTheCreator() {
+    TestUser creator = register();
+    TestUser guest = register();
+    JsonNode created = post("/event/create", creator,
+        Map.of("eventType", "COFFEE", "title", "Coffee by link")).body();
+
+    //
+    //
+    post("/event/join/" + created.get("shareToken").asString(), guest);
+    //
+    //
+
+    JsonNode newest = get("/notification/list", creator).body().get(0);
+    assertThat(newest.get("kind").asString()).isEqualTo("GUEST_JOINED");
+    assertThat(newest.get("text").asString()).isEqualTo(guest.displayName() + " joined Coffee by link");
   }
 
   @Test

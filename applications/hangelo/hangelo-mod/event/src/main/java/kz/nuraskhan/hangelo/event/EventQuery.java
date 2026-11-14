@@ -82,7 +82,9 @@ public class EventQuery {
 
     Long eventId = row.get(EVENT.ID);
 
-    int invitedCount = dsl.fetchCount(INVITATION, INVITATION.EVENT_ID.eq(eventId));
+    // A request to join is not an invitation.
+    int invitedCount = dsl.fetchCount(INVITATION,
+        INVITATION.EVENT_ID.eq(eventId).and(INVITATION.STATUS.ne(InvitationStatus.REQUESTED)));
     int goingCount = dsl.fetchCount(INVITATION,
         INVITATION.EVENT_ID.eq(eventId).and(INVITATION.STATUS.eq(InvitationStatus.ACCEPTED)));
 
@@ -109,7 +111,8 @@ public class EventQuery {
             .where(INVITATION.EVENT_ID.eq(EVENT.ID))
             .and(INVITATION.INVITEE__USER_ACCOUNT_ID.eq(me))
             // Someone the creator removed is out: the event is no longer theirs to open.
-            .and(INVITATION.STATUS.ne(InvitationStatus.REMOVED))));
+            // Someone who only asked to join is not in yet: the feed shows them what is public.
+            .and(INVITATION.STATUS.notIn(InvitationStatus.REMOVED, InvitationStatus.REQUESTED))));
   }
 
   /**
@@ -230,7 +233,10 @@ public class EventQuery {
           creatorId.equals(me) ? row.get(EVENT.SHARE_TOKEN) : null,
           creatorId,
           row.get(PROFILE.DISPLAY_NAME),
-          inviteesByEventId.getOrDefault(eventId, List.of()),
+          // Who is asking to join is the creator's business alone, until the creator says yes.
+          inviteesByEventId.getOrDefault(eventId, List.of()).stream()
+              .filter(invitee -> creatorId.equals(me) || invitee.status() != InvitationStatus.REQUESTED)
+              .toList(),
           myPreferenceByEventId.get(eventId),
           row.get(EVENT.SUGGESTED_AT),
           suggestionsByEventId.getOrDefault(eventId, List.of())));

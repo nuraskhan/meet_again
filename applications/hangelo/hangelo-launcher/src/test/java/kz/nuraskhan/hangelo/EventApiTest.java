@@ -90,6 +90,9 @@ class EventApiTest extends ApiTestBase {
       assertThat(longs(chats.body(), "id")).containsExactly(chatId);
       assertThat(chats.body().get(0).get("title").asString()).isEqualTo("Lagman on Friday");
       assertThat(chats.body().get(0).get("memberCount").asInt()).isEqualTo(3);
+      // The chat leads back to its event.
+      assertThat(chats.body().get(0).get("eventId").asLong()).isEqualTo(eventId);
+      assertThat(chats.body().get(0).get("eventType").asString()).isEqualTo("FOOD");
     }
     assertThat(longs(get("/chat/" + chatId + "/member/list", friend1).body(), "userId"))
         .containsExactlyInAnyOrder(creator.id(), friend1.id(), friend2.id());

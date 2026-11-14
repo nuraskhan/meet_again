@@ -1,6 +1,7 @@
 package kz.nuraskhan.hangelo.chat;
 
 import static kz.nuraskhan.hangelo.jooq.Tables.CHAT;
+import static kz.nuraskhan.hangelo.jooq.Tables.EVENT;
 import static kz.nuraskhan.hangelo.jooq.Tables.CHAT_MEMBER;
 import static kz.nuraskhan.hangelo.jooq.Tables.CHAT_MESSAGE;
 import static kz.nuraskhan.hangelo.jooq.Tables.PROFILE;
@@ -41,9 +42,11 @@ public class ChatQuery {
         .asField("member_count");
 
     return dsl
-        .select(CHAT.ID, CHAT.TITLE, CHAT.CREATED_AT, memberCount)
+        .select(CHAT.ID, CHAT.TITLE, CHAT.CREATED_AT, memberCount, EVENT.ID, EVENT.EVENT_TYPE)
         .from(CHAT)
         .join(mine).on(mine.CHAT_ID.eq(CHAT.ID))
+        // Every chat is created with an event and belongs to exactly one.
+        .leftJoin(EVENT).on(EVENT.CHAT_ID.eq(CHAT.ID))
         .where(mine.USER_ACCOUNT_ID.eq(me))
         .and(mine.LEFT_AT.isNull())
         .orderBy(CHAT.ID.desc())

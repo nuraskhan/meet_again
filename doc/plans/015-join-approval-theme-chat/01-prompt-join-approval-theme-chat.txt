@@ -1,0 +1,4 @@
+also public ones now should be approve submittions to join and color palithra should be not blue and also change theme support(dark, light in top bar)
+and chats could have ability to click name of chat and members list and event itself (or clicable card that will open event)
+
+Answer to the question asked (which colour replaces blue): Earth brown, from the logo.

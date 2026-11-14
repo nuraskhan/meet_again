@@ -25,4 +25,10 @@ public enum NotificationKind {
   REMOVED_FROM_EVENT,
   /** To every guest: the creator cancelled the event. */
   EVENT_CANCELLED,
+  /** Someone asks to join my public event. */
+  JOIN_REQUESTED,
+  /** The creator let me into the public event I asked to join. */
+  JOIN_APPROVED,
+  /** The creator said no to my request to join. */
+  JOIN_DECLINED,
 }

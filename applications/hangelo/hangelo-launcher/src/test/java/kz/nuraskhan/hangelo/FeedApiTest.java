@@ -143,10 +143,11 @@ class FeedApiTest extends ApiTestBase {
   // ------------------------------------------------------------------ joining
 
   @Test
-  void join__makesAStrangerAGuestWhoIsComing_andPutsThemIntoTheChat() {
+  void join__asksTheCreator_andTheStrangerIsNotInYet() {
     TestUser creator = register();
     TestUser stranger = register();
     long eventId = publicEvent(creator);
+    long chatId = get("/event/" + eventId, creator).body().get("chatId").asLong();
 
     //
     //
@@ -155,27 +156,29 @@ class FeedApiTest extends ApiTestBase {
     //
 
     assertThat(response.status()).isEqualTo(200);
-    long chatId = response.body().get("chatId").asLong();
-    assertThat(response.body().get("visibility").asString()).isEqualTo("PUBLIC");
-    assertThat(response.body().get("invitees").get(0).get("userId").asLong()).isEqualTo(stranger.id());
-    assertThat(response.body().get("invitees").get(0).get("status").asString()).isEqualTo("ACCEPTED");
+    assertThat(response.body().get("standing").asString()).isEqualTo("REQUESTED");
 
-    // In the group chat with the creator, and able to write there.
-    assertThat(longs(get("/chat/list", stranger).body(), "id")).containsExactly(chatId);
-    assertThat(post("/chat/" + chatId + "/message", stranger, Map.of("text", "Hi all")).status()).isEqualTo(200);
-    assertThat(get("/chat/" + chatId + "/message/list", creator).body().get(0).get("text").asString())
-        .isEqualTo("Hi all");
+    // Not a guest yet: no chat, and the event is not theirs to open.
+    assertThat(get("/chat/list", stranger).body().size()).isZero();
+    assertThat(get("/chat/" + chatId + "/message/list", stranger).status()).isEqualTo(404);
+    assertThat(get("/event/" + eventId, stranger).status()).isEqualTo(404);
+    assertThat(get("/event/list", stranger).body().size()).isZero();
 
-    // The feed shows a face and where the reader stands.
+    // The feed says the request is waiting, and counts nobody as coming.
     JsonNode item = feedItem(stranger, eventId);
-    assertThat(item.get("myStanding").asString()).isEqualTo("ACCEPTED");
-    assertThat(item.get("goingCount").asInt()).isEqualTo(1);
-    assertThat(item.get("going").get(0).get("userId").asLong()).isEqualTo(stranger.id());
-    assertThat(item.get("going").get(0).get("displayName").asString()).isEqualTo(stranger.displayName());
+    assertThat(item.get("myStanding").asString()).isEqualTo("REQUESTED");
+    assertThat(item.get("goingCount").asInt()).isZero();
+    assertThat(item.get("going").size()).isZero();
+
+    // The creator sees who is asking.
+    JsonNode asking = get("/event/" + eventId, creator).body().get("invitees");
+    assertThat(asking.size()).isEqualTo(1);
+    assertThat(asking.get(0).get("userId").asLong()).isEqualTo(stranger.id());
+    assertThat(asking.get(0).get("status").asString()).isEqualTo("REQUESTED");
   }
 
   @Test
-  void join__twice_changesNothing() {
+  void join__twice_isOneRequest() {
     TestUser creator = register();
     TestUser guest = register();
     long eventId = publicEvent(creator);
@@ -188,8 +191,165 @@ class FeedApiTest extends ApiTestBase {
     //
 
     assertThat(response.status()).isEqualTo(200);
-    assertThat(response.body().get("invitees").size()).isEqualTo(1);
-    assertThat(feedItem(creator, eventId).get("goingCount").asInt()).isEqualTo(1);
+    assertThat(response.body().get("standing").asString()).isEqualTo("REQUESTED");
+    assertThat(get("/event/" + eventId, creator).body().get("invitees").size()).isEqualTo(1);
+    // The creator was told once, not twice.
+    assertThat(get("/notification/list", creator).body().valueStream()
+        .filter(n -> n.get("kind").asString().equals("JOIN_REQUESTED")).count()).isEqualTo(1);
+  }
+
+  @Test
+  void join__ofSomeoneInvitedByName_isTheirYes_withoutAsking() {
+    TestUser creator = register();
+    TestUser friend = register();
+    makeFriends(creator, friend);
+    long eventId = post("/event/create", creator, Map.of(
+        "eventType", "WALK", "visibility", "PUBLIC", "inviteeIds", List.of(friend.id())))
+        .body().get("id").asLong();
+
+    //
+    //
+    Response response = post("/event/" + eventId + "/join", friend);
+    //
+    //
+
+    assertThat(response.body().get("standing").asString()).isEqualTo("ACCEPTED");
+    assertThat(get("/chat/list", friend).body().size()).isEqualTo(1);
+    assertThat(feedItem(friend, eventId).get("goingCount").asInt()).isEqualTo(1);
+  }
+
+  @Test
+  void approveRequest__makesTheStrangerAGuestWhoIsComing_andPutsThemIntoTheChat() {
+    TestUser creator = register();
+    TestUser stranger = register();
+    long eventId = publicEvent(creator);
+    post("/event/" + eventId + "/join", stranger);
+
+    //
+    //
+    Response response = post("/event/" + eventId + "/request/" + stranger.id() + "/approve", creator);
+    //
+    //
+
+    assertThat(response.status()).isEqualTo(200);
+    long chatId = response.body().get("chatId").asLong();
+    assertThat(response.body().get("invitees").get(0).get("userId").asLong()).isEqualTo(stranger.id());
+    assertThat(response.body().get("invitees").get(0).get("status").asString()).isEqualTo("ACCEPTED");
+    assertThat(response.body().get("invitees").get(0).get("respondedAt").isNull()).isFalse();
+
+    // In the group chat with the creator, and able to write there.
+    assertThat(longs(get("/chat/list", stranger).body(), "id")).containsExactly(chatId);
+    assertThat(post("/chat/" + chatId + "/message", stranger, Map.of("text", "Hi all")).status()).isEqualTo(200);
+    assertThat(get("/chat/" + chatId + "/message/list", creator).body().get(0).get("text").asString())
+        .isEqualTo("Hi all");
+
+    // The event is theirs to open now.
+    assertThat(get("/event/" + eventId, stranger).status()).isEqualTo(200);
+
+    // The feed shows a face and where the reader stands.
+    JsonNode item = feedItem(stranger, eventId);
+    assertThat(item.get("myStanding").asString()).isEqualTo("ACCEPTED");
+    assertThat(item.get("goingCount").asInt()).isEqualTo(1);
+    assertThat(item.get("going").get(0).get("userId").asLong()).isEqualTo(stranger.id());
+    assertThat(item.get("going").get(0).get("displayName").asString()).isEqualTo(stranger.displayName());
+  }
+
+  @Test
+  void declineRequest__leavesThemOut_andTheyMayAskAgain() {
+    TestUser creator = register();
+    TestUser stranger = register();
+    long eventId = publicEvent(creator);
+    post("/event/" + eventId + "/join", stranger);
+
+    //
+    //
+    Response response = post("/event/" + eventId + "/request/" + stranger.id() + "/decline", creator);
+    //
+    //
+
+    assertThat(response.status()).isEqualTo(200);
+    assertThat(response.body().get("invitees").get(0).get("status").asString()).isEqualTo("DECLINED");
+    assertThat(get("/chat/list", stranger).body().size()).isZero();
+    assertThat(feedItem(stranger, eventId).get("myStanding").asString()).isEqualTo("DECLINED");
+    assertThat(feedItem(creator, eventId).get("goingCount").asInt()).isZero();
+
+    assertThat(post("/event/" + eventId + "/join", stranger).body().get("standing").asString())
+        .isEqualTo("REQUESTED");
+  }
+
+  @Test
+  void aRequest__isAnsweredOnlyByTheCreator_andOnlyWhileItWaits() {
+    TestUser creator = register();
+    TestUser asking = register();
+    TestUser guest = register();
+    TestUser stranger = register();
+    long eventId = publicEvent(creator);
+    post("/event/" + eventId + "/join", asking);
+    joinApproved(creator, eventId, guest);
+
+    //
+    //
+    Response byAGuest = post("/event/" + eventId + "/request/" + asking.id() + "/approve", guest);
+    Response byThemselves = post("/event/" + eventId + "/request/" + asking.id() + "/approve", asking);
+    Response ofAStranger = post("/event/" + eventId + "/request/" + stranger.id() + "/approve", creator);
+    Response ofAGuest = post("/event/" + eventId + "/request/" + guest.id() + "/decline", creator);
+    Response withoutToken = post("/event/" + eventId + "/request/" + asking.id() + "/approve", null);
+    //
+    //
+
+    assertThat(byAGuest.status()).isEqualTo(404);
+    assertThat(byThemselves.status()).isEqualTo(404);
+    assertThat(ofAStranger.status()).isEqualTo(404);
+    assertThat(ofAStranger.body().get("code").asString()).isEqualTo("request_not_found");
+    assertThat(ofAGuest.status()).isEqualTo(404);
+    assertThat(withoutToken.status()).isEqualTo(401);
+    assertThat(feedItem(asking, eventId).get("myStanding").asString()).isEqualTo("REQUESTED");
+    assertThat(feedItem(guest, eventId).get("myStanding").asString()).isEqualTo("ACCEPTED");
+  }
+
+  @Test
+  void aRequest__isSeenByTheCreatorOnly_andGivesNoSayInTheEvent() {
+    TestUser creator = register();
+    TestUser asking = register();
+    TestUser guest = register();
+    long eventId = publicEvent(creator);
+    joinApproved(creator, eventId, guest);
+    post("/event/" + eventId + "/join", asking);
+
+    //
+    //
+    JsonNode seenByCreator = get("/event/" + eventId, creator).body().get("invitees");
+    JsonNode seenByGuest = get("/event/" + eventId, guest).body().get("invitees");
+    Response preference = post("/event/" + eventId + "/preference", asking,
+        Map.of("locationText", "Somewhere", "travelRadiusMi", 5));
+    Response suggestions = post("/event/" + eventId + "/suggestion/refresh", asking);
+    //
+    //
+
+    assertThat(longs(seenByCreator, "userId")).containsExactly(guest.id(), asking.id());
+    assertThat(longs(seenByGuest, "userId")).containsExactly(guest.id());
+    assertThat(preference.status()).isEqualTo(409);
+    assertThat(suggestions.status()).isEqualTo(404);
+  }
+
+  @Test
+  void leave__takesBackARequestThatIsWaiting() {
+    TestUser creator = register();
+    TestUser asking = register();
+    long eventId = publicEvent(creator);
+    post("/event/" + eventId + "/join", asking);
+
+    //
+    //
+    Response response = post("/event/" + eventId + "/leave", asking);
+    //
+    //
+
+    assertThat(response.status()).isEqualTo(200);
+    assertThat(feedItem(asking, eventId).get("myStanding").asString()).isEqualTo("DECLINED");
+    // Nothing is left for the creator to answer.
+    assertThat(post("/event/" + eventId + "/request/" + asking.id() + "/approve", creator).status())
+        .isEqualTo(404);
   }
 
   @Test
@@ -247,7 +407,7 @@ class FeedApiTest extends ApiTestBase {
     TestUser creator = register();
     TestUser guest = register();
     long eventId = publicEvent(creator);
-    long chatId = post("/event/" + eventId + "/join", guest).body().get("chatId").asLong();
+    long chatId = joinApproved(creator, eventId, guest);
 
     //
     //
@@ -261,7 +421,10 @@ class FeedApiTest extends ApiTestBase {
     assertThat(feedItem(guest, eventId).get("myStanding").asString()).isEqualTo("DECLINED");
     assertThat(feedItem(creator, eventId).get("goingCount").asInt()).isZero();
 
-    assertThat(post("/event/" + eventId + "/join", guest).status()).isEqualTo(200);
+    // Coming back is asking again: the creator decides once more.
+    assertThat(post("/event/" + eventId + "/join", guest).body().get("standing").asString())
+        .isEqualTo("REQUESTED");
+    assertThat(joinApproved(creator, eventId, guest)).isEqualTo(chatId);
     assertThat(longs(get("/chat/list", guest).body(), "id")).containsExactly(chatId);
   }
 
@@ -290,7 +453,7 @@ class FeedApiTest extends ApiTestBase {
     TestUser unwanted = register();
     JsonNode created = post("/event/create", creator, Map.of("eventType", "BAR", "visibility", "PUBLIC")).body();
     long eventId = created.get("id").asLong();
-    long chatId = post("/event/" + eventId + "/join", unwanted).body().get("chatId").asLong();
+    long chatId = joinApproved(creator, eventId, unwanted);
 
     //
     //
@@ -323,8 +486,8 @@ class FeedApiTest extends ApiTestBase {
     TestUser otherGuest = register();
     TestUser stranger = register();
     long eventId = publicEvent(creator);
-    post("/event/" + eventId + "/join", guest);
-    post("/event/" + eventId + "/join", otherGuest);
+    joinApproved(creator, eventId, guest);
+    joinApproved(creator, eventId, otherGuest);
 
     //
     //
@@ -345,7 +508,7 @@ class FeedApiTest extends ApiTestBase {
     TestUser creator = register();
     TestUser removed = register();
     long eventId = publicEvent(creator);
-    post("/event/" + eventId + "/join", removed);
+    joinApproved(creator, eventId, removed);
     post("/event/" + eventId + "/guest/" + removed.id() + "/remove", creator);
 
     //
@@ -363,6 +526,14 @@ class FeedApiTest extends ApiTestBase {
   }
 
   // ------------------------------------------------------------------ helpers
+
+  /** The guest asks to join and the creator lets them in. @return the id of the event's chat */
+  private long joinApproved(TestUser creator, long eventId, TestUser guest) {
+    assertThat(post("/event/" + eventId + "/join", guest).status()).isEqualTo(200);
+    Response approved = post("/event/" + eventId + "/request/" + guest.id() + "/approve", creator);
+    assertThat(approved.status()).isEqualTo(200);
+    return approved.body().get("chatId").asLong();
+  }
 
   private long publicEvent(TestUser creator) {
     Response response = post("/event/create", creator, Map.of("eventType", "WALK", "visibility", "PUBLIC"));
