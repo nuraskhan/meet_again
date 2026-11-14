@@ -6,6 +6,7 @@ import kz.nuraskhan.meet_again.model.entity.Chat;
 import kz.nuraskhan.meet_again.model.entity.ChatMember;
 import kz.nuraskhan.meet_again.model.entity.ChatMessage;
 import kz.nuraskhan.meet_again.model.entity.Event;
+import kz.nuraskhan.meet_again.model.entity.EventTimeOption;
 import kz.nuraskhan.meet_again.model.entity.Friendship;
 import kz.nuraskhan.meet_again.model.entity.Invitation;
 import kz.nuraskhan.meet_again.model.entity.Profile;
@@ -15,6 +16,7 @@ import kz.nuraskhan.meet_again.model.repository.ChatMemberRepository;
 import kz.nuraskhan.meet_again.model.repository.ChatMessageRepository;
 import kz.nuraskhan.meet_again.model.repository.ChatRepository;
 import kz.nuraskhan.meet_again.model.repository.EventRepository;
+import kz.nuraskhan.meet_again.model.repository.EventTimeOptionRepository;
 import kz.nuraskhan.meet_again.model.repository.FriendshipRepository;
 import kz.nuraskhan.meet_again.model.repository.InvitationRepository;
 import kz.nuraskhan.meet_again.model.repository.ProfileRepository;
@@ -36,6 +38,7 @@ class RndPersistenceTest extends ApiTestBase {
   @Autowired ChatMemberRepository chatMemberRepository;
   @Autowired ChatMessageRepository chatMessageRepository;
   @Autowired EventRepository eventRepository;
+  @Autowired EventTimeOptionRepository eventTimeOptionRepository;
   @Autowired InvitationRepository invitationRepository;
 
   @Test
@@ -54,6 +57,7 @@ class RndPersistenceTest extends ApiTestBase {
     ChatMember member = chatMemberRepository.save(RND.chatMember(chat.id, user1.id));
     ChatMessage message = chatMessageRepository.save(RND.chatMessage(chat.id, user1.id));
     Event event = eventRepository.save(RND.event(user1.id, chat.id));
+    EventTimeOption timeOption = eventTimeOptionRepository.save(RND.eventTimeOption(event.id));
     Invitation invitation = invitationRepository.save(RND.invitation(event.id, user2.id));
     //
     //
@@ -70,9 +74,11 @@ class RndPersistenceTest extends ApiTestBase {
         .usingRecursiveComparison().isEqualTo(member);
     assertThat(chatMessageRepository.findById(message.id).orElseThrow())
         .usingRecursiveComparison().isEqualTo(message);
-    // The moments in particular: startsAt must survive the round trip in any time zone.
     assertThat(eventRepository.findById(event.id).orElseThrow())
         .usingRecursiveComparison().isEqualTo(event);
+    // The moment in particular: it must survive the round trip in any time zone.
+    assertThat(eventTimeOptionRepository.findById(timeOption.id).orElseThrow())
+        .usingRecursiveComparison().isEqualTo(timeOption);
     assertThat(invitationRepository.findById(invitation.id).orElseThrow())
         .usingRecursiveComparison().isEqualTo(invitation);
 

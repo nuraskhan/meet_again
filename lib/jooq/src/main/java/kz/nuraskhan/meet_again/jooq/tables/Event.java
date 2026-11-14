@@ -112,11 +112,6 @@ public class Event extends TableImpl<EventRecord> {
     public final TableField<EventRecord, Integer> PRICE_MAX = createField(DSL.name("price_max"), SQLDataType.INTEGER.nullable(false), this, "");
 
     /**
-     * The column <code>public.event.starts_at</code>.
-     */
-    public final TableField<EventRecord, Instant> STARTS_AT = createField(DSL.name("starts_at"), SQLDataType.INSTANT, this, "");
-
-    /**
      * The column <code>public.event.status</code>.
      */
     public final TableField<EventRecord, EventStatus> STATUS = createField(DSL.name("status"), SQLDataType.CLOB.nullable(false), this, "", new EnumConverter<String, EventStatus>(String.class, EventStatus.class));
@@ -125,6 +120,11 @@ public class Event extends TableImpl<EventRecord> {
      * The column <code>public.event.created_at</code>.
      */
     public final TableField<EventRecord, Instant> CREATED_AT = createField(DSL.name("created_at"), SQLDataType.INSTANT.nullable(false), this, "");
+
+    /**
+     * The column <code>public.event.share_token</code>.
+     */
+    public final TableField<EventRecord, String> SHARE_TOKEN = createField(DSL.name("share_token"), SQLDataType.CLOB.nullable(false), this, "");
 
     private Event(Name alias, Table<EventRecord> aliased) {
         this(alias, aliased, (Field<?>[]) null, null);
@@ -162,7 +162,7 @@ public class Event extends TableImpl<EventRecord> {
 
     @Override
     public List<Index> getIndexes() {
-        return Arrays.asList(Indexes.EVENT__CREATOR);
+        return Arrays.asList(Indexes.EVENT__CREATOR, Indexes.EVENT__SHARE_TOKEN);
     }
 
     @Override

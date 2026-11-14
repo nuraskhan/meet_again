@@ -163,45 +163,45 @@ public class EventRecord extends UpdatableRecordImpl<EventRecord> {
     }
 
     /**
-     * Setter for <code>public.event.starts_at</code>.
-     */
-    public void setStartsAt(Instant value) {
-        set(10, value);
-    }
-
-    /**
-     * Getter for <code>public.event.starts_at</code>.
-     */
-    public Instant getStartsAt() {
-        return (Instant) get(10);
-    }
-
-    /**
      * Setter for <code>public.event.status</code>.
      */
     public void setStatus(EventStatus value) {
-        set(11, value);
+        set(10, value);
     }
 
     /**
      * Getter for <code>public.event.status</code>.
      */
     public EventStatus getStatus() {
-        return (EventStatus) get(11);
+        return (EventStatus) get(10);
     }
 
     /**
      * Setter for <code>public.event.created_at</code>.
      */
     public void setCreatedAt(Instant value) {
-        set(12, value);
+        set(11, value);
     }
 
     /**
      * Getter for <code>public.event.created_at</code>.
      */
     public Instant getCreatedAt() {
-        return (Instant) get(12);
+        return (Instant) get(11);
+    }
+
+    /**
+     * Setter for <code>public.event.share_token</code>.
+     */
+    public void setShareToken(String value) {
+        set(12, value);
+    }
+
+    /**
+     * Getter for <code>public.event.share_token</code>.
+     */
+    public String getShareToken() {
+        return (String) get(12);
     }
 
     // -------------------------------------------------------------------------
@@ -227,7 +227,7 @@ public class EventRecord extends UpdatableRecordImpl<EventRecord> {
     /**
      * Create a detached, initialised EventRecord
      */
-    public EventRecord(Long id, Long creator_UserAccountId, Long chatId, EventType eventType, String title, String description, Integer distanceMinKm, Integer distanceMaxKm, Integer priceMin, Integer priceMax, Instant startsAt, EventStatus status, Instant createdAt) {
+    public EventRecord(Long id, Long creator_UserAccountId, Long chatId, EventType eventType, String title, String description, Integer distanceMinKm, Integer distanceMaxKm, Integer priceMin, Integer priceMax, EventStatus status, Instant createdAt, String shareToken) {
         super(Event.EVENT);
 
         setId(id);
@@ -240,9 +240,9 @@ public class EventRecord extends UpdatableRecordImpl<EventRecord> {
         setDistanceMaxKm(distanceMaxKm);
         setPriceMin(priceMin);
         setPriceMax(priceMax);
-        setStartsAt(startsAt);
         setStatus(status);
         setCreatedAt(createdAt);
+        setShareToken(shareToken);
         resetTouchedOnNotNull();
     }
 }

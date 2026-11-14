@@ -42,6 +42,17 @@ public class EventController {
     return eventQuery.get(me, eventId).orElseThrow();
   }
 
+  /**
+   * Accepting by the link: the caller becomes a guest who said yes. Needs a token like everything
+   * here - reading the invitation without one is {@code GET /public/event/{shareToken}}.
+   */
+  @PostMapping("/join/{shareToken}")
+  public EventDto join(Principal principal, @PathVariable("shareToken") String shareToken) {
+    Long me = CurrentUser.id(principal);
+    Long eventId = eventService.joinByLink(me, shareToken);
+    return eventQuery.get(me, eventId).orElseThrow();
+  }
+
   @GetMapping("/list")
   public List<EventDto> list(Principal principal) {
     return eventQuery.list(CurrentUser.id(principal));

@@ -6,8 +6,13 @@ import kz.nuraskhan.meet_again.model.enums.EventStatus;
 import kz.nuraskhan.meet_again.model.enums.EventType;
 
 /**
- * @param chatId   the group chat of the event
- * @param invitees everyone invited, in the order they were invited
+ * An event as its participants see it.
+ *
+ * @param proposedTimes the dates the creator offers, earliest first; empty = to be agreed
+ * @param chatId        the group chat of the event
+ * @param shareToken    the secret part of the link to the event; only the creator gets it, null
+ *                      for everyone else
+ * @param invitees      everyone invited or joined by the link, in the order they appeared
  */
 public record EventDto(
     Long id,
@@ -18,10 +23,11 @@ public record EventDto(
     Integer distanceMaxKm,
     Integer priceMin,
     Integer priceMax,
-    Instant startsAt,
+    List<Instant> proposedTimes,
     EventStatus status,
     Instant createdAt,
     Long chatId,
+    String shareToken,
     Long creatorId,
     String creatorName,
     List<InviteeDto> invitees

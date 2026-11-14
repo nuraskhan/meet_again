@@ -8,6 +8,7 @@ import kz.nuraskhan.meet_again.model.entity.Chat;
 import kz.nuraskhan.meet_again.model.entity.ChatMember;
 import kz.nuraskhan.meet_again.model.entity.ChatMessage;
 import kz.nuraskhan.meet_again.model.entity.Event;
+import kz.nuraskhan.meet_again.model.entity.EventTimeOption;
 import kz.nuraskhan.meet_again.model.entity.Friendship;
 import kz.nuraskhan.meet_again.model.entity.Invitation;
 import kz.nuraskhan.meet_again.model.entity.Profile;
@@ -149,6 +150,7 @@ public final class RND {
     Event x = new Event();
     x.creatorUserAccountId = creatorUserAccountId;
     x.chatId = chatId;
+    x.shareToken = str(32);
     x.eventType = oneOf(EventType.class);
     x.title = "Event " + str(10);
     x.description = "Description " + str(30);
@@ -156,9 +158,15 @@ public final class RND {
     x.distanceMaxKm = x.distanceMinKm + intBetween(0, 20);
     x.priceMin = intBetween(0, 5000);
     x.priceMax = x.priceMin + intBetween(0, 20000);
-    x.startsAt = futureInstant();
     x.status = EventStatus.ACTIVE;
     x.createdAt = pastInstant();
+    return x;
+  }
+
+  public static EventTimeOption eventTimeOption(Long eventId) {
+    EventTimeOption x = new EventTimeOption();
+    x.eventId = eventId;
+    x.startsAt = futureInstant();
     return x;
   }
 

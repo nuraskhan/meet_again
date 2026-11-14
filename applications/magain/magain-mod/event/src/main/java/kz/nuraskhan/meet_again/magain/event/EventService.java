@@ -1,18 +1,23 @@
 package kz.nuraskhan.meet_again.magain.event;
 
+import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import kz.nuraskhan.meet_again.magain.chat.ChatService;
 import kz.nuraskhan.meet_again.magain.event.dto.CreateEventRequest;
 import kz.nuraskhan.meet_again.model.entity.Event;
+import kz.nuraskhan.meet_again.model.entity.EventTimeOption;
 import kz.nuraskhan.meet_again.model.entity.Invitation;
 import kz.nuraskhan.meet_again.model.enums.EventStatus;
 import kz.nuraskhan.meet_again.model.enums.EventType;
 import kz.nuraskhan.meet_again.model.enums.InvitationStatus;
 import kz.nuraskhan.meet_again.model.repository.EventRepository;
+import kz.nuraskhan.meet_again.model.repository.EventTimeOptionRepository;
 import kz.nuraskhan.meet_again.model.repository.FriendshipRepository;
 import kz.nuraskhan.meet_again.model.repository.InvitationRepository;
 import kz.nuraskhan.meet_again.web.ApiException;
@@ -22,24 +27,32 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class EventService {
 
+  /** 18 random bytes = 144 bits: the link cannot be guessed. In base64url that is 24 characters. */
+  private static final int SHARE_TOKEN_BYTES = 18;
+
+  private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
   private final EventRepository eventRepository;
+  private final EventTimeOptionRepository eventTimeOptionRepository;
   private final InvitationRepository invitationRepository;
   private final FriendshipRepository friendshipRepository;
   private final ChatService chatService;
 
   public EventService(EventRepository eventRepository,
+                      EventTimeOptionRepository eventTimeOptionRepository,
                       InvitationRepository invitationRepository,
                       FriendshipRepository friendshipRepository,
                       ChatService chatService) {
     this.eventRepository = eventRepository;
+    this.eventTimeOptionRepository = eventTimeOptionRepository;
     this.invitationRepository = invitationRepository;
     this.friendshipRepository = friendshipRepository;
     this.chatService = chatService;
   }
 
   /**
-   * Creates the event, an invitation for every invitee, and the group chat with the creator and all
-   * the invitees in it - all or nothing.
+   * Creates the event with its link, the proposed dates, an invitation for every invitee, and the
+   * group chat with the creator and all the invitees in it - all or nothing.
    *
    * @return id of the event
    */
@@ -61,11 +74,13 @@ public class EventService {
       throw ApiException.badRequest("bad_price", "Minimal price is greater than maximal");
     }
 
-    Set<Long> inviteeIds = new LinkedHashSet<>(request.inviteeIds());
+    // Nobody invited by name is fine: people then come by the link.
+    Set<Long> inviteeIds = new LinkedHashSet<>(orEmpty(request.inviteeIds()));
     if (inviteeIds.contains(me)) {
       throw ApiException.badRequest("invite_self", "You cannot invite yourself");
     }
-    if (friendshipRepository.countFriendsAmong(me, inviteeIds) != inviteeIds.size()) {
+    if (!inviteeIds.isEmpty()
+        && friendshipRepository.countFriendsAmong(me, inviteeIds) != inviteeIds.size()) {
       throw ApiException.badRequest("invitee_not_friend", "You can invite only your friends");
     }
 
@@ -79,6 +94,7 @@ public class EventService {
     Event event = new Event();
     event.creatorUserAccountId = me;
     event.chatId = chatId;
+    event.shareToken = newShareToken();
     event.eventType = type;
     event.title = title;
     event.description = request.description();
@@ -86,10 +102,17 @@ public class EventService {
     event.distanceMaxKm = distanceMaxKm;
     event.priceMin = priceMin;
     event.priceMax = priceMax;
-    event.startsAt = request.startsAt();
     event.status = EventStatus.ACTIVE;
     event.createdAt = now;
     event = eventRepository.save(event);
+
+    // A date given twice is one date.
+    for (Instant startsAt : new TreeSet<>(orEmpty(request.proposedTimes()))) {
+      EventTimeOption option = new EventTimeOption();
+      option.eventId = event.id;
+      option.startsAt = startsAt;
+      eventTimeOptionRepository.save(option);
+    }
 
     for (Long inviteeId : inviteeIds) {
       Invitation invitation = new Invitation();
@@ -99,6 +122,48 @@ public class EventService {
       invitation.createdAt = now;
       invitationRepository.save(invitation);
     }
+
+    return event.id;
+  }
+
+  /**
+   * Accepting by the link: the caller becomes a guest who said yes and enters the chat of the
+   * event. Works for someone never invited by name, for an invitee who has not answered, and for
+   * one who declined and changed their mind. Calling it again changes nothing.
+   *
+   * @return id of the event
+   */
+  @Transactional
+  public Long joinByLink(Long me, String shareToken) {
+    Event event = eventRepository.findByShareToken(shareToken)
+        .orElseThrow(() -> ApiException.notFound("event_not_found", "Event not found"));
+
+    if (event.status != EventStatus.ACTIVE) {
+      throw ApiException.conflict("event_cancelled", "The event is cancelled");
+    }
+    if (event.creatorUserAccountId.equals(me)) {
+      return event.id; // the creator is in already
+    }
+
+    Instant now = Instant.now();
+
+    Invitation invitation =
+        invitationRepository.findByEventIdAndInviteeUserAccountId(event.id, me).orElse(null);
+
+    if (invitation == null) {
+      invitation = new Invitation();
+      invitation.eventId = event.id;
+      invitation.inviteeUserAccountId = me;
+      invitation.status = InvitationStatus.ACCEPTED;
+      invitation.createdAt = now;
+      invitation.respondedAt = now;
+      invitationRepository.save(invitation);
+    } else if (invitation.status != InvitationStatus.ACCEPTED) {
+      invitation.status = InvitationStatus.ACCEPTED;
+      invitation.respondedAt = now;
+    }
+
+    chatService.join(event.chatId, me);
 
     return event.id;
   }
@@ -152,11 +217,21 @@ public class EventService {
     return event;
   }
 
+  private static String newShareToken() {
+    byte[] bytes = new byte[SHARE_TOKEN_BYTES];
+    SECURE_RANDOM.nextBytes(bytes);
+    return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+  }
+
   private static boolean isBlank(String s) {
     return s == null || s.isBlank();
   }
 
   private static int orDefault(Integer value, int defaultValue) {
     return value == null ? defaultValue : value;
+  }
+
+  private static <T> List<T> orEmpty(List<T> list) {
+    return list == null ? List.of() : list;
   }
 }

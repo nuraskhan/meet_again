@@ -12,7 +12,10 @@ import java.time.Instant;
 import kz.nuraskhan.meet_again.model.enums.EventStatus;
 import kz.nuraskhan.meet_again.model.enums.EventType;
 
-/** The invitation form as its creator filled it. The people invited are {@link Invitation}s. */
+/**
+ * The invitation form as its creator filled it. The people invited are {@link Invitation}s, the
+ * proposed dates are {@link EventTimeOption}s.
+ */
 @Entity
 @Table(name = "event")
 public class Event {
@@ -27,6 +30,13 @@ public class Event {
   /** The group chat created together with the event. */
   @Column(name = "chat_id", nullable = false)
   public Long chatId;
+
+  /**
+   * The secret part of the link to the event. Whoever has it can see the event without logging in
+   * and, once logged in, join it.
+   */
+  @Column(name = "share_token", nullable = false)
+  public String shareToken;
 
   @Enumerated(EnumType.STRING)
   @Column(name = "event_type", nullable = false)
@@ -51,10 +61,6 @@ public class Event {
 
   @Column(name = "price_max", nullable = false)
   public Integer priceMax;
-
-  /** When; empty = to be agreed in the chat. */
-  @Column(name = "starts_at")
-  public Instant startsAt;
 
   @Enumerated(EnumType.STRING)
   @Column(name = "status", nullable = false)

@@ -53,6 +53,22 @@ public class ChatService {
     return chat.id;
   }
 
+  /** Puts the person into the chat: a new member, or one who left and comes back. */
+  @Transactional
+  public void join(Long chatId, Long userId) {
+    ChatMember member = chatMemberRepository.findByChatIdAndUserAccountId(chatId, userId).orElse(null);
+
+    if (member == null) {
+      member = new ChatMember();
+      member.chatId = chatId;
+      member.userAccountId = userId;
+      member.joinedAt = Instant.now();
+      chatMemberRepository.save(member);
+    } else if (member.leftAt != null) {
+      member.leftAt = null;
+    }
+  }
+
   /** Takes the person out of the chat. Does nothing if they are not in it. */
   @Transactional
   public void leave(Long chatId, Long userId) {

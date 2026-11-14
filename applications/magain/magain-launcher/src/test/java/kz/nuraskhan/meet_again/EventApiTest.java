@@ -47,9 +47,10 @@ class EventApiTest extends ApiTestBase {
         "distanceMaxKm", 7,
         "priceMin", 2500,
         "priceMax", 6000,
-        // Evening in Almaty, the previous calendar day in Los Angeles: the moment must come back
-        // exactly as sent, whatever the time zone of the server is.
-        "startsAt", "2030-01-01T02:30:00Z",
+        // 02:30Z is morning in Almaty and the previous calendar day in Los Angeles: the moments must
+        // come back exactly as sent, whatever the time zone of the server is. Sent latest first and
+        // one of them twice: they come back earliest first, each once.
+        "proposedTimes", List.of("2030-01-02T15:00:00Z", "2030-01-01T02:30:00Z", "2030-01-02T15:00:00Z"),
         "inviteeIds", List.of(friend1.id(), friend2.id())));
     //
     //
@@ -63,7 +64,8 @@ class EventApiTest extends ApiTestBase {
     assertThat(event.get("distanceMaxKm").asInt()).isEqualTo(7);
     assertThat(event.get("priceMin").asInt()).isEqualTo(2500);
     assertThat(event.get("priceMax").asInt()).isEqualTo(6000);
-    assertThat(event.get("startsAt").asString()).isEqualTo("2030-01-01T02:30:00Z");
+    assertThat(event.get("proposedTimes").valueStream().map(JsonNode::asString).toList())
+        .containsExactly("2030-01-01T02:30:00Z", "2030-01-02T15:00:00Z");
     assertThat(event.get("status").asString()).isEqualTo("ACTIVE");
     assertThat(event.get("creatorId").asLong()).isEqualTo(creator.id());
     assertThat(event.get("creatorName").asString()).isEqualTo(creator.displayName());
@@ -113,7 +115,7 @@ class EventApiTest extends ApiTestBase {
     assertThat(event.get("distanceMaxKm").asInt()).isEqualTo(15);
     assertThat(event.get("priceMin").asInt()).isEqualTo(5000);
     assertThat(event.get("priceMax").asInt()).isEqualTo(15000);
-    assertThat(event.get("startsAt").isNull()).isTrue();
+    assertThat(event.get("proposedTimes").size()).isZero();
   }
 
   @Test
@@ -138,21 +140,18 @@ class EventApiTest extends ApiTestBase {
   }
 
   @Test
-  void create__refusesFormWithoutInviteesOrWithReversedRange() {
+  void create__refusesFormWithReversedRange() {
     TestUser creator = register();
     TestUser friend = register();
     makeFriends(creator, friend);
 
     //
     //
-    Response noInvitees = post("/event/create", creator,
-        Map.of("eventType", "WALK", "inviteeIds", List.of()));
     Response reversedPrice = post("/event/create", creator, Map.of(
         "eventType", "WALK", "priceMin", 500, "priceMax", 100, "inviteeIds", List.of(friend.id())));
     //
     //
 
-    assertThat(noInvitees.status()).isEqualTo(400);
     assertThat(reversedPrice.status()).isEqualTo(400);
     assertThat(reversedPrice.body().get("code").asString()).isEqualTo("bad_price");
   }

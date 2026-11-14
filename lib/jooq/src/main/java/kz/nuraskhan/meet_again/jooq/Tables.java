@@ -8,6 +8,7 @@ import kz.nuraskhan.meet_again.jooq.tables.Chat;
 import kz.nuraskhan.meet_again.jooq.tables.ChatMember;
 import kz.nuraskhan.meet_again.jooq.tables.ChatMessage;
 import kz.nuraskhan.meet_again.jooq.tables.Event;
+import kz.nuraskhan.meet_again.jooq.tables.EventTimeOption;
 import kz.nuraskhan.meet_again.jooq.tables.Friendship;
 import kz.nuraskhan.meet_again.jooq.tables.Invitation;
 import kz.nuraskhan.meet_again.jooq.tables.Profile;
@@ -39,6 +40,11 @@ public class Tables {
      * The table <code>public.event</code>.
      */
     public static final Event EVENT = Event.EVENT;
+
+    /**
+     * The table <code>public.event_time_option</code>.
+     */
+    public static final EventTimeOption EVENT_TIME_OPTION = EventTimeOption.EVENT_TIME_OPTION;
 
     /**
      * The table <code>public.friendship</code>.

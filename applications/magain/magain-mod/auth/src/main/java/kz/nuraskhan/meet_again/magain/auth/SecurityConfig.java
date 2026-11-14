@@ -20,7 +20,8 @@ import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 /**
- * Every request needs a bearer token, except registration, login and the health check.
+ * Every request needs a bearer token, except registration, login, the health check and everything
+ * under /public (an invitation opened by its link).
  * No sessions and no cookies, so no CSRF protection is needed.
  */
 @Configuration
@@ -35,7 +36,8 @@ public class SecurityConfig {
         .csrf(csrf -> csrf.disable())
         .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/auth/**", "/actuator/health/**", "/actuator/health").permitAll()
+            .requestMatchers("/auth/**", "/public/**", "/actuator/health/**", "/actuator/health")
+            .permitAll()
             .anyRequest().authenticated())
         .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));
 

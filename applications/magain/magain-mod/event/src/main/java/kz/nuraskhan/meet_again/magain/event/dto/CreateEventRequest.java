@@ -1,7 +1,6 @@
 package kz.nuraskhan.meet_again.magain.event.dto;
 
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.time.Instant;
@@ -9,11 +8,13 @@ import java.util.List;
 import kz.nuraskhan.meet_again.model.enums.EventType;
 
 /**
- * The invitation form. Only the type and the invitees are mandatory: title, distance and price left
- * out are taken from the type (see {@link EventTypeDto}).
+ * The invitation form. Only the type is mandatory: title, distance and price left out are taken
+ * from the type (see {@link EventTypeDto}).
  *
- * @param startsAt   when; a moment in UTC ({@code 2026-12-31T15:00:00Z}); may be left out
- * @param inviteeIds friends of the caller
+ * @param proposedTimes the dates the creator offers, moments in UTC ({@code 2026-12-31T15:00:00Z});
+ *                      none = to be agreed in the chat
+ * @param inviteeIds    friends of the caller; may be empty - then people come by the link of the
+ *                      event
  */
 public record CreateEventRequest(
     @NotNull EventType eventType,
@@ -23,7 +24,7 @@ public record CreateEventRequest(
     @Min(0) Integer distanceMaxKm,
     @Min(0) Integer priceMin,
     @Min(0) Integer priceMax,
-    Instant startsAt,
-    @NotEmpty @Size(max = 50) List<@NotNull Long> inviteeIds
+    @Size(max = 10) List<@NotNull Instant> proposedTimes,
+    @Size(max = 50) List<@NotNull Long> inviteeIds
 ) {
 }

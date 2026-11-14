@@ -11,6 +11,7 @@ import kz.nuraskhan.meet_again.jooq.tables.Chat;
 import kz.nuraskhan.meet_again.jooq.tables.ChatMember;
 import kz.nuraskhan.meet_again.jooq.tables.ChatMessage;
 import kz.nuraskhan.meet_again.jooq.tables.Event;
+import kz.nuraskhan.meet_again.jooq.tables.EventTimeOption;
 import kz.nuraskhan.meet_again.jooq.tables.Friendship;
 import kz.nuraskhan.meet_again.jooq.tables.Invitation;
 import kz.nuraskhan.meet_again.jooq.tables.Profile;
@@ -56,6 +57,11 @@ public class Public extends SchemaImpl {
     public final Event EVENT = Event.EVENT;
 
     /**
+     * The table <code>public.event_time_option</code>.
+     */
+    public final EventTimeOption EVENT_TIME_OPTION = EventTimeOption.EVENT_TIME_OPTION;
+
+    /**
      * The table <code>public.friendship</code>.
      */
     public final Friendship FRIENDSHIP = Friendship.FRIENDSHIP;
@@ -95,6 +101,7 @@ public class Public extends SchemaImpl {
             ChatMember.CHAT_MEMBER,
             ChatMessage.CHAT_MESSAGE,
             Event.EVENT,
+            EventTimeOption.EVENT_TIME_OPTION,
             Friendship.FRIENDSHIP,
             Invitation.INVITATION,
             Profile.PROFILE,
