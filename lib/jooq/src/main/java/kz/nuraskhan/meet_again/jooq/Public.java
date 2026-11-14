@@ -7,6 +7,7 @@ package kz.nuraskhan.meet_again.jooq;
 import java.util.Arrays;
 import java.util.List;
 
+import kz.nuraskhan.meet_again.jooq.tables.Avatar;
 import kz.nuraskhan.meet_again.jooq.tables.Chat;
 import kz.nuraskhan.meet_again.jooq.tables.ChatMember;
 import kz.nuraskhan.meet_again.jooq.tables.ChatMessage;
@@ -36,6 +37,11 @@ public class Public extends SchemaImpl {
      * The reference instance of <code>public</code>
      */
     public static final Public PUBLIC = new Public();
+
+    /**
+     * The table <code>public.avatar</code>.
+     */
+    public final Avatar AVATAR = Avatar.AVATAR;
 
     /**
      * The table <code>public.chat</code>.
@@ -103,6 +109,7 @@ public class Public extends SchemaImpl {
     @Override
     public final List<Table<?>> getTables() {
         return Arrays.asList(
+            Avatar.AVATAR,
             Chat.CHAT,
             ChatMember.CHAT_MEMBER,
             ChatMessage.CHAT_MESSAGE,

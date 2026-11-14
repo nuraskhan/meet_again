@@ -4,6 +4,7 @@
 package kz.nuraskhan.meet_again.jooq;
 
 
+import kz.nuraskhan.meet_again.jooq.tables.Avatar;
 import kz.nuraskhan.meet_again.jooq.tables.Chat;
 import kz.nuraskhan.meet_again.jooq.tables.ChatMember;
 import kz.nuraskhan.meet_again.jooq.tables.ChatMessage;
@@ -21,6 +22,11 @@ import kz.nuraskhan.meet_again.jooq.tables.UserAccount;
  */
 @SuppressWarnings({ "all", "unchecked", "rawtypes", "this-escape" })
 public class Tables {
+
+    /**
+     * The table <code>public.avatar</code>.
+     */
+    public static final Avatar AVATAR = Avatar.AVATAR;
 
     /**
      * The table <code>public.chat</code>.

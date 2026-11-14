@@ -2,6 +2,7 @@ package kz.nuraskhan.meet_again;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import kz.nuraskhan.meet_again.model.entity.Avatar;
 import kz.nuraskhan.meet_again.model.entity.Chat;
 import kz.nuraskhan.meet_again.model.entity.ChatMember;
 import kz.nuraskhan.meet_again.model.entity.ChatMessage;
@@ -13,6 +14,7 @@ import kz.nuraskhan.meet_again.model.entity.ParticipantPreference;
 import kz.nuraskhan.meet_again.model.entity.Profile;
 import kz.nuraskhan.meet_again.model.entity.UserAccount;
 import kz.nuraskhan.meet_again.model.enums.FriendshipStatus;
+import kz.nuraskhan.meet_again.model.repository.AvatarRepository;
 import kz.nuraskhan.meet_again.model.repository.ChatMemberRepository;
 import kz.nuraskhan.meet_again.model.repository.ChatMessageRepository;
 import kz.nuraskhan.meet_again.model.repository.ChatRepository;
@@ -35,6 +37,7 @@ class RndPersistenceTest extends ApiTestBase {
 
   @Autowired UserAccountRepository userAccountRepository;
   @Autowired ProfileRepository profileRepository;
+  @Autowired AvatarRepository avatarRepository;
   @Autowired FriendshipRepository friendshipRepository;
   @Autowired ChatRepository chatRepository;
   @Autowired ChatMemberRepository chatMemberRepository;
@@ -54,6 +57,7 @@ class RndPersistenceTest extends ApiTestBase {
     user1 = userAccountRepository.save(user1);
     user2 = userAccountRepository.save(user2);
     Profile profile = profileRepository.save(RND.profile(user1.id));
+    Avatar avatar = avatarRepository.save(RND.avatar(user1.id));
     Friendship friendship =
         friendshipRepository.save(RND.friendship(user1.id, user2.id, FriendshipStatus.ACCEPTED));
     Chat chat = chatRepository.save(RND.chat());
@@ -71,6 +75,8 @@ class RndPersistenceTest extends ApiTestBase {
         .usingRecursiveComparison().isEqualTo(user1);
     assertThat(profileRepository.findById(user1.id).orElseThrow())
         .usingRecursiveComparison().isEqualTo(profile);
+    assertThat(avatarRepository.findById(user1.id).orElseThrow())
+        .usingRecursiveComparison().isEqualTo(avatar);
     assertThat(friendshipRepository.findById(friendship.id).orElseThrow())
         .usingRecursiveComparison().isEqualTo(friendship);
     assertThat(chatRepository.findById(chat.id).orElseThrow())

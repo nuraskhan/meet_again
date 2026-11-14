@@ -5,6 +5,25 @@
       <GradleProjectSettings>
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="gradleHome" value="C:\Gradle\gradle-9.1.0" />
+        <option name="modules">
+          <set>
+            <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/applications" />
+            <option value="$PROJECT_DIR$/applications/magain" />
+            <option value="$PROJECT_DIR$/applications/magain/magain-launcher" />
+            <option value="$PROJECT_DIR$/applications/magain/magain-mod" />
+            <option value="$PROJECT_DIR$/applications/magain/magain-mod/auth" />
+            <option value="$PROJECT_DIR$/applications/magain/magain-mod/chat" />
+            <option value="$PROJECT_DIR$/applications/magain/magain-mod/event" />
+            <option value="$PROJECT_DIR$/applications/magain/magain-mod/friend" />
+            <option value="$PROJECT_DIR$/applications/magain/magain-mod/profile" />
+            <option value="$PROJECT_DIR$/lib" />
+            <option value="$PROJECT_DIR$/lib/jooq" />
+            <option value="$PROJECT_DIR$/lib/model" />
+            <option value="$PROJECT_DIR$/lib/web" />
+            <option value="$PROJECT_DIR$/migration" />
+          </set>
+        </option>
       </GradleProjectSettings>
     </option>
   </component>

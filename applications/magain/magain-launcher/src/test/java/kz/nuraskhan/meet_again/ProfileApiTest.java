@@ -19,8 +19,7 @@ class ProfileApiTest extends ApiTestBase {
         "displayName", "Dauren",
         "bio", "Likes bathhouses",
         "city", "Almaty",
-        "birthDate", "1995-03-01",
-        "avatarUrl", "https://example.test/dauren.png"));
+        "birthDate", "1995-03-01"));
     //
     //
 

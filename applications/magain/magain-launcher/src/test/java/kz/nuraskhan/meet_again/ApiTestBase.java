@@ -51,6 +51,60 @@ public abstract class ApiTestBase {
     return post(path, as, null);
   }
 
+  /** A response whose body is not JSON: a picture. */
+  public record RawResponse(int status, java.net.http.HttpHeaders headers, byte[] body) {
+  }
+
+  /**
+   * Sends a file the way a browser form does: one part named {@code file}.
+   *
+   * @param fileName    what the uploader claims the file is called
+   * @param contentType what the uploader claims the file is
+   */
+  protected Response upload(String path, TestUser as, String fileName, String contentType,
+                            byte[] content) {
+    String boundary = "----test" + RND.str(24);
+
+    byte[] head = ("--" + boundary + "\r\n"
+        + "Content-Disposition: form-data; name=\"file\"; filename=\"" + fileName + "\"\r\n"
+        + "Content-Type: " + contentType + "\r\n\r\n").getBytes(java.nio.charset.StandardCharsets.UTF_8);
+    byte[] tail = ("\r\n--" + boundary + "--\r\n").getBytes(java.nio.charset.StandardCharsets.UTF_8);
+
+    HttpRequest.Builder request = HttpRequest.newBuilder(URI.create("http://localhost:" + port + path))
+        .header("Content-Type", "multipart/form-data; boundary=" + boundary)
+        .POST(HttpRequest.BodyPublishers.ofByteArrays(List.of(head, content, tail)));
+    if (as != null) {
+      request.header("Authorization", "Bearer " + as.token());
+    }
+
+    try {
+      HttpResponse<String> response = HTTP.send(request.build(), HttpResponse.BodyHandlers.ofString());
+      String text = response.body();
+      JsonNode json = text == null || text.isBlank() ? JSON.missingNode() : JSON.readTree(text);
+      return new Response(response.statusCode(), json);
+    } catch (java.io.IOException e) {
+      throw new java.io.UncheckedIOException(e);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new IllegalStateException(e);
+    }
+  }
+
+  /** A GET without a token, for something that is not JSON. */
+  protected RawResponse getRaw(String path) {
+    try {
+      HttpResponse<byte[]> response = HTTP.send(
+          HttpRequest.newBuilder(URI.create("http://localhost:" + port + path)).GET().build(),
+          HttpResponse.BodyHandlers.ofByteArray());
+      return new RawResponse(response.statusCode(), response.headers(), response.body());
+    } catch (java.io.IOException e) {
+      throw new java.io.UncheckedIOException(e);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new IllegalStateException(e);
+    }
+  }
+
   /** Registers a new person with a random e-mail and name. */
   protected TestUser register() {
     String email = RND.email();

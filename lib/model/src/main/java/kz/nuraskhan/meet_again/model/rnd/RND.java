@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.ThreadLocalRandom;
+import kz.nuraskhan.meet_again.model.entity.Avatar;
 import kz.nuraskhan.meet_again.model.entity.Chat;
 import kz.nuraskhan.meet_again.model.entity.ChatMember;
 import kz.nuraskhan.meet_again.model.entity.ChatMessage;
@@ -107,7 +108,7 @@ public final class RND {
     x.bio = "Bio " + str(30);
     x.city = "City " + str(6);
     x.birthDate = birthDate();
-    x.avatarUrl = "https://rnd.test/avatar/" + str(12) + ".png";
+    x.avatarUrl = "/public/avatar/" + str(24); // the address of an uploaded picture, never a link
     x.updatedAt = pastInstant();
     return x;
   }
@@ -177,6 +178,18 @@ public final class RND {
     x.inviteeUserAccountId = inviteeUserAccountId;
     x.status = InvitationStatus.PENDING;
     x.createdAt = pastInstant();
+    return x;
+  }
+
+  /** The content is random bytes, not a picture: enough for storing and reading back. */
+  public static Avatar avatar(Long userAccountId) {
+    Avatar x = new Avatar();
+    x.userAccountId = userAccountId;
+    x.token = str(32);
+    x.contentType = oneOf("image/jpeg", "image/png");
+    x.content = new byte[intBetween(1, 64)];
+    random().nextBytes(x.content);
+    x.updatedAt = now();
     return x;
   }
 

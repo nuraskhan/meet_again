@@ -26,7 +26,6 @@ public class ProfileService {
     profile.bio = request.bio();
     profile.city = request.city();
     profile.birthDate = request.birthDate();
-    profile.avatarUrl = request.avatarUrl();
     profile.updatedAt = Instant.now();
   }
 }

@@ -4,6 +4,7 @@
 package kz.nuraskhan.meet_again.jooq;
 
 
+import kz.nuraskhan.meet_again.jooq.tables.Avatar;
 import kz.nuraskhan.meet_again.jooq.tables.Chat;
 import kz.nuraskhan.meet_again.jooq.tables.ChatMember;
 import kz.nuraskhan.meet_again.jooq.tables.ChatMessage;
@@ -14,6 +15,7 @@ import kz.nuraskhan.meet_again.jooq.tables.Invitation;
 import kz.nuraskhan.meet_again.jooq.tables.ParticipantPreference;
 import kz.nuraskhan.meet_again.jooq.tables.Profile;
 import kz.nuraskhan.meet_again.jooq.tables.UserAccount;
+import kz.nuraskhan.meet_again.jooq.tables.records.AvatarRecord;
 import kz.nuraskhan.meet_again.jooq.tables.records.ChatMemberRecord;
 import kz.nuraskhan.meet_again.jooq.tables.records.ChatMessageRecord;
 import kz.nuraskhan.meet_again.jooq.tables.records.ChatRecord;
@@ -44,6 +46,8 @@ public class Keys {
     // UNIQUE and PRIMARY KEY definitions
     // -------------------------------------------------------------------------
 
+    public static final UniqueKey<AvatarRecord> AVATAR_PKEY = Internal.createUniqueKey(Avatar.AVATAR, DSL.name("avatar_pkey"), new TableField[] { Avatar.AVATAR.USER_ACCOUNT_ID }, true);
+    public static final UniqueKey<AvatarRecord> AVATAR_TOKEN_KEY = Internal.createUniqueKey(Avatar.AVATAR, DSL.name("avatar_token_key"), new TableField[] { Avatar.AVATAR.TOKEN }, true);
     public static final UniqueKey<ChatRecord> CHAT_PKEY = Internal.createUniqueKey(Chat.CHAT, DSL.name("chat_pkey"), new TableField[] { Chat.CHAT.ID }, true);
     public static final UniqueKey<ChatMemberRecord> CHAT_MEMBER_CHAT_ID_USER_ACCOUNT_ID_KEY = Internal.createUniqueKey(ChatMember.CHAT_MEMBER, DSL.name("chat_member_chat_id_user_account_id_key"), new TableField[] { ChatMember.CHAT_MEMBER.CHAT_ID, ChatMember.CHAT_MEMBER.USER_ACCOUNT_ID }, true);
     public static final UniqueKey<ChatMemberRecord> CHAT_MEMBER_PKEY = Internal.createUniqueKey(ChatMember.CHAT_MEMBER, DSL.name("chat_member_pkey"), new TableField[] { ChatMember.CHAT_MEMBER.ID }, true);
@@ -64,6 +68,7 @@ public class Keys {
     // FOREIGN KEY definitions
     // -------------------------------------------------------------------------
 
+    public static final ForeignKey<AvatarRecord, UserAccountRecord> AVATAR__AVATAR_USER_ACCOUNT_ID_FKEY = Internal.createForeignKey(Avatar.AVATAR, DSL.name("avatar_user_account_id_fkey"), new TableField[] { Avatar.AVATAR.USER_ACCOUNT_ID }, Keys.USER_ACCOUNT_PKEY, new TableField[] { UserAccount.USER_ACCOUNT.ID }, true, ForeignKeyRule.NO_ACTION, ForeignKeyRule.NO_ACTION);
     public static final ForeignKey<ChatMemberRecord, ChatRecord> CHAT_MEMBER__CHAT_MEMBER_CHAT_ID_FKEY = Internal.createForeignKey(ChatMember.CHAT_MEMBER, DSL.name("chat_member_chat_id_fkey"), new TableField[] { ChatMember.CHAT_MEMBER.CHAT_ID }, Keys.CHAT_PKEY, new TableField[] { Chat.CHAT.ID }, true, ForeignKeyRule.NO_ACTION, ForeignKeyRule.NO_ACTION);
     public static final ForeignKey<ChatMemberRecord, UserAccountRecord> CHAT_MEMBER__CHAT_MEMBER_USER_ACCOUNT_ID_FKEY = Internal.createForeignKey(ChatMember.CHAT_MEMBER, DSL.name("chat_member_user_account_id_fkey"), new TableField[] { ChatMember.CHAT_MEMBER.USER_ACCOUNT_ID }, Keys.USER_ACCOUNT_PKEY, new TableField[] { UserAccount.USER_ACCOUNT.ID }, true, ForeignKeyRule.NO_ACTION, ForeignKeyRule.NO_ACTION);
     public static final ForeignKey<ChatMessageRecord, UserAccountRecord> CHAT_MESSAGE__CHAT_MESSAGE_AUTHOR__USER_ACCOUNT_ID_FKEY = Internal.createForeignKey(ChatMessage.CHAT_MESSAGE, DSL.name("chat_message_author__user_account_id_fkey"), new TableField[] { ChatMessage.CHAT_MESSAGE.AUTHOR__USER_ACCOUNT_ID }, Keys.USER_ACCOUNT_PKEY, new TableField[] { UserAccount.USER_ACCOUNT.ID }, true, ForeignKeyRule.NO_ACTION, ForeignKeyRule.NO_ACTION);

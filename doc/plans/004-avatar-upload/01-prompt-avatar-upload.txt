@@ -1,0 +1,1 @@
+remove ability to add image link and make it file save way(also add some vulnerabilities or some prohibited files append)
