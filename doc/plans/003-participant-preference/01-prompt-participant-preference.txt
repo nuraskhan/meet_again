@@ -1,0 +1,6 @@
+2. Предпочтения участников
+Каждый приглашённый указывает дополнительно:
+- Current Location — геолокация с разрешения пользователя или ручной ввод.
+- Travel Radius — максимальное расстояние в милях.
+
+ add ones which is not in system and values will be in US metrics

@@ -38,7 +38,7 @@ class RNDTest {
     //
     //
 
-    assertThat(actual.distanceMinKm).isBetween(0, actual.distanceMaxKm);
+    assertThat(actual.distanceMinMi).isBetween(0, actual.distanceMaxMi);
     assertThat(actual.priceMin).isBetween(0, actual.priceMax);
     assertThat(actual.shareToken).hasSize(32);
   }

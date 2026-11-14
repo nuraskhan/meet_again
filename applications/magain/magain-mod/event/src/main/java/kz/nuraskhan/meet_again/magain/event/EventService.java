@@ -10,9 +10,11 @@ import java.util.Set;
 import java.util.TreeSet;
 import kz.nuraskhan.meet_again.magain.chat.ChatService;
 import kz.nuraskhan.meet_again.magain.event.dto.CreateEventRequest;
+import kz.nuraskhan.meet_again.magain.event.dto.SavePreferenceRequest;
 import kz.nuraskhan.meet_again.model.entity.Event;
 import kz.nuraskhan.meet_again.model.entity.EventTimeOption;
 import kz.nuraskhan.meet_again.model.entity.Invitation;
+import kz.nuraskhan.meet_again.model.entity.ParticipantPreference;
 import kz.nuraskhan.meet_again.model.enums.EventStatus;
 import kz.nuraskhan.meet_again.model.enums.EventType;
 import kz.nuraskhan.meet_again.model.enums.InvitationStatus;
@@ -20,6 +22,7 @@ import kz.nuraskhan.meet_again.model.repository.EventRepository;
 import kz.nuraskhan.meet_again.model.repository.EventTimeOptionRepository;
 import kz.nuraskhan.meet_again.model.repository.FriendshipRepository;
 import kz.nuraskhan.meet_again.model.repository.InvitationRepository;
+import kz.nuraskhan.meet_again.model.repository.ParticipantPreferenceRepository;
 import kz.nuraskhan.meet_again.web.ApiException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,17 +39,20 @@ public class EventService {
   private final EventTimeOptionRepository eventTimeOptionRepository;
   private final InvitationRepository invitationRepository;
   private final FriendshipRepository friendshipRepository;
+  private final ParticipantPreferenceRepository participantPreferenceRepository;
   private final ChatService chatService;
 
   public EventService(EventRepository eventRepository,
                       EventTimeOptionRepository eventTimeOptionRepository,
                       InvitationRepository invitationRepository,
                       FriendshipRepository friendshipRepository,
+                      ParticipantPreferenceRepository participantPreferenceRepository,
                       ChatService chatService) {
     this.eventRepository = eventRepository;
     this.eventTimeOptionRepository = eventTimeOptionRepository;
     this.invitationRepository = invitationRepository;
     this.friendshipRepository = friendshipRepository;
+    this.participantPreferenceRepository = participantPreferenceRepository;
     this.chatService = chatService;
   }
 
@@ -62,12 +68,12 @@ public class EventService {
 
     // What the form leaves out comes from the type: that is the "pre-filled" part.
     String title = isBlank(request.title()) ? type.defaultTitle : request.title().trim();
-    int distanceMinKm = orDefault(request.distanceMinKm(), type.defaultDistanceMinKm);
-    int distanceMaxKm = orDefault(request.distanceMaxKm(), type.defaultDistanceMaxKm);
+    int distanceMinMi = orDefault(request.distanceMinMi(), type.defaultDistanceMinMi);
+    int distanceMaxMi = orDefault(request.distanceMaxMi(), type.defaultDistanceMaxMi);
     int priceMin = orDefault(request.priceMin(), type.defaultPriceMin);
     int priceMax = orDefault(request.priceMax(), type.defaultPriceMax);
 
-    if (distanceMinKm > distanceMaxKm) {
+    if (distanceMinMi > distanceMaxMi) {
       throw ApiException.badRequest("bad_distance", "Minimal distance is greater than maximal");
     }
     if (priceMin > priceMax) {
@@ -98,8 +104,8 @@ public class EventService {
     event.eventType = type;
     event.title = title;
     event.description = request.description();
-    event.distanceMinKm = distanceMinKm;
-    event.distanceMaxKm = distanceMaxKm;
+    event.distanceMinMi = distanceMinMi;
+    event.distanceMaxMi = distanceMaxMi;
     event.priceMin = priceMin;
     event.priceMax = priceMax;
     event.status = EventStatus.ACTIVE;
@@ -166,6 +172,55 @@ public class EventService {
     chatService.join(event.chatId, me);
 
     return event.id;
+  }
+
+  /**
+   * A guest says where they are and how far they are ready to travel, for this event. Saving again
+   * replaces what was said before.
+   *
+   * <p>Only for a guest who has not declined: the creator's wish is the distance of the event
+   * itself, and someone who is not coming has nothing to say.
+   */
+  @Transactional
+  public void savePreference(Long me, Long eventId, SavePreferenceRequest request) {
+    Invitation invitation =
+        invitationRepository.findByEventIdAndInviteeUserAccountId(eventId, me).orElse(null);
+
+    // Not a guest of it: the event "does not exist" for the caller.
+    if (invitation == null) {
+      throw ApiException.notFound("event_not_found", "Event not found");
+    }
+    if (invitation.status == InvitationStatus.DECLINED) {
+      throw ApiException.conflict("invitation_declined", "You declined this invitation");
+    }
+
+    boolean hasLatitude = request.latitude() != null;
+    boolean hasLongitude = request.longitude() != null;
+    String locationText = isBlank(request.locationText()) ? null : request.locationText().trim();
+
+    if (hasLatitude != hasLongitude) {
+      throw ApiException.badRequest("bad_location", "Latitude and longitude go together");
+    }
+    if (!hasLatitude && locationText == null) {
+      throw ApiException.badRequest("no_location", "Share your location or type where you are");
+    }
+
+    ParticipantPreference preference = participantPreferenceRepository
+        .findByEventIdAndUserAccountId(eventId, me)
+        .orElseGet(() -> {
+          ParticipantPreference created = new ParticipantPreference();
+          created.eventId = eventId;
+          created.userAccountId = me;
+          return created;
+        });
+
+    preference.latitude = request.latitude();
+    preference.longitude = request.longitude();
+    preference.locationText = locationText;
+    preference.travelRadiusMi = request.travelRadiusMi();
+    preference.updatedAt = Instant.now();
+
+    participantPreferenceRepository.save(preference);
   }
 
   /** Only the creator cancels. The chat stays. */

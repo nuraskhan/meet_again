@@ -11,6 +11,7 @@ import kz.nuraskhan.meet_again.jooq.tables.Event;
 import kz.nuraskhan.meet_again.jooq.tables.EventTimeOption;
 import kz.nuraskhan.meet_again.jooq.tables.Friendship;
 import kz.nuraskhan.meet_again.jooq.tables.Invitation;
+import kz.nuraskhan.meet_again.jooq.tables.ParticipantPreference;
 import kz.nuraskhan.meet_again.jooq.tables.Profile;
 import kz.nuraskhan.meet_again.jooq.tables.UserAccount;
 
@@ -55,6 +56,11 @@ public class Tables {
      * The table <code>public.invitation</code>.
      */
     public static final Invitation INVITATION = Invitation.INVITATION;
+
+    /**
+     * The table <code>public.participant_preference</code>.
+     */
+    public static final ParticipantPreference PARTICIPANT_PREFERENCE = ParticipantPreference.PARTICIPANT_PREFERENCE;
 
     /**
      * The table <code>public.profile</code>.

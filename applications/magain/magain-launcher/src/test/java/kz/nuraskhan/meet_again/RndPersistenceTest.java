@@ -9,6 +9,7 @@ import kz.nuraskhan.meet_again.model.entity.Event;
 import kz.nuraskhan.meet_again.model.entity.EventTimeOption;
 import kz.nuraskhan.meet_again.model.entity.Friendship;
 import kz.nuraskhan.meet_again.model.entity.Invitation;
+import kz.nuraskhan.meet_again.model.entity.ParticipantPreference;
 import kz.nuraskhan.meet_again.model.entity.Profile;
 import kz.nuraskhan.meet_again.model.entity.UserAccount;
 import kz.nuraskhan.meet_again.model.enums.FriendshipStatus;
@@ -19,6 +20,7 @@ import kz.nuraskhan.meet_again.model.repository.EventRepository;
 import kz.nuraskhan.meet_again.model.repository.EventTimeOptionRepository;
 import kz.nuraskhan.meet_again.model.repository.FriendshipRepository;
 import kz.nuraskhan.meet_again.model.repository.InvitationRepository;
+import kz.nuraskhan.meet_again.model.repository.ParticipantPreferenceRepository;
 import kz.nuraskhan.meet_again.model.repository.ProfileRepository;
 import kz.nuraskhan.meet_again.model.repository.UserAccountRepository;
 import kz.nuraskhan.meet_again.model.rnd.RND;
@@ -40,6 +42,7 @@ class RndPersistenceTest extends ApiTestBase {
   @Autowired EventRepository eventRepository;
   @Autowired EventTimeOptionRepository eventTimeOptionRepository;
   @Autowired InvitationRepository invitationRepository;
+  @Autowired ParticipantPreferenceRepository participantPreferenceRepository;
 
   @Test
   void everyRndEntity__isSavedAndReadBackUnchanged() {
@@ -59,6 +62,8 @@ class RndPersistenceTest extends ApiTestBase {
     Event event = eventRepository.save(RND.event(user1.id, chat.id));
     EventTimeOption timeOption = eventTimeOptionRepository.save(RND.eventTimeOption(event.id));
     Invitation invitation = invitationRepository.save(RND.invitation(event.id, user2.id));
+    ParticipantPreference preference =
+        participantPreferenceRepository.save(RND.participantPreference(event.id, user2.id));
     //
     //
 
@@ -81,6 +86,8 @@ class RndPersistenceTest extends ApiTestBase {
         .usingRecursiveComparison().isEqualTo(timeOption);
     assertThat(invitationRepository.findById(invitation.id).orElseThrow())
         .usingRecursiveComparison().isEqualTo(invitation);
+    assertThat(participantPreferenceRepository.findById(preference.id).orElseThrow())
+        .usingRecursiveComparison().isEqualTo(preference);
 
     assertThat(friendshipRepository.countFriendsAmong(user1.id, java.util.List.of(user2.id)))
         .isEqualTo(1);

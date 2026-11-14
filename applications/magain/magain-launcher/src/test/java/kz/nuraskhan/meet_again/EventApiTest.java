@@ -24,7 +24,7 @@ class EventApiTest extends ApiTestBase {
         .filter(type -> type.get("eventType").asString().equals("BATH"))
         .findFirst().orElseThrow();
     assertThat(bath.get("defaultTitle").asString()).isEqualTo("Bathhouse");
-    assertThat(bath.get("defaultDistanceMaxKm").asInt()).isEqualTo(15);
+    assertThat(bath.get("defaultDistanceMaxMi").asInt()).isEqualTo(10);
     assertThat(bath.get("defaultPriceMin").asInt()).isEqualTo(5000);
     assertThat(bath.get("defaultPriceMax").asInt()).isEqualTo(15000);
   }
@@ -43,8 +43,8 @@ class EventApiTest extends ApiTestBase {
         "eventType", "FOOD",
         "title", "Lagman on Friday",
         "description", "The place near the office",
-        "distanceMinKm", 1,
-        "distanceMaxKm", 7,
+        "distanceMinMi", 1,
+        "distanceMaxMi", 7,
         "priceMin", 2500,
         "priceMax", 6000,
         // 02:30Z is morning in Almaty and the previous calendar day in Los Angeles: the moments must
@@ -60,8 +60,8 @@ class EventApiTest extends ApiTestBase {
     assertThat(event.get("eventType").asString()).isEqualTo("FOOD");
     assertThat(event.get("title").asString()).isEqualTo("Lagman on Friday");
     assertThat(event.get("description").asString()).isEqualTo("The place near the office");
-    assertThat(event.get("distanceMinKm").asInt()).isEqualTo(1);
-    assertThat(event.get("distanceMaxKm").asInt()).isEqualTo(7);
+    assertThat(event.get("distanceMinMi").asInt()).isEqualTo(1);
+    assertThat(event.get("distanceMaxMi").asInt()).isEqualTo(7);
     assertThat(event.get("priceMin").asInt()).isEqualTo(2500);
     assertThat(event.get("priceMax").asInt()).isEqualTo(6000);
     assertThat(event.get("proposedTimes").valueStream().map(JsonNode::asString).toList())
@@ -111,8 +111,8 @@ class EventApiTest extends ApiTestBase {
     assertThat(response.status()).isEqualTo(200);
     JsonNode event = response.body();
     assertThat(event.get("title").asString()).isEqualTo("Bathhouse");
-    assertThat(event.get("distanceMinKm").asInt()).isEqualTo(0);
-    assertThat(event.get("distanceMaxKm").asInt()).isEqualTo(15);
+    assertThat(event.get("distanceMinMi").asInt()).isEqualTo(0);
+    assertThat(event.get("distanceMaxMi").asInt()).isEqualTo(10);
     assertThat(event.get("priceMin").asInt()).isEqualTo(5000);
     assertThat(event.get("priceMax").asInt()).isEqualTo(15000);
     assertThat(event.get("proposedTimes").size()).isZero();

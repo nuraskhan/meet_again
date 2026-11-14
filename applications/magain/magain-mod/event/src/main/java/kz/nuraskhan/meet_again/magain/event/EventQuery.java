@@ -3,6 +3,7 @@ package kz.nuraskhan.meet_again.magain.event;
 import static kz.nuraskhan.meet_again.jooq.Tables.EVENT;
 import static kz.nuraskhan.meet_again.jooq.Tables.EVENT_TIME_OPTION;
 import static kz.nuraskhan.meet_again.jooq.Tables.INVITATION;
+import static kz.nuraskhan.meet_again.jooq.Tables.PARTICIPANT_PREFERENCE;
 import static kz.nuraskhan.meet_again.jooq.Tables.PROFILE;
 
 import java.time.Instant;
@@ -14,6 +15,7 @@ import java.util.Optional;
 import kz.nuraskhan.meet_again.magain.event.dto.EventDto;
 import kz.nuraskhan.meet_again.magain.event.dto.InvitationDto;
 import kz.nuraskhan.meet_again.magain.event.dto.InviteeDto;
+import kz.nuraskhan.meet_again.magain.event.dto.PreferenceDto;
 import kz.nuraskhan.meet_again.magain.event.dto.PublicEventDto;
 import kz.nuraskhan.meet_again.model.enums.EventStatus;
 import kz.nuraskhan.meet_again.model.enums.InvitationStatus;
@@ -85,8 +87,8 @@ public class EventQuery {
         row.get(EVENT.EVENT_TYPE),
         row.get(EVENT.TITLE),
         row.get(EVENT.DESCRIPTION),
-        row.get(EVENT.DISTANCE_MIN_KM),
-        row.get(EVENT.DISTANCE_MAX_KM),
+        row.get(EVENT.DISTANCE_MIN_MI),
+        row.get(EVENT.DISTANCE_MAX_MI),
         row.get(EVENT.PRICE_MIN),
         row.get(EVENT.PRICE_MAX),
         proposedTimes(List.of(eventId)).getOrDefault(eventId, List.of()),
@@ -106,8 +108,8 @@ public class EventQuery {
   }
 
   /**
-   * Three queries whatever the number of events: the events, the guests of all of them, the
-   * proposed dates of all of them.
+   * Four queries whatever the number of events: the events, the guests of all of them, the
+   * proposed dates of all of them, the caller's own preferences for them.
    */
   private List<EventDto> events(Long me, Condition condition) {
     var eventRows = dsl
@@ -124,11 +126,18 @@ public class EventQuery {
 
     List<Long> eventIds = eventRows.getValues(EVENT.ID);
 
+    // A guest's preference, if they gave one. Of the place only the typed text and the fact that
+    // coordinates exist leave the server; the coordinates themselves go to their owner alone.
     Map<Long, List<InviteeDto>> inviteesByEventId = dsl
         .select(INVITATION.EVENT_ID, INVITATION.ID, PROFILE.USER_ACCOUNT_ID, PROFILE.DISPLAY_NAME,
-            INVITATION.STATUS, INVITATION.RESPONDED_AT)
+            INVITATION.STATUS, INVITATION.RESPONDED_AT,
+            PARTICIPANT_PREFERENCE.TRAVEL_RADIUS_MI, PARTICIPANT_PREFERENCE.LOCATION_TEXT,
+            PARTICIPANT_PREFERENCE.LATITUDE)
         .from(INVITATION)
         .join(PROFILE).on(PROFILE.USER_ACCOUNT_ID.eq(INVITATION.INVITEE__USER_ACCOUNT_ID))
+        .leftJoin(PARTICIPANT_PREFERENCE)
+        .on(PARTICIPANT_PREFERENCE.EVENT_ID.eq(INVITATION.EVENT_ID))
+        .and(PARTICIPANT_PREFERENCE.USER_ACCOUNT_ID.eq(INVITATION.INVITEE__USER_ACCOUNT_ID))
         .where(INVITATION.EVENT_ID.in(eventIds))
         .orderBy(INVITATION.ID)
         .fetchGroups(INVITATION.EVENT_ID, row -> new InviteeDto(
@@ -136,9 +145,25 @@ public class EventQuery {
             row.get(PROFILE.USER_ACCOUNT_ID),
             row.get(PROFILE.DISPLAY_NAME),
             row.get(INVITATION.STATUS),
-            row.get(INVITATION.RESPONDED_AT)));
+            row.get(INVITATION.RESPONDED_AT),
+            row.get(PARTICIPANT_PREFERENCE.TRAVEL_RADIUS_MI),
+            row.get(PARTICIPANT_PREFERENCE.LOCATION_TEXT),
+            row.get(PARTICIPANT_PREFERENCE.LATITUDE) != null));
 
     Map<Long, List<Instant>> timesByEventId = proposedTimes(eventIds);
+
+    Map<Long, PreferenceDto> myPreferenceByEventId = dsl
+        .select(PARTICIPANT_PREFERENCE.EVENT_ID, PARTICIPANT_PREFERENCE.LATITUDE,
+            PARTICIPANT_PREFERENCE.LONGITUDE, PARTICIPANT_PREFERENCE.LOCATION_TEXT,
+            PARTICIPANT_PREFERENCE.TRAVEL_RADIUS_MI)
+        .from(PARTICIPANT_PREFERENCE)
+        .where(PARTICIPANT_PREFERENCE.EVENT_ID.in(eventIds))
+        .and(PARTICIPANT_PREFERENCE.USER_ACCOUNT_ID.eq(me))
+        .fetchMap(PARTICIPANT_PREFERENCE.EVENT_ID, row -> new PreferenceDto(
+            row.get(PARTICIPANT_PREFERENCE.LATITUDE),
+            row.get(PARTICIPANT_PREFERENCE.LONGITUDE),
+            row.get(PARTICIPANT_PREFERENCE.LOCATION_TEXT),
+            row.get(PARTICIPANT_PREFERENCE.TRAVEL_RADIUS_MI)));
 
     List<EventDto> result = new ArrayList<>();
     for (var row : eventRows) {
@@ -149,8 +174,8 @@ public class EventQuery {
           row.get(EVENT.EVENT_TYPE),
           row.get(EVENT.TITLE),
           row.get(EVENT.DESCRIPTION),
-          row.get(EVENT.DISTANCE_MIN_KM),
-          row.get(EVENT.DISTANCE_MAX_KM),
+          row.get(EVENT.DISTANCE_MIN_MI),
+          row.get(EVENT.DISTANCE_MAX_MI),
           row.get(EVENT.PRICE_MIN),
           row.get(EVENT.PRICE_MAX),
           timesByEventId.getOrDefault(eventId, List.of()),
@@ -161,7 +186,8 @@ public class EventQuery {
           creatorId.equals(me) ? row.get(EVENT.SHARE_TOKEN) : null,
           creatorId,
           row.get(PROFILE.DISPLAY_NAME),
-          inviteesByEventId.getOrDefault(eventId, List.of())));
+          inviteesByEventId.getOrDefault(eventId, List.of()),
+          myPreferenceByEventId.get(eventId)));
     }
     return result;
   }

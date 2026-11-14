@@ -11,6 +11,7 @@ import kz.nuraskhan.meet_again.model.entity.Event;
 import kz.nuraskhan.meet_again.model.entity.EventTimeOption;
 import kz.nuraskhan.meet_again.model.entity.Friendship;
 import kz.nuraskhan.meet_again.model.entity.Invitation;
+import kz.nuraskhan.meet_again.model.entity.ParticipantPreference;
 import kz.nuraskhan.meet_again.model.entity.Profile;
 import kz.nuraskhan.meet_again.model.entity.UserAccount;
 import kz.nuraskhan.meet_again.model.enums.EventStatus;
@@ -154,8 +155,8 @@ public final class RND {
     x.eventType = oneOf(EventType.class);
     x.title = "Event " + str(10);
     x.description = "Description " + str(30);
-    x.distanceMinKm = intBetween(0, 5);
-    x.distanceMaxKm = x.distanceMinKm + intBetween(0, 20);
+    x.distanceMinMi = intBetween(0, 5);
+    x.distanceMaxMi = x.distanceMinMi + intBetween(0, 20);
     x.priceMin = intBetween(0, 5000);
     x.priceMax = x.priceMin + intBetween(0, 20000);
     x.status = EventStatus.ACTIVE;
@@ -176,6 +177,19 @@ public final class RND {
     x.inviteeUserAccountId = inviteeUserAccountId;
     x.status = InvitationStatus.PENDING;
     x.createdAt = pastInstant();
+    return x;
+  }
+
+  /** With coordinates and a typed place both filled. */
+  public static ParticipantPreference participantPreference(Long eventId, Long userAccountId) {
+    ParticipantPreference x = new ParticipantPreference();
+    x.eventId = eventId;
+    x.userAccountId = userAccountId;
+    x.latitude = intBetween(-89_000, 89_000) / 1000.0;
+    x.longitude = intBetween(-179_000, 179_000) / 1000.0;
+    x.locationText = "Place " + str(10);
+    x.travelRadiusMi = intBetween(1, 50);
+    x.updatedAt = now();
     return x;
   }
 

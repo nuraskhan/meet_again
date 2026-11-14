@@ -11,6 +11,7 @@ import kz.nuraskhan.meet_again.jooq.tables.Event;
 import kz.nuraskhan.meet_again.jooq.tables.EventTimeOption;
 import kz.nuraskhan.meet_again.jooq.tables.Friendship;
 import kz.nuraskhan.meet_again.jooq.tables.Invitation;
+import kz.nuraskhan.meet_again.jooq.tables.ParticipantPreference;
 import kz.nuraskhan.meet_again.jooq.tables.Profile;
 import kz.nuraskhan.meet_again.jooq.tables.UserAccount;
 import kz.nuraskhan.meet_again.jooq.tables.records.ChatMemberRecord;
@@ -20,6 +21,7 @@ import kz.nuraskhan.meet_again.jooq.tables.records.EventRecord;
 import kz.nuraskhan.meet_again.jooq.tables.records.EventTimeOptionRecord;
 import kz.nuraskhan.meet_again.jooq.tables.records.FriendshipRecord;
 import kz.nuraskhan.meet_again.jooq.tables.records.InvitationRecord;
+import kz.nuraskhan.meet_again.jooq.tables.records.ParticipantPreferenceRecord;
 import kz.nuraskhan.meet_again.jooq.tables.records.ProfileRecord;
 import kz.nuraskhan.meet_again.jooq.tables.records.UserAccountRecord;
 
@@ -52,6 +54,8 @@ public class Keys {
     public static final UniqueKey<FriendshipRecord> FRIENDSHIP_PKEY = Internal.createUniqueKey(Friendship.FRIENDSHIP, DSL.name("friendship_pkey"), new TableField[] { Friendship.FRIENDSHIP.ID }, true);
     public static final UniqueKey<InvitationRecord> INVITATION_EVENT_ID_INVITEE__USER_ACCOUNT_ID_KEY = Internal.createUniqueKey(Invitation.INVITATION, DSL.name("invitation_event_id_invitee__user_account_id_key"), new TableField[] { Invitation.INVITATION.EVENT_ID, Invitation.INVITATION.INVITEE__USER_ACCOUNT_ID }, true);
     public static final UniqueKey<InvitationRecord> INVITATION_PKEY = Internal.createUniqueKey(Invitation.INVITATION, DSL.name("invitation_pkey"), new TableField[] { Invitation.INVITATION.ID }, true);
+    public static final UniqueKey<ParticipantPreferenceRecord> PARTICIPANT_PREFERENCE_EVENT_ID_USER_ACCOUNT_ID_KEY = Internal.createUniqueKey(ParticipantPreference.PARTICIPANT_PREFERENCE, DSL.name("participant_preference_event_id_user_account_id_key"), new TableField[] { ParticipantPreference.PARTICIPANT_PREFERENCE.EVENT_ID, ParticipantPreference.PARTICIPANT_PREFERENCE.USER_ACCOUNT_ID }, true);
+    public static final UniqueKey<ParticipantPreferenceRecord> PARTICIPANT_PREFERENCE_PKEY = Internal.createUniqueKey(ParticipantPreference.PARTICIPANT_PREFERENCE, DSL.name("participant_preference_pkey"), new TableField[] { ParticipantPreference.PARTICIPANT_PREFERENCE.ID }, true);
     public static final UniqueKey<ProfileRecord> PROFILE_PKEY = Internal.createUniqueKey(Profile.PROFILE, DSL.name("profile_pkey"), new TableField[] { Profile.PROFILE.USER_ACCOUNT_ID }, true);
     public static final UniqueKey<UserAccountRecord> USER_ACCOUNT_EMAIL_KEY = Internal.createUniqueKey(UserAccount.USER_ACCOUNT, DSL.name("user_account_email_key"), new TableField[] { UserAccount.USER_ACCOUNT.EMAIL }, true);
     public static final UniqueKey<UserAccountRecord> USER_ACCOUNT_PKEY = Internal.createUniqueKey(UserAccount.USER_ACCOUNT, DSL.name("user_account_pkey"), new TableField[] { UserAccount.USER_ACCOUNT.ID }, true);
@@ -71,5 +75,7 @@ public class Keys {
     public static final ForeignKey<FriendshipRecord, UserAccountRecord> FRIENDSHIP__FRIENDSHIP_REQUESTER__USER_ACCOUNT_ID_FKEY = Internal.createForeignKey(Friendship.FRIENDSHIP, DSL.name("friendship_requester__user_account_id_fkey"), new TableField[] { Friendship.FRIENDSHIP.REQUESTER__USER_ACCOUNT_ID }, Keys.USER_ACCOUNT_PKEY, new TableField[] { UserAccount.USER_ACCOUNT.ID }, true, ForeignKeyRule.NO_ACTION, ForeignKeyRule.NO_ACTION);
     public static final ForeignKey<InvitationRecord, EventRecord> INVITATION__INVITATION_EVENT_ID_FKEY = Internal.createForeignKey(Invitation.INVITATION, DSL.name("invitation_event_id_fkey"), new TableField[] { Invitation.INVITATION.EVENT_ID }, Keys.EVENT_PKEY, new TableField[] { Event.EVENT.ID }, true, ForeignKeyRule.NO_ACTION, ForeignKeyRule.NO_ACTION);
     public static final ForeignKey<InvitationRecord, UserAccountRecord> INVITATION__INVITATION_INVITEE__USER_ACCOUNT_ID_FKEY = Internal.createForeignKey(Invitation.INVITATION, DSL.name("invitation_invitee__user_account_id_fkey"), new TableField[] { Invitation.INVITATION.INVITEE__USER_ACCOUNT_ID }, Keys.USER_ACCOUNT_PKEY, new TableField[] { UserAccount.USER_ACCOUNT.ID }, true, ForeignKeyRule.NO_ACTION, ForeignKeyRule.NO_ACTION);
+    public static final ForeignKey<ParticipantPreferenceRecord, EventRecord> PARTICIPANT_PREFERENCE__PARTICIPANT_PREFERENCE_EVENT_ID_FKEY = Internal.createForeignKey(ParticipantPreference.PARTICIPANT_PREFERENCE, DSL.name("participant_preference_event_id_fkey"), new TableField[] { ParticipantPreference.PARTICIPANT_PREFERENCE.EVENT_ID }, Keys.EVENT_PKEY, new TableField[] { Event.EVENT.ID }, true, ForeignKeyRule.NO_ACTION, ForeignKeyRule.NO_ACTION);
+    public static final ForeignKey<ParticipantPreferenceRecord, UserAccountRecord> PARTICIPANT_PREFERENCE__PARTICIPANT_PREFERENCE_USER_ACCOUNT_ID_FKEY = Internal.createForeignKey(ParticipantPreference.PARTICIPANT_PREFERENCE, DSL.name("participant_preference_user_account_id_fkey"), new TableField[] { ParticipantPreference.PARTICIPANT_PREFERENCE.USER_ACCOUNT_ID }, Keys.USER_ACCOUNT_PKEY, new TableField[] { UserAccount.USER_ACCOUNT.ID }, true, ForeignKeyRule.NO_ACTION, ForeignKeyRule.NO_ACTION);
     public static final ForeignKey<ProfileRecord, UserAccountRecord> PROFILE__PROFILE_USER_ACCOUNT_ID_FKEY = Internal.createForeignKey(Profile.PROFILE, DSL.name("profile_user_account_id_fkey"), new TableField[] { Profile.PROFILE.USER_ACCOUNT_ID }, Keys.USER_ACCOUNT_PKEY, new TableField[] { UserAccount.USER_ACCOUNT.ID }, true, ForeignKeyRule.NO_ACTION, ForeignKeyRule.NO_ACTION);
 }

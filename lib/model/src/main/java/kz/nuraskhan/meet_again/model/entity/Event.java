@@ -48,12 +48,12 @@ public class Event {
   @Column(name = "description")
   public String description;
 
-  /** Preferred distance from the creator, kilometres. */
-  @Column(name = "distance_min_km", nullable = false)
-  public Integer distanceMinKm;
+  /** Preferred distance from the creator, miles. */
+  @Column(name = "distance_min_mi", nullable = false)
+  public Integer distanceMinMi;
 
-  @Column(name = "distance_max_km", nullable = false)
-  public Integer distanceMaxKm;
+  @Column(name = "distance_max_mi", nullable = false)
+  public Integer distanceMaxMi;
 
   /** Expected spending per person. */
   @Column(name = "price_min", nullable = false)

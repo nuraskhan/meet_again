@@ -5,6 +5,7 @@ import java.security.Principal;
 import java.util.Arrays;
 import java.util.List;
 import kz.nuraskhan.meet_again.magain.event.dto.CreateEventRequest;
+import kz.nuraskhan.meet_again.magain.event.dto.SavePreferenceRequest;
 import kz.nuraskhan.meet_again.magain.event.dto.EventDto;
 import kz.nuraskhan.meet_again.magain.event.dto.EventTypeDto;
 import kz.nuraskhan.meet_again.model.enums.EventType;
@@ -62,6 +63,16 @@ public class EventController {
   public EventDto get(Principal principal, @PathVariable("eventId") Long eventId) {
     return eventQuery.get(CurrentUser.id(principal), eventId)
         .orElseThrow(() -> ApiException.notFound("event_not_found", "Event not found"));
+  }
+
+  /** A guest says where they are and how far they travel, for this event. */
+  @PostMapping("/{eventId}/preference")
+  public EventDto savePreference(Principal principal,
+                                 @PathVariable("eventId") Long eventId,
+                                 @Valid @RequestBody SavePreferenceRequest request) {
+    Long me = CurrentUser.id(principal);
+    eventService.savePreference(me, eventId, request);
+    return eventQuery.get(me, eventId).orElseThrow();
   }
 
   @PostMapping("/{eventId}/cancel")

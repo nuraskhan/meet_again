@@ -92,14 +92,14 @@ public class Event extends TableImpl<EventRecord> {
     public final TableField<EventRecord, String> DESCRIPTION = createField(DSL.name("description"), SQLDataType.CLOB, this, "");
 
     /**
-     * The column <code>public.event.distance_min_km</code>.
+     * The column <code>public.event.distance_min_mi</code>.
      */
-    public final TableField<EventRecord, Integer> DISTANCE_MIN_KM = createField(DSL.name("distance_min_km"), SQLDataType.INTEGER.nullable(false), this, "");
+    public final TableField<EventRecord, Integer> DISTANCE_MIN_MI = createField(DSL.name("distance_min_mi"), SQLDataType.INTEGER.nullable(false), this, "");
 
     /**
-     * The column <code>public.event.distance_max_km</code>.
+     * The column <code>public.event.distance_max_mi</code>.
      */
-    public final TableField<EventRecord, Integer> DISTANCE_MAX_KM = createField(DSL.name("distance_max_km"), SQLDataType.INTEGER.nullable(false), this, "");
+    public final TableField<EventRecord, Integer> DISTANCE_MAX_MI = createField(DSL.name("distance_max_mi"), SQLDataType.INTEGER.nullable(false), this, "");
 
     /**
      * The column <code>public.event.price_min</code>.
@@ -183,7 +183,7 @@ public class Event extends TableImpl<EventRecord> {
     @Override
     public List<Check<EventRecord>> getChecks() {
         return Arrays.asList(
-            Internal.createCheck(this, DSL.name("event_check"), "(((0 <= distance_min_km) AND (distance_min_km <= distance_max_km)))", true),
+            Internal.createCheck(this, DSL.name("event_check"), "(((0 <= distance_min_mi) AND (distance_min_mi <= distance_max_mi)))", true),
             Internal.createCheck(this, DSL.name("event_check1"), "(((0 <= price_min) AND (price_min <= price_max)))", true),
             Internal.createCheck(this, DSL.name("event_event_type_check"), "((event_type = ANY (ARRAY['BATH'::text, 'FOOD'::text, 'COFFEE'::text, 'BAR'::text, 'WALK'::text, 'CINEMA'::text, 'SPORT'::text, 'BOARD_GAMES'::text, 'OTHER'::text])))", true),
             Internal.createCheck(this, DSL.name("event_status_check"), "((status = ANY (ARRAY['ACTIVE'::text, 'CANCELLED'::text])))", true)

@@ -107,30 +107,30 @@ public class EventRecord extends UpdatableRecordImpl<EventRecord> {
     }
 
     /**
-     * Setter for <code>public.event.distance_min_km</code>.
+     * Setter for <code>public.event.distance_min_mi</code>.
      */
-    public void setDistanceMinKm(Integer value) {
+    public void setDistanceMinMi(Integer value) {
         set(6, value);
     }
 
     /**
-     * Getter for <code>public.event.distance_min_km</code>.
+     * Getter for <code>public.event.distance_min_mi</code>.
      */
-    public Integer getDistanceMinKm() {
+    public Integer getDistanceMinMi() {
         return (Integer) get(6);
     }
 
     /**
-     * Setter for <code>public.event.distance_max_km</code>.
+     * Setter for <code>public.event.distance_max_mi</code>.
      */
-    public void setDistanceMaxKm(Integer value) {
+    public void setDistanceMaxMi(Integer value) {
         set(7, value);
     }
 
     /**
-     * Getter for <code>public.event.distance_max_km</code>.
+     * Getter for <code>public.event.distance_max_mi</code>.
      */
-    public Integer getDistanceMaxKm() {
+    public Integer getDistanceMaxMi() {
         return (Integer) get(7);
     }
 
@@ -227,7 +227,7 @@ public class EventRecord extends UpdatableRecordImpl<EventRecord> {
     /**
      * Create a detached, initialised EventRecord
      */
-    public EventRecord(Long id, Long creator_UserAccountId, Long chatId, EventType eventType, String title, String description, Integer distanceMinKm, Integer distanceMaxKm, Integer priceMin, Integer priceMax, EventStatus status, Instant createdAt, String shareToken) {
+    public EventRecord(Long id, Long creator_UserAccountId, Long chatId, EventType eventType, String title, String description, Integer distanceMinMi, Integer distanceMaxMi, Integer priceMin, Integer priceMax, EventStatus status, Instant createdAt, String shareToken) {
         super(Event.EVENT);
 
         setId(id);
@@ -236,8 +236,8 @@ public class EventRecord extends UpdatableRecordImpl<EventRecord> {
         setEventType(eventType);
         setTitle(title);
         setDescription(description);
-        setDistanceMinKm(distanceMinKm);
-        setDistanceMaxKm(distanceMaxKm);
+        setDistanceMinMi(distanceMinMi);
+        setDistanceMaxMi(distanceMaxMi);
         setPriceMin(priceMin);
         setPriceMax(priceMax);
         setStatus(status);
