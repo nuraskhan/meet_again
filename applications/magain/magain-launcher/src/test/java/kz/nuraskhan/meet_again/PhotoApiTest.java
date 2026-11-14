@@ -118,6 +118,41 @@ class PhotoApiTest extends ApiTestBase {
   }
 
   @Test
+  void add__neverGoesBeyondTenPhotos_evenOnTheHighestLevel() {
+    TestUser user = register();
+    setPrivilege(user, Privilege.MAX);
+    for (int i = 0; i < 10; i++) {
+      addPhoto(user);
+    }
+
+    //
+    //
+    Response eleventh = upload(PHOTO, user, "11.png", "image/png", image(10, 10, "png", false));
+    //
+    //
+
+    assertThat(eleventh.status()).isEqualTo(409);
+    assertThat(eleventh.body().get("code").asString()).isEqualTo("photo_limit");
+    assertThat(eleventh.body().get("message").asString()).contains("10 photos");
+
+    JsonNode me = get("/profile/me", user).body();
+    assertThat(me.get("maxPhotos").asInt()).isEqualTo(10);
+    assertThat(me.get("photos").size()).isEqualTo(10);
+  }
+
+  @Test
+  void noLevel__allowsMoreThanTenPhotos() {
+    //
+    //
+    int most = Arrays.stream(Privilege.values()).mapToInt(level -> level.maxPhotos).max().orElseThrow();
+    //
+    //
+
+    assertThat(most).isEqualTo(10);
+    assertThat(Privilege.PHOTO_CEILING).isEqualTo(10);
+  }
+
+  @Test
   void makeMain__putsThePhotoFirst_andItBecomesThePictureShownEverywhere() {
     TestUser user = register();
     TestUser friend = register();

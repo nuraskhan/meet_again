@@ -148,6 +148,7 @@ public class ProfilePhoto extends TableImpl<ProfilePhotoRecord> {
     @Override
     public List<Check<ProfilePhotoRecord>> getChecks() {
         return Arrays.asList(
+            Internal.createCheck(this, DSL.name("profile_photo__ceiling"), "((\"position\" <= 10))", true),
             Internal.createCheck(this, DSL.name("profile_photo_content_type_check"), "((content_type = ANY (ARRAY['image/jpeg'::text, 'image/png'::text])))", true),
             Internal.createCheck(this, DSL.name("profile_photo_position_check"), "((\"position\" >= 1))", true)
         );
