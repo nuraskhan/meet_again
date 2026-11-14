@@ -1,0 +1,7 @@
+// Events and invitations. An event creates its group chat, hence the dependency.
+
+dependencies {
+    implementation project(':applications:hangelo:hangelo-mod:chat')
+    implementation project(':applications:hangelo:hangelo-mod:notification')
+    implementation project(':lib:mail') // reminders about upcoming events
+}

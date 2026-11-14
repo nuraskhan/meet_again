@@ -1,4 +1,4 @@
-rootProject.name = 'meet_again'
+rootProject.name = 'hangelo'
 
 // Shared libraries.
 include 'lib:model'   // JPA entities, enums, repositories, RND
@@ -9,11 +9,11 @@ include 'lib:mail'    // sending e-mail (Resend), and the look of our letters
 // Database migrations (make upgradeDbAll).
 include 'migration'
 
-// Application "magain": the launcher builds the boot-jar, every feature is a module.
-include 'applications:magain:magain-launcher'
-include 'applications:magain:magain-mod:notification'
-include 'applications:magain:magain-mod:auth'
-include 'applications:magain:magain-mod:profile'
-include 'applications:magain:magain-mod:friend'
-include 'applications:magain:magain-mod:chat'
-include 'applications:magain:magain-mod:event'
+// Application "hangelo": the launcher builds the boot-jar, every feature is a module.
+include 'applications:hangelo:hangelo-launcher'
+include 'applications:hangelo:hangelo-mod:notification'
+include 'applications:hangelo:hangelo-mod:auth'
+include 'applications:hangelo:hangelo-mod:profile'
+include 'applications:hangelo:hangelo-mod:friend'
+include 'applications:hangelo:hangelo-mod:chat'
+include 'applications:hangelo:hangelo-mod:event'

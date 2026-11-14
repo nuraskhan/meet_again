@@ -13,7 +13,7 @@ endif
 export APP_DATA_ROOT ?= $(CURDIR)/.data
 
 COMPOSE := docker compose -f docker/local/docker-compose.yaml
-LAUNCHER := :applications:magain:magain-launcher
+LAUNCHER := :applications:hangelo:hangelo-launcher
 
 .PHONY: start stop dockerUp up recreate purge upgradeDbAll data jooq compile test test-tz
 

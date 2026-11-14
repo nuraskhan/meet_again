@@ -6,7 +6,7 @@ plugins {
 def testTimeZones = ['Asia/Almaty', 'America/Los_Angeles']
 
 allprojects {
-    group = 'kz.nuraskhan.meet_again'
+    group = 'kz.nuraskhan.hangelo'
     version = rootProject.file('version.txt').text.trim()
 
     repositories {
@@ -15,7 +15,7 @@ allprojects {
 }
 
 subprojects { Project p ->
-    // `lib`, `applications`, `applications:magain`, `...:magain-mod` are only directories.
+    // `lib`, `applications`, `applications:hangelo`, `...:hangelo-mod` are only directories.
     if (!p.childProjects.isEmpty()) {
         return
     }
@@ -84,5 +84,5 @@ subprojects { Project p ->
 tasks.register('stage') {
     description = 'Prepares build/stage for Heroku: the server jar and the migration program'
     group = 'distribution'
-    dependsOn ':applications:magain:magain-launcher:stage', ':migration:stage'
+    dependsOn ':applications:hangelo:hangelo-launcher:stage', ':migration:stage'
 }

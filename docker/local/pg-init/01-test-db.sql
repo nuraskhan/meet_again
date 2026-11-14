@@ -1,2 +1,2 @@
--- Runs once, on an empty data directory. The database `magain` is created by the image itself.
-create database magain_test owner magain;
+-- Runs once, on an empty data directory. The database `hangelo` is created by the image itself.
+create database hangelo_test owner hangelo;

@@ -9,14 +9,14 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/applications" />
-            <option value="$PROJECT_DIR$/applications/magain" />
-            <option value="$PROJECT_DIR$/applications/magain/magain-launcher" />
-            <option value="$PROJECT_DIR$/applications/magain/magain-mod" />
-            <option value="$PROJECT_DIR$/applications/magain/magain-mod/auth" />
-            <option value="$PROJECT_DIR$/applications/magain/magain-mod/chat" />
-            <option value="$PROJECT_DIR$/applications/magain/magain-mod/event" />
-            <option value="$PROJECT_DIR$/applications/magain/magain-mod/friend" />
-            <option value="$PROJECT_DIR$/applications/magain/magain-mod/profile" />
+            <option value="$PROJECT_DIR$/applications/hangelo" />
+            <option value="$PROJECT_DIR$/applications/hangelo/hangelo-launcher" />
+            <option value="$PROJECT_DIR$/applications/hangelo/hangelo-mod" />
+            <option value="$PROJECT_DIR$/applications/hangelo/hangelo-mod/auth" />
+            <option value="$PROJECT_DIR$/applications/hangelo/hangelo-mod/chat" />
+            <option value="$PROJECT_DIR$/applications/hangelo/hangelo-mod/event" />
+            <option value="$PROJECT_DIR$/applications/hangelo/hangelo-mod/friend" />
+            <option value="$PROJECT_DIR$/applications/hangelo/hangelo-mod/profile" />
             <option value="$PROJECT_DIR$/lib" />
             <option value="$PROJECT_DIR$/lib/jooq" />
             <option value="$PROJECT_DIR$/lib/mail" />

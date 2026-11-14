@@ -1,7 +1,0 @@
-// Events and invitations. An event creates its group chat, hence the dependency.
-
-dependencies {
-    implementation project(':applications:magain:magain-mod:chat')
-    implementation project(':applications:magain:magain-mod:notification')
-    implementation project(':lib:mail') // reminders about upcoming events
-}

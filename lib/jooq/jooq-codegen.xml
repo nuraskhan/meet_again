@@ -3,9 +3,9 @@
 <configuration xmlns="http://www.jooq.org/xsd/jooq-codegen-3.21.0.xsd">
   <jdbc>
     <driver>org.postgresql.Driver</driver>
-    <url>jdbc:postgresql://localhost:20000/magain</url>
-    <user>magain</user>
-    <password>magain</password>
+    <url>jdbc:postgresql://localhost:20000/hangelo</url>
+    <user>hangelo</user>
+    <password>hangelo</password>
   </jdbc>
   <generator>
     <database>
@@ -21,37 +21,37 @@
         <!-- Text columns with a closed set of values are read as the enums of lib:model.
              A new enum column gets a new entry here. -->
         <forcedType>
-          <userType>kz.nuraskhan.meet_again.model.enums.FriendshipStatus</userType>
+          <userType>kz.nuraskhan.hangelo.model.enums.FriendshipStatus</userType>
           <enumConverter>true</enumConverter>
           <includeExpression>public\.friendship\.status</includeExpression>
         </forcedType>
         <forcedType>
-          <userType>kz.nuraskhan.meet_again.model.enums.EventType</userType>
+          <userType>kz.nuraskhan.hangelo.model.enums.EventType</userType>
           <enumConverter>true</enumConverter>
           <includeExpression>public\.event\.event_type|public\.place\.category</includeExpression>
         </forcedType>
         <forcedType>
-          <userType>kz.nuraskhan.meet_again.model.enums.EventStatus</userType>
+          <userType>kz.nuraskhan.hangelo.model.enums.EventStatus</userType>
           <enumConverter>true</enumConverter>
           <includeExpression>public\.event\.status</includeExpression>
         </forcedType>
         <forcedType>
-          <userType>kz.nuraskhan.meet_again.model.enums.InvitationStatus</userType>
+          <userType>kz.nuraskhan.hangelo.model.enums.InvitationStatus</userType>
           <enumConverter>true</enumConverter>
           <includeExpression>public\.invitation\.status</includeExpression>
         </forcedType>
         <forcedType>
-          <userType>kz.nuraskhan.meet_again.model.enums.EventVisibility</userType>
+          <userType>kz.nuraskhan.hangelo.model.enums.EventVisibility</userType>
           <enumConverter>true</enumConverter>
           <includeExpression>public\.event\.visibility</includeExpression>
         </forcedType>
         <forcedType>
-          <userType>kz.nuraskhan.meet_again.model.enums.NotificationKind</userType>
+          <userType>kz.nuraskhan.hangelo.model.enums.NotificationKind</userType>
           <enumConverter>true</enumConverter>
           <includeExpression>public\.notification\.kind</includeExpression>
         </forcedType>
         <forcedType>
-          <userType>kz.nuraskhan.meet_again.model.enums.Privilege</userType>
+          <userType>kz.nuraskhan.hangelo.model.enums.Privilege</userType>
           <enumConverter>true</enumConverter>
           <includeExpression>public\.profile\.privilege</includeExpression>
         </forcedType>
@@ -65,7 +65,7 @@
       <implicitJoinPathsManyToMany>false</implicitJoinPathsManyToMany>
     </generate>
     <target>
-      <packageName>kz.nuraskhan.meet_again.jooq</packageName>
+      <packageName>kz.nuraskhan.hangelo.jooq</packageName>
       <directory>src/main/java</directory>
     </target>
   </generator>

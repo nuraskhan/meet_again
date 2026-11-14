@@ -3,11 +3,11 @@
 | Внешний порт | Внутренний порт | Назначение                                      |
 |--------------|-----------------|-------------------------------------------------|
 | 19090        |                 | Keycloak                                        |
-| 19000        |                 | UI -> magain-api                                |
-| 19010        |                 | UI -> magain-admin                              |
-| 29000        |                 | Rest Server magain                              |
-| 29010        |                 | Rest Server magain-admin                        |
-| 20000        |                 | PostgreSQL: magain, magain_test                |
+| 19000        |                 | UI -> hangelo-api                                |
+| 19010        |                 | UI -> hangelo-admin                              |
+| 29000        |                 | Rest Server hangelo                              |
+| 29010        |                 | Rest Server hangelo-admin                        |
+| 20000        |                 | PostgreSQL: hangelo, hangelo_test                |
 | 20001        | 5672  api       | RabbitMQ                                        |
 | 20002        | 15672 admin     | RabbitMQ                                        |
 | 20003        | 61613 stomp     | RabbitMQ                                        |

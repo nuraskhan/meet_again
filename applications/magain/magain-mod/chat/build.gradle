@@ -1,5 +1,0 @@
-// Chats, members, messages. A new message is signalled to the open pages of the other members.
-
-dependencies {
-    implementation project(':applications:magain:magain-mod:notification')
-}

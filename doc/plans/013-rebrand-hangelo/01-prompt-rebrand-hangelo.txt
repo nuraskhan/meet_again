@@ -1,0 +1,5 @@
+also including last design part and all code/project -> make rebradding rename project from meet_again to hangelo and I will upload sketch of logo provide good prompt
+
+[Image #7] in general its letter H with location-symbol and H also should be in color of path in nature
+
+(The sketch is saved in the front-end repository: design/logo/sketch.png)

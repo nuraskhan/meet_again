@@ -1,0 +1,1 @@
+In C:\Users\nuras\IdeaProjects\meet_again_ui\proto I have added all export from designers, so implement improvements in fronend

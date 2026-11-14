@@ -12,13 +12,13 @@ def migrate = { String taskName, String db ->
         description = "Applies migrations to the database ${db}"
         group = 'database'
         classpath = sourceSets.main.runtimeClasspath
-        mainClass = 'kz.nuraskhan.meet_again.migration.Migrate'
-        args "jdbc:postgresql://localhost:20000/${db}", 'magain', 'magain'
+        mainClass = 'kz.nuraskhan.hangelo.migration.Migrate'
+        args "jdbc:postgresql://localhost:20000/${db}", 'hangelo', 'hangelo'
     }
 }
 
-def local = migrate('upgradeLocalDb', 'magain')
-def test = migrate('upgradeTestDb', 'magain_test')
+def local = migrate('upgradeLocalDb', 'hangelo')
+def test = migrate('upgradeTestDb', 'hangelo_test')
 
 tasks.register('upgradeDbAll') {
     description = 'Applies migrations to the local and the test database'

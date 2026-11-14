@@ -13,7 +13,7 @@
       "args": [
         "/c", "npx", "-y", "@bytebase/dbhub",
         "--transport", "stdio",
-        "--dsn", "${MAGAIN_DB_DSN:-postgres://magain:magain@localhost:20000/magain?sslmode=disable}"
+        "--dsn", "${HANGELO_DB_DSN:-postgres://hangelo:hangelo@localhost:20000/hangelo?sslmode=disable}"
       ]
     }
   }

@@ -1,0 +1,12 @@
+now lets create UI-design for each page and use as reffer good UIs as beReal apple and etc
+and ask for things for full UI-designer prompt and do all stuff in frontend subdir /design
+
+Answers to the questions asked:
+- What to produce: designer prompt + written spec only
+- Screen: desktop first
+- Look: both themes, following the system
+- Brand: black and white + one accent
+- Who receives the prompt: an AI design/code tool
+- Accent: electric blue
+- Audience and voice: any adult, neutral
+- Typography: system font only

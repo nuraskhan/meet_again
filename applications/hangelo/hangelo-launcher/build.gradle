@@ -1,0 +1,67 @@
+// The server "hangelo" (REST, port 29000): the only module here that builds a boot-jar.
+// It has no features of its own - it assembles the modules of hangelo-mod.
+
+plugins {
+    alias(libs.plugins.springBoot)
+}
+
+dependencies {
+    implementation project(':applications:hangelo:hangelo-mod:notification')
+    implementation project(':applications:hangelo:hangelo-mod:auth')
+    implementation project(':applications:hangelo:hangelo-mod:profile')
+    implementation project(':applications:hangelo:hangelo-mod:friend')
+    implementation project(':applications:hangelo:hangelo-mod:chat')
+    implementation project(':applications:hangelo:hangelo-mod:event')
+
+    implementation libs.starterActuator
+    runtimeOnly libs.postgresql
+
+    // The tests replace the mail sender with one that keeps the letters.
+    testImplementation project(':lib:mail')
+}
+
+// What the server needs from the environment, with the values of the local stack
+// (docker/local, ports from CLAUDE.md). Nothing here is used in production: there the variables are
+// set for real, and the server does not start without them.
+def localEnv = [
+        HANGELO_DB_URL     : 'jdbc:postgresql://localhost:20000/hangelo',
+        HANGELO_DB_USER    : 'hangelo',
+        HANGELO_DB_PASSWORD: 'hangelo',
+        HANGELO_JWT_SECRET : 'local-secret-known-to-everyone-do-not-use-anywhere-else',
+]
+
+def withLocalEnv = { task, Map overrides = [:] ->
+    (localEnv + overrides).each { name, value ->
+        // A variable already set by the developer wins.
+        task.environment name, System.getenv(name) ?: value
+    }
+}
+
+tasks.named('bootRun') {
+    withLocalEnv(it)
+}
+
+// Tests always go to the test database, whatever is exported.
+tasks.withType(Test).configureEach {
+    environment localEnv + [HANGELO_DB_URL: 'jdbc:postgresql://localhost:20000/hangelo_test']
+}
+
+tasks.register('populateLocalDb', JavaExec) {
+    description = 'Loads demo data into the local database; does nothing if it is already there'
+    group = 'database'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'kz.nuraskhan.hangelo.HangeloApplication'
+    // Port 0 = any free one, so it also works while the server is running.
+    args '--hangelo.demo-data=true', '--server.port=0'
+    withLocalEnv(it)
+}
+
+// Heroku: part of the root task `stage` (see the root build.gradle). This part of it puts the boot-jar at
+// build/stage/hangelo.jar - a fixed name, so the Procfile does not change with the version.
+tasks.register('stage', Copy) {
+    description = 'Copies the boot-jar to build/stage/hangelo.jar'
+    group = 'distribution'
+    from tasks.named('bootJar')
+    into rootProject.layout.buildDirectory.dir('stage')
+    rename { 'hangelo.jar' }
+}
