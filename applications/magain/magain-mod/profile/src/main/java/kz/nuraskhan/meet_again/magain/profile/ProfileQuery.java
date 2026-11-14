@@ -9,6 +9,7 @@ import kz.nuraskhan.meet_again.magain.profile.dto.MyProfileDto;
 import kz.nuraskhan.meet_again.magain.profile.dto.ProfileDto;
 import org.jooq.DSLContext;
 import org.jooq.Records;
+import org.jooq.impl.DSL;
 import org.springframework.stereotype.Component;
 
 /** Reading profiles. */
@@ -25,7 +26,8 @@ public class ProfileQuery {
 
   public Optional<MyProfileDto> my(Long me) {
     return dsl
-        .select(PROFILE.USER_ACCOUNT_ID, USER_ACCOUNT.EMAIL, PROFILE.DISPLAY_NAME, PROFILE.BIO,
+        .select(PROFILE.USER_ACCOUNT_ID, USER_ACCOUNT.EMAIL,
+            DSL.field(USER_ACCOUNT.EMAIL_VERIFIED_AT.isNotNull()), PROFILE.DISPLAY_NAME, PROFILE.BIO,
             PROFILE.CITY, PROFILE.BIRTH_DATE, PROFILE.AVATAR_URL)
         .from(PROFILE)
         .join(USER_ACCOUNT).on(USER_ACCOUNT.ID.eq(PROFILE.USER_ACCOUNT_ID))

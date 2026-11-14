@@ -66,6 +66,13 @@ public class Event {
   @Column(name = "status", nullable = false)
   public EventStatus status;
 
+  /**
+   * The time zone the proposed dates are meant in (IANA name), from the creator's browser. Empty
+   * for events made before it was recorded.
+   */
+  @Column(name = "time_zone")
+  public String timeZone;
+
   @Column(name = "created_at", nullable = false)
   public Instant createdAt;
 }

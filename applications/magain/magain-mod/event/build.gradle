@@ -2,4 +2,5 @@
 
 dependencies {
     implementation project(':applications:magain:magain-mod:chat')
+    implementation project(':lib:mail') // reminders about upcoming events
 }

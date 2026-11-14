@@ -8,7 +8,9 @@ import kz.nuraskhan.meet_again.model.entity.Avatar;
 import kz.nuraskhan.meet_again.model.entity.Chat;
 import kz.nuraskhan.meet_again.model.entity.ChatMember;
 import kz.nuraskhan.meet_again.model.entity.ChatMessage;
+import kz.nuraskhan.meet_again.model.entity.EmailVerification;
 import kz.nuraskhan.meet_again.model.entity.Event;
+import kz.nuraskhan.meet_again.model.entity.EventReminder;
 import kz.nuraskhan.meet_again.model.entity.EventTimeOption;
 import kz.nuraskhan.meet_again.model.entity.Friendship;
 import kz.nuraskhan.meet_again.model.entity.Invitation;
@@ -153,6 +155,7 @@ public final class RND {
     x.creatorUserAccountId = creatorUserAccountId;
     x.chatId = chatId;
     x.shareToken = str(32);
+    x.timeZone = oneOf("America/New_York", "America/Los_Angeles", "Asia/Almaty");
     x.eventType = oneOf(EventType.class);
     x.title = "Event " + str(10);
     x.description = "Description " + str(30);
@@ -162,6 +165,23 @@ public final class RND {
     x.priceMax = x.priceMin + intBetween(0, 20000);
     x.status = EventStatus.ACTIVE;
     x.createdAt = pastInstant();
+    return x;
+  }
+
+  public static EmailVerification emailVerification(Long userAccountId) {
+    EmailVerification x = new EmailVerification();
+    x.userAccountId = userAccountId;
+    x.tokenHash = str(64);
+    x.createdAt = now();
+    x.expiresAt = futureInstant();
+    return x;
+  }
+
+  public static EventReminder eventReminder(Long eventId, Long userAccountId) {
+    EventReminder x = new EventReminder();
+    x.eventId = eventId;
+    x.userAccountId = userAccountId;
+    x.sentAt = now();
     return x;
   }
 

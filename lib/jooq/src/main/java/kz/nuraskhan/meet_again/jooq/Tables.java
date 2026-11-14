@@ -8,7 +8,9 @@ import kz.nuraskhan.meet_again.jooq.tables.Avatar;
 import kz.nuraskhan.meet_again.jooq.tables.Chat;
 import kz.nuraskhan.meet_again.jooq.tables.ChatMember;
 import kz.nuraskhan.meet_again.jooq.tables.ChatMessage;
+import kz.nuraskhan.meet_again.jooq.tables.EmailVerification;
 import kz.nuraskhan.meet_again.jooq.tables.Event;
+import kz.nuraskhan.meet_again.jooq.tables.EventReminder;
 import kz.nuraskhan.meet_again.jooq.tables.EventTimeOption;
 import kz.nuraskhan.meet_again.jooq.tables.Friendship;
 import kz.nuraskhan.meet_again.jooq.tables.Invitation;
@@ -44,9 +46,19 @@ public class Tables {
     public static final ChatMessage CHAT_MESSAGE = ChatMessage.CHAT_MESSAGE;
 
     /**
+     * The table <code>public.email_verification</code>.
+     */
+    public static final EmailVerification EMAIL_VERIFICATION = EmailVerification.EMAIL_VERIFICATION;
+
+    /**
      * The table <code>public.event</code>.
      */
     public static final Event EVENT = Event.EVENT;
+
+    /**
+     * The table <code>public.event_reminder</code>.
+     */
+    public static final EventReminder EVENT_REMINDER = EventReminder.EVENT_REMINDER;
 
     /**
      * The table <code>public.event_time_option</code>.

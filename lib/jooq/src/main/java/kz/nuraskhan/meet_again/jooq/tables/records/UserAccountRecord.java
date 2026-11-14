@@ -90,6 +90,20 @@ public class UserAccountRecord extends UpdatableRecordImpl<UserAccountRecord> {
         return (Instant) get(4);
     }
 
+    /**
+     * Setter for <code>public.user_account.email_verified_at</code>.
+     */
+    public void setEmailVerifiedAt(Instant value) {
+        set(5, value);
+    }
+
+    /**
+     * Getter for <code>public.user_account.email_verified_at</code>.
+     */
+    public Instant getEmailVerifiedAt() {
+        return (Instant) get(5);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -113,7 +127,7 @@ public class UserAccountRecord extends UpdatableRecordImpl<UserAccountRecord> {
     /**
      * Create a detached, initialised UserAccountRecord
      */
-    public UserAccountRecord(Long id, String email, String passwordHash, Instant createdAt, Instant deactivatedAt) {
+    public UserAccountRecord(Long id, String email, String passwordHash, Instant createdAt, Instant deactivatedAt, Instant emailVerifiedAt) {
         super(UserAccount.USER_ACCOUNT);
 
         setId(id);
@@ -121,6 +135,7 @@ public class UserAccountRecord extends UpdatableRecordImpl<UserAccountRecord> {
         setPasswordHash(passwordHash);
         setCreatedAt(createdAt);
         setDeactivatedAt(deactivatedAt);
+        setEmailVerifiedAt(emailVerifiedAt);
         resetTouchedOnNotNull();
     }
 }

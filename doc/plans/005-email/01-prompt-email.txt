@@ -1,0 +1,3 @@
+now lets use email sender for notification about upcomming events and think about emails sender as resend or etc also for email verification too
+
+or just adding resend

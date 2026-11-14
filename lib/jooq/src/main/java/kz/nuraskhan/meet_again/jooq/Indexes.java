@@ -6,6 +6,7 @@ package kz.nuraskhan.meet_again.jooq;
 
 import kz.nuraskhan.meet_again.jooq.tables.ChatMember;
 import kz.nuraskhan.meet_again.jooq.tables.ChatMessage;
+import kz.nuraskhan.meet_again.jooq.tables.EmailVerification;
 import kz.nuraskhan.meet_again.jooq.tables.Event;
 import kz.nuraskhan.meet_again.jooq.tables.Friendship;
 import kz.nuraskhan.meet_again.jooq.tables.Invitation;
@@ -28,6 +29,7 @@ public class Indexes {
 
     public static final Index CHAT_MEMBER__USER = Internal.createIndex(DSL.name("chat_member__user"), ChatMember.CHAT_MEMBER, new OrderField[] { ChatMember.CHAT_MEMBER.USER_ACCOUNT_ID }, false);
     public static final Index CHAT_MESSAGE__CHAT = Internal.createIndex(DSL.name("chat_message__chat"), ChatMessage.CHAT_MESSAGE, new OrderField[] { ChatMessage.CHAT_MESSAGE.CHAT_ID, ChatMessage.CHAT_MESSAGE.ID }, false);
+    public static final Index EMAIL_VERIFICATION__USER = Internal.createIndex(DSL.name("email_verification__user"), EmailVerification.EMAIL_VERIFICATION, new OrderField[] { EmailVerification.EMAIL_VERIFICATION.USER_ACCOUNT_ID, EmailVerification.EMAIL_VERIFICATION.CREATED_AT }, false);
     public static final Index EVENT__CREATOR = Internal.createIndex(DSL.name("event__creator"), Event.EVENT, new OrderField[] { Event.EVENT.CREATOR__USER_ACCOUNT_ID }, false);
     public static final Index EVENT__SHARE_TOKEN = Internal.createIndex(DSL.name("event__share_token"), Event.EVENT, new OrderField[] { Event.EVENT.SHARE_TOKEN }, true);
     public static final Index FRIENDSHIP__ADDRESSEE = Internal.createIndex(DSL.name("friendship__addressee"), Friendship.FRIENDSHIP, new OrderField[] { Friendship.FRIENDSHIP.ADDRESSEE__USER_ACCOUNT_ID }, false);

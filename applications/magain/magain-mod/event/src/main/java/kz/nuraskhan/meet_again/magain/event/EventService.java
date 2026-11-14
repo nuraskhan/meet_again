@@ -80,6 +80,11 @@ public class EventService {
       throw ApiException.badRequest("bad_price", "Minimal price is greater than maximal");
     }
 
+    String timeZone = isBlank(request.timeZone()) ? null : request.timeZone().trim();
+    if (timeZone != null && !isKnownTimeZone(timeZone)) {
+      throw ApiException.badRequest("bad_time_zone", "Unknown time zone: " + timeZone);
+    }
+
     // Nobody invited by name is fine: people then come by the link.
     Set<Long> inviteeIds = new LinkedHashSet<>(orEmpty(request.inviteeIds()));
     if (inviteeIds.contains(me)) {
@@ -101,6 +106,7 @@ public class EventService {
     event.creatorUserAccountId = me;
     event.chatId = chatId;
     event.shareToken = newShareToken();
+    event.timeZone = timeZone;
     event.eventType = type;
     event.title = title;
     event.description = request.description();
@@ -276,6 +282,15 @@ public class EventService {
     byte[] bytes = new byte[SHARE_TOKEN_BYTES];
     SECURE_RANDOM.nextBytes(bytes);
     return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+  }
+
+  private static boolean isKnownTimeZone(String name) {
+    try {
+      java.time.ZoneId.of(name);
+      return true;
+    } catch (java.time.DateTimeException e) {
+      return false;
+    }
   }
 
   private static boolean isBlank(String s) {

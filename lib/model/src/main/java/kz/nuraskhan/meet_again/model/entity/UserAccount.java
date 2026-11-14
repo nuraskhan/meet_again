@@ -27,6 +27,10 @@ public class UserAccount {
   @Column(name = "created_at", nullable = false)
   public Instant createdAt;
 
+  /** When the person confirmed that the address is theirs. Empty = not confirmed. */
+  @Column(name = "email_verified_at")
+  public Instant emailVerifiedAt;
+
   /** Filled = cannot log in. */
   @Column(name = "deactivated_at")
   public Instant deactivatedAt;

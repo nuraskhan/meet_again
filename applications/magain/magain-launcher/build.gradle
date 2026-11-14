@@ -14,6 +14,9 @@ dependencies {
 
     implementation libs.starterActuator
     runtimeOnly libs.postgresql
+
+    // The tests replace the mail sender with one that keeps the letters.
+    testImplementation project(':lib:mail')
 }
 
 // What the server needs from the environment, with the values of the local stack

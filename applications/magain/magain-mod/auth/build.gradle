@@ -6,4 +6,5 @@
 
 dependencies {
     implementation libs.starterResourceServer
+    implementation project(':lib:mail') // the confirmation letter
 }

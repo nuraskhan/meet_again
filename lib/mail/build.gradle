@@ -1,0 +1,6 @@
+// Sending e-mail. The provider is Resend (https://resend.com), called over HTTP; nothing else in the
+// system knows that - it sees only EmailSender.
+
+dependencies {
+    implementation libs.starterWebmvc // RestClient and configuration properties
+}

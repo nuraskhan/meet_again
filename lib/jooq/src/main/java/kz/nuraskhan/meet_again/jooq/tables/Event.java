@@ -126,6 +126,11 @@ public class Event extends TableImpl<EventRecord> {
      */
     public final TableField<EventRecord, String> SHARE_TOKEN = createField(DSL.name("share_token"), SQLDataType.CLOB.nullable(false), this, "");
 
+    /**
+     * The column <code>public.event.time_zone</code>.
+     */
+    public final TableField<EventRecord, String> TIME_ZONE = createField(DSL.name("time_zone"), SQLDataType.CLOB, this, "");
+
     private Event(Name alias, Table<EventRecord> aliased) {
         this(alias, aliased, (Field<?>[]) null, null);
     }

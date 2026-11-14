@@ -35,6 +35,17 @@ magain:
   jwt:
     secret: ${MAGAIN_JWT_SECRET}
     ttl: 30d
+  mail:
+    # Unlike the secrets above, these three may be absent - with a deliberate meaning each:
+    # no key          = letters are not sent, only written to the log (a developer's machine);
+    # no "from"       = Resend's test sender, which delivers only to the owner of the Resend account;
+    # no public url   = links in letters point at the local UI.
+    resend-api-key: ${MAGAIN_RESEND_API_KEY:}
+    from: ${MAGAIN_MAIL_FROM:Meet Again <onboarding@resend.dev>}
+    public-url: ${MAGAIN_PUBLIC_URL:http://localhost:19000}
+  reminder:
+    # The timer that sends reminders about upcoming events. The tests turn it off.
+    enabled: true
 
 management:
   endpoints:

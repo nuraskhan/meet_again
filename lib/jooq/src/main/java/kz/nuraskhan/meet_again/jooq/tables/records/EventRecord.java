@@ -204,6 +204,20 @@ public class EventRecord extends UpdatableRecordImpl<EventRecord> {
         return (String) get(12);
     }
 
+    /**
+     * Setter for <code>public.event.time_zone</code>.
+     */
+    public void setTimeZone(String value) {
+        set(13, value);
+    }
+
+    /**
+     * Getter for <code>public.event.time_zone</code>.
+     */
+    public String getTimeZone() {
+        return (String) get(13);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -227,7 +241,7 @@ public class EventRecord extends UpdatableRecordImpl<EventRecord> {
     /**
      * Create a detached, initialised EventRecord
      */
-    public EventRecord(Long id, Long creator_UserAccountId, Long chatId, EventType eventType, String title, String description, Integer distanceMinMi, Integer distanceMaxMi, Integer priceMin, Integer priceMax, EventStatus status, Instant createdAt, String shareToken) {
+    public EventRecord(Long id, Long creator_UserAccountId, Long chatId, EventType eventType, String title, String description, Integer distanceMinMi, Integer distanceMaxMi, Integer priceMin, Integer priceMax, EventStatus status, Instant createdAt, String shareToken, String timeZone) {
         super(Event.EVENT);
 
         setId(id);
@@ -243,6 +257,7 @@ public class EventRecord extends UpdatableRecordImpl<EventRecord> {
         setStatus(status);
         setCreatedAt(createdAt);
         setShareToken(shareToken);
+        setTimeZone(timeZone);
         resetTouchedOnNotNull();
     }
 }

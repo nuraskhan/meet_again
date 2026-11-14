@@ -4,6 +4,7 @@ rootProject.name = 'meet_again'
 include 'lib:model'   // JPA entities, enums, repositories, RND
 include 'lib:jooq'    // jOOQ classes generated from the schema (make jooq)
 include 'lib:web'     // what every REST module needs: errors, current user
+include 'lib:mail'    // sending e-mail (Resend), and the look of our letters
 
 // Database migrations (make upgradeDbAll).
 include 'migration'

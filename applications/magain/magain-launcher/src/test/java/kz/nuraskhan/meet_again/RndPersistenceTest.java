@@ -6,7 +6,9 @@ import kz.nuraskhan.meet_again.model.entity.Avatar;
 import kz.nuraskhan.meet_again.model.entity.Chat;
 import kz.nuraskhan.meet_again.model.entity.ChatMember;
 import kz.nuraskhan.meet_again.model.entity.ChatMessage;
+import kz.nuraskhan.meet_again.model.entity.EmailVerification;
 import kz.nuraskhan.meet_again.model.entity.Event;
+import kz.nuraskhan.meet_again.model.entity.EventReminder;
 import kz.nuraskhan.meet_again.model.entity.EventTimeOption;
 import kz.nuraskhan.meet_again.model.entity.Friendship;
 import kz.nuraskhan.meet_again.model.entity.Invitation;
@@ -18,6 +20,8 @@ import kz.nuraskhan.meet_again.model.repository.AvatarRepository;
 import kz.nuraskhan.meet_again.model.repository.ChatMemberRepository;
 import kz.nuraskhan.meet_again.model.repository.ChatMessageRepository;
 import kz.nuraskhan.meet_again.model.repository.ChatRepository;
+import kz.nuraskhan.meet_again.model.repository.EmailVerificationRepository;
+import kz.nuraskhan.meet_again.model.repository.EventReminderRepository;
 import kz.nuraskhan.meet_again.model.repository.EventRepository;
 import kz.nuraskhan.meet_again.model.repository.EventTimeOptionRepository;
 import kz.nuraskhan.meet_again.model.repository.FriendshipRepository;
@@ -43,6 +47,8 @@ class RndPersistenceTest extends ApiTestBase {
   @Autowired ChatMemberRepository chatMemberRepository;
   @Autowired ChatMessageRepository chatMessageRepository;
   @Autowired EventRepository eventRepository;
+  @Autowired EmailVerificationRepository emailVerificationRepository;
+  @Autowired EventReminderRepository eventReminderRepository;
   @Autowired EventTimeOptionRepository eventTimeOptionRepository;
   @Autowired InvitationRepository invitationRepository;
   @Autowired ParticipantPreferenceRepository participantPreferenceRepository;
@@ -65,6 +71,9 @@ class RndPersistenceTest extends ApiTestBase {
     ChatMessage message = chatMessageRepository.save(RND.chatMessage(chat.id, user1.id));
     Event event = eventRepository.save(RND.event(user1.id, chat.id));
     EventTimeOption timeOption = eventTimeOptionRepository.save(RND.eventTimeOption(event.id));
+    EmailVerification verification =
+        emailVerificationRepository.save(RND.emailVerification(user1.id));
+    EventReminder reminder = eventReminderRepository.save(RND.eventReminder(event.id, user1.id));
     Invitation invitation = invitationRepository.save(RND.invitation(event.id, user2.id));
     ParticipantPreference preference =
         participantPreferenceRepository.save(RND.participantPreference(event.id, user2.id));
@@ -90,6 +99,10 @@ class RndPersistenceTest extends ApiTestBase {
     // The moment in particular: it must survive the round trip in any time zone.
     assertThat(eventTimeOptionRepository.findById(timeOption.id).orElseThrow())
         .usingRecursiveComparison().isEqualTo(timeOption);
+    assertThat(emailVerificationRepository.findById(verification.id).orElseThrow())
+        .usingRecursiveComparison().isEqualTo(verification);
+    assertThat(eventReminderRepository.findById(reminder.id).orElseThrow())
+        .usingRecursiveComparison().isEqualTo(reminder);
     assertThat(invitationRepository.findById(invitation.id).orElseThrow())
         .usingRecursiveComparison().isEqualTo(invitation);
     assertThat(participantPreferenceRepository.findById(preference.id).orElseThrow())

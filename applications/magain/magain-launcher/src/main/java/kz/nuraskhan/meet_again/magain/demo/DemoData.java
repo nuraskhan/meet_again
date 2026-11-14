@@ -110,7 +110,8 @@ public class DemoData implements ApplicationRunner {
     Instant inFiveDays = Instant.now().plus(5, ChronoUnit.DAYS).truncatedTo(ChronoUnit.HOURS);
     Long eventId = eventService.create(alice, new CreateEventRequest(
         EventType.BATH, null, "Let's go this week", null, null, null, null,
-        List.of(inFiveDays, inFiveDays.plus(1, ChronoUnit.DAYS)), List.of(bob, carol)));
+        List.of(inFiveDays, inFiveDays.plus(1, ChronoUnit.DAYS)), "America/New_York",
+        List.of(bob, carol)));
 
     Event event = eventRepository.findById(eventId).orElseThrow();
     Invitation bobsInvitation =
