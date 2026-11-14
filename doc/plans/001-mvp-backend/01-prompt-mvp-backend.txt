@@ -1,0 +1,17 @@
+so, lets start out real work:
+
+We need to create system with backend and frontend (we will create it later)
+and for now imnplement(only in back):
+
+minimal MVP where we have users, profile and list of friends. Main idea is invite/create events for hang out with friends: send them invitiation pre-filled forms where have:
+- type of event (bath, just eat smth together and etc)
+- preferred distance from you (5-10km etc)
+- price and etc
+
+them others (one or many) will got invitations and automatically will be created group chat
+
+for now thats enough. Later we will add more features.
+
+For entities use library(directory) -> entity, enums, repository and also use RND for immeditely create random fielded entities
+Also use jooq for db access and for future get requests (but library use JPA clasically)
+for auth use something lightweight insead of Keycloak(we will add it later)

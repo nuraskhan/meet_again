@@ -1,0 +1,9 @@
+// Lightweight authentication: e-mail + password, and a signed token (JWT, HS256) in return.
+//
+// The rest of the system only sees "a bearer token whose subject is the user id" - exactly what
+// Keycloak will give later. Replacing this module then means: drop registration/login here and
+// point the token decoder at Keycloak.
+
+dependencies {
+    implementation libs.starterResourceServer
+}

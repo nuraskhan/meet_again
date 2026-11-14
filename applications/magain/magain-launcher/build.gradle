@@ -1,0 +1,53 @@
+// The server "magain" (REST, port 29000): the only module here that builds a boot-jar.
+// It has no features of its own - it assembles the modules of magain-mod.
+
+plugins {
+    alias(libs.plugins.springBoot)
+}
+
+dependencies {
+    implementation project(':applications:magain:magain-mod:auth')
+    implementation project(':applications:magain:magain-mod:profile')
+    implementation project(':applications:magain:magain-mod:friend')
+    implementation project(':applications:magain:magain-mod:chat')
+    implementation project(':applications:magain:magain-mod:event')
+
+    implementation libs.starterActuator
+    runtimeOnly libs.postgresql
+}
+
+// What the server needs from the environment, with the values of the local stack
+// (docker/local, ports from CLAUDE.md). Nothing here is used in production: there the variables are
+// set for real, and the server does not start without them.
+def localEnv = [
+        MAGAIN_DB_URL     : 'jdbc:postgresql://localhost:20000/magain',
+        MAGAIN_DB_USER    : 'magain',
+        MAGAIN_DB_PASSWORD: 'magain',
+        MAGAIN_JWT_SECRET : 'local-secret-known-to-everyone-do-not-use-anywhere-else',
+]
+
+def withLocalEnv = { task, Map overrides = [:] ->
+    (localEnv + overrides).each { name, value ->
+        // A variable already set by the developer wins.
+        task.environment name, System.getenv(name) ?: value
+    }
+}
+
+tasks.named('bootRun') {
+    withLocalEnv(it)
+}
+
+// Tests always go to the test database, whatever is exported.
+tasks.withType(Test).configureEach {
+    environment localEnv + [MAGAIN_DB_URL: 'jdbc:postgresql://localhost:20000/magain_test']
+}
+
+tasks.register('populateLocalDb', JavaExec) {
+    description = 'Loads demo data into the local database; does nothing if it is already there'
+    group = 'database'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'kz.nuraskhan.meet_again.MagainApplication'
+    // Port 0 = any free one, so it also works while the server is running.
+    args '--magain.demo-data=true', '--server.port=0'
+    withLocalEnv(it)
+}

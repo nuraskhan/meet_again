@@ -1,0 +1,23 @@
+# The only place with versions. Everything without a version here is managed by the Spring Boot BOM.
+[versions]
+springBoot = "4.1.2"
+
+[plugins]
+springBoot = { id = "org.springframework.boot", version.ref = "springBoot" }
+
+[libraries]
+springBootBom = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "springBoot" }
+
+starterWebmvc = { module = "org.springframework.boot:spring-boot-starter-webmvc" }
+starterValidation = { module = "org.springframework.boot:spring-boot-starter-validation" }
+starterDataJpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa" }
+starterJooq = { module = "org.springframework.boot:spring-boot-starter-jooq" }
+starterActuator = { module = "org.springframework.boot:spring-boot-starter-actuator" }
+starterResourceServer = { module = "org.springframework.boot:spring-boot-starter-security-oauth2-resource-server" }
+starterTest = { module = "org.springframework.boot:spring-boot-starter-test" }
+
+jooqCodegen = { module = "org.jooq:jooq-codegen" }
+flywayCore = { module = "org.flywaydb:flyway-core" }
+flywayPostgresql = { module = "org.flywaydb:flyway-database-postgresql" }
+postgresql = { module = "org.postgresql:postgresql" }
+junitLauncher = { module = "org.junit.platform:junit-platform-launcher" }

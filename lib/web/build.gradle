@@ -1,0 +1,6 @@
+// What every REST module needs: the error format and the id of the current user.
+
+dependencies {
+    api libs.starterWebmvc
+    api libs.starterValidation
+}

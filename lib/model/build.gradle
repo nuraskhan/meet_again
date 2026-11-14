@@ -1,0 +1,6 @@
+// The data model: JPA entities, their enums, Spring Data repositories, and RND - a factory of
+// entities with random field values for tests and demo data.
+
+dependencies {
+    api libs.starterDataJpa
+}

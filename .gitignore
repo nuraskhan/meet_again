@@ -1,5 +1,8 @@
 .gradle
 build/
+
+### Data of the local stack (APP_DATA_ROOT, see Makefile) ###
+/.data/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/

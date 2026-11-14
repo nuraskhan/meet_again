@@ -1,20 +1,79 @@
 plugins {
-    id 'java'
+    alias(libs.plugins.springBoot) apply false
 }
 
-group = 'kz.nuraskhan.meet_again'
-version = '1.0-SNAPSHOT'
+// Time zones the tests are run in by `testTz` (make test-tz): two distant ones, on both sides of UTC.
+def testTimeZones = ['Asia/Almaty', 'America/Los_Angeles']
 
-repositories {
-    mavenCentral()
+allprojects {
+    group = 'kz.nuraskhan.meet_again'
+    version = rootProject.file('version.txt').text.trim()
+
+    repositories {
+        mavenCentral()
+    }
 }
 
-dependencies {
-    testImplementation platform('org.junit:junit-bom:5.10.0')
-    testImplementation 'org.junit.jupiter:junit-jupiter'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-}
+subprojects { Project p ->
+    // `lib`, `applications`, `applications:magain`, `...:magain-mod` are only directories.
+    if (!p.childProjects.isEmpty()) {
+        return
+    }
 
-test {
-    useJUnitPlatform()
+    p.apply plugin: 'java-library'
+
+    // Archive name from the module path, not its name: two modules called `auth` in different
+    // applications would otherwise collide inside a boot-jar.
+    p.base.archivesName = p.path.substring(1).replace(':', '-')
+
+    p.java.toolchain.languageVersion = JavaLanguageVersion.of(25)
+
+    p.tasks.withType(JavaCompile).configureEach {
+        options.encoding = 'UTF-8'
+        // Spring reads parameter names (@PathVariable, record components) from the class files.
+        options.compilerArgs << '-parameters'
+    }
+
+    p.dependencies {
+        implementation platform(rootProject.libs.springBootBom)
+        testImplementation rootProject.libs.starterTest
+        testRuntimeOnly rootProject.libs.junitLauncher
+    }
+
+    // Every feature module of an application sees the shared libraries.
+    if (p.path.contains('-mod:')) {
+        p.dependencies {
+            api project(':lib:model')
+            api project(':lib:jooq')
+            api project(':lib:web')
+        }
+    }
+
+    p.tasks.withType(Test).configureEach {
+        useJUnitPlatform()
+        // -PtestTimeZone=Europe/London runs `test` in that zone.
+        systemProperty 'user.timezone', providers.gradleProperty('testTimeZone').getOrElse('Asia/Almaty')
+        // The database is not a Gradle input, so "UP-TO-DATE" would be a lie.
+        outputs.upToDateWhen { false }
+        testLogging {
+            events 'failed'
+            exceptionFormat = 'full'
+        }
+    }
+
+    // testTz = the same tests once per zone from `testTimeZones`.
+    def perZone = testTimeZones.withIndex().collect { String zone, int i ->
+        p.tasks.register("testTz${i}", Test) {
+            description = "Tests in the time zone ${zone}"
+            group = 'verification'
+            testClassesDirs = p.sourceSets.test.output.classesDirs
+            classpath = p.sourceSets.test.runtimeClasspath
+            systemProperty 'user.timezone', zone
+        }
+    }
+    p.tasks.register('testTz') {
+        description = 'Tests in every time zone from testTimeZones'
+        group = 'verification'
+        dependsOn perZone
+    }
 }

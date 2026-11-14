@@ -1,1 +1,17 @@
 rootProject.name = 'meet_again'
+
+// Shared libraries.
+include 'lib:model'   // JPA entities, enums, repositories, RND
+include 'lib:jooq'    // jOOQ classes generated from the schema (make jooq)
+include 'lib:web'     // what every REST module needs: errors, current user
+
+// Database migrations (make upgradeDbAll).
+include 'migration'
+
+// Application "magain": the launcher builds the boot-jar, every feature is a module.
+include 'applications:magain:magain-launcher'
+include 'applications:magain:magain-mod:auth'
+include 'applications:magain:magain-mod:profile'
+include 'applications:magain:magain-mod:friend'
+include 'applications:magain:magain-mod:chat'
+include 'applications:magain:magain-mod:event'

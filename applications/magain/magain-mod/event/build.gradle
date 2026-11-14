@@ -1,0 +1,5 @@
+// Events and invitations. An event creates its group chat, hence the dependency.
+
+dependencies {
+    implementation project(':applications:magain:magain-mod:chat')
+}

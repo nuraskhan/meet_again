@@ -1,0 +1,27 @@
+// Migrations: numbered SQL files in src/main/resources/db/migration, applied by Flyway.
+// Append-only: a change is always a new file, an applied file is never edited.
+
+dependencies {
+    implementation libs.flywayCore
+    implementation libs.flywayPostgresql
+    runtimeOnly libs.postgresql
+}
+
+def migrate = { String taskName, String db ->
+    tasks.register(taskName, JavaExec) {
+        description = "Applies migrations to the database ${db}"
+        group = 'database'
+        classpath = sourceSets.main.runtimeClasspath
+        mainClass = 'kz.nuraskhan.meet_again.migration.Migrate'
+        args "jdbc:postgresql://localhost:20000/${db}", 'magain', 'magain'
+    }
+}
+
+def local = migrate('upgradeLocalDb', 'magain')
+def test = migrate('upgradeTestDb', 'magain_test')
+
+tasks.register('upgradeDbAll') {
+    description = 'Applies migrations to the local and the test database'
+    group = 'database'
+    dependsOn local, test
+}

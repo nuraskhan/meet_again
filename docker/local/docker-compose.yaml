@@ -1,0 +1,35 @@
+# Local infrastructure. Started by `make dockerUp`, which passes APP_DATA_ROOT.
+# Ports are the ones from the "Ports" table in CLAUDE.md.
+name: meet_again-local
+
+services:
+
+  # Creates the data directory and gives it to the postgres user (uid 999 in the image).
+  # It is here and not in the Makefile because `compose up` can be called from anywhere.
+  pg-init:
+    image: alpine:3.22
+    user: root
+    command: sh -c "mkdir -p /data/postgres && chown -R 999:999 /data/postgres"
+    volumes:
+      - ${APP_DATA_ROOT:?run through make, or set APP_DATA_ROOT}:/data
+
+  pg:
+    image: postgres:17
+    depends_on:
+      pg-init:
+        condition: service_completed_successfully
+    environment:
+      POSTGRES_USER: magain
+      POSTGRES_PASSWORD: magain
+      POSTGRES_DB: magain
+    ports:
+      - "20000:5432"
+    volumes:
+      - ${APP_DATA_ROOT}/postgres:/var/lib/postgresql/data
+      - ./pg-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      # magain_test is created last, so when it answers, both databases exist.
+      test: ["CMD-SHELL", "pg_isready -U magain -d magain_test"]
+      interval: 2s
+      timeout: 3s
+      retries: 60
