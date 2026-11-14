@@ -51,3 +51,13 @@ tasks.register('populateLocalDb', JavaExec) {
     args '--magain.demo-data=true', '--server.port=0'
     withLocalEnv(it)
 }
+
+// Heroku: `gradlew stage` is what its buildpack runs. This part of it puts the boot-jar at
+// build/stage/magain.jar - a fixed name, so the Procfile does not change with the version.
+tasks.register('stage', Copy) {
+    description = 'Copies the boot-jar to build/stage/magain.jar'
+    group = 'distribution'
+    from tasks.named('bootJar')
+    into rootProject.layout.buildDirectory.dir('stage')
+    rename { 'magain.jar' }
+}

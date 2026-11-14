@@ -25,3 +25,14 @@ tasks.register('upgradeDbAll') {
     group = 'database'
     dependsOn local, test
 }
+
+// Heroku: `gradlew stage` is what its buildpack runs. This part of it puts the migration program
+// and its libraries into build/stage/migration, where the release command of the Procfile finds
+// them under names that do not change with the version.
+tasks.register('stage', Sync) {
+    description = 'Copies the migration program and its libraries to build/stage/migration'
+    group = 'distribution'
+    from tasks.named('jar')
+    from configurations.named('runtimeClasspath')
+    into rootProject.layout.buildDirectory.dir('stage/migration')
+}
