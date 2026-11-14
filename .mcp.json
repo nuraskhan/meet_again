@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "context7": {
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "@upstash/context7-mcp"]
+    },
+    "playwright": {
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "@playwright/mcp@latest"]
+    },
+    "postgres": {
+      "command": "cmd",
+      "args": [
+        "/c", "npx", "-y", "@bytebase/dbhub",
+        "--transport", "stdio",
+        "--dsn", "${MAGAIN_DB_DSN:-postgres://magain:magain@localhost:20000/magain?sslmode=disable}"
+      ]
+    }
+  }
+}
