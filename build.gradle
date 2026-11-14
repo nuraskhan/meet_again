@@ -77,3 +77,12 @@ subprojects { Project p ->
         dependsOn perZone
     }
 }
+
+// Heroku: its buildpack runs `gradlew stage` when the ROOT project has a task with this name;
+// otherwise it runs `build`, and build/stage, which the Procfile starts from, does not appear.
+// The work is done by the `stage` tasks of the launcher and of the migration module.
+tasks.register('stage') {
+    description = 'Prepares build/stage for Heroku: the server jar and the migration program'
+    group = 'distribution'
+    dependsOn ':applications:magain:magain-launcher:stage', ':migration:stage'
+}

@@ -52,9 +52,7 @@ tasks.register('populateLocalDb', JavaExec) {
     withLocalEnv(it)
 }
 
-// Heroku: its buildpack runs `gradlew stage` because the app has the config var GRADLE_TASK=stage
-// (without it a Spring Boot project is built with `build`, and build/stage does not appear).
-// This part of it puts the boot-jar at
+// Heroku: part of the root task `stage` (see the root build.gradle). This part of it puts the boot-jar at
 // build/stage/magain.jar - a fixed name, so the Procfile does not change with the version.
 tasks.register('stage', Copy) {
     description = 'Copies the boot-jar to build/stage/magain.jar'
