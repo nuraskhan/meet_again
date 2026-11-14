@@ -28,7 +28,7 @@
         <forcedType>
           <userType>kz.nuraskhan.meet_again.model.enums.EventType</userType>
           <enumConverter>true</enumConverter>
-          <includeExpression>public\.event\.event_type</includeExpression>
+          <includeExpression>public\.event\.event_type|public\.place\.category</includeExpression>
         </forcedType>
         <forcedType>
           <userType>kz.nuraskhan.meet_again.model.enums.EventStatus</userType>

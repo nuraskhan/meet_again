@@ -41,19 +41,22 @@ public class EventService {
   private final FriendshipRepository friendshipRepository;
   private final ParticipantPreferenceRepository participantPreferenceRepository;
   private final ChatService chatService;
+  private final SuggestionService suggestionService;
 
   public EventService(EventRepository eventRepository,
                       EventTimeOptionRepository eventTimeOptionRepository,
                       InvitationRepository invitationRepository,
                       FriendshipRepository friendshipRepository,
                       ParticipantPreferenceRepository participantPreferenceRepository,
-                      ChatService chatService) {
+                      ChatService chatService,
+                      SuggestionService suggestionService) {
     this.eventRepository = eventRepository;
     this.eventTimeOptionRepository = eventTimeOptionRepository;
     this.invitationRepository = invitationRepository;
     this.friendshipRepository = friendshipRepository;
     this.participantPreferenceRepository = participantPreferenceRepository;
     this.chatService = chatService;
+    this.suggestionService = suggestionService;
   }
 
   /**
@@ -150,9 +153,7 @@ public class EventService {
     Event event = eventRepository.findByShareToken(shareToken)
         .orElseThrow(() -> ApiException.notFound("event_not_found", "Event not found"));
 
-    if (event.status != EventStatus.ACTIVE) {
-      throw ApiException.conflict("event_cancelled", "The event is cancelled");
-    }
+    requireActive(event);
     if (event.creatorUserAccountId.equals(me)) {
       return event.id; // the creator is in already
     }
@@ -181,23 +182,31 @@ public class EventService {
   }
 
   /**
-   * A guest says where they are and how far they are ready to travel, for this event. Saving again
-   * replaces what was said before.
+   * A participant says where they are and how far they are ready to travel, for this event. Saving
+   * again replaces what was said before.
    *
-   * <p>Only for a guest who has not declined: the creator's wish is the distance of the event
-   * itself, and someone who is not coming has nothing to say.
+   * <p>For the creator and for a guest who has not declined: suggesting a place needs to know where
+   * everyone is coming from, the creator included. Someone who is not coming has nothing to say.
+   *
+   * <p>The first time the location of everyone coming is known, places are suggested by themselves
+   * (see {@link SuggestionService#suggestIfEveryoneIsKnown}).
    */
   @Transactional
   public void savePreference(Long me, Long eventId, SavePreferenceRequest request) {
-    Invitation invitation =
-        invitationRepository.findByEventIdAndInviteeUserAccountId(eventId, me).orElse(null);
+    Event event = eventRepository.findById(eventId).orElse(null);
+    boolean isCreator = event != null && event.creatorUserAccountId.equals(me);
 
-    // Not a guest of it: the event "does not exist" for the caller.
-    if (invitation == null) {
-      throw ApiException.notFound("event_not_found", "Event not found");
-    }
-    if (invitation.status == InvitationStatus.DECLINED) {
-      throw ApiException.conflict("invitation_declined", "You declined this invitation");
+    if (!isCreator) {
+      Invitation invitation =
+          invitationRepository.findByEventIdAndInviteeUserAccountId(eventId, me).orElse(null);
+
+      // Not a part of it: the event "does not exist" for the caller.
+      if (invitation == null) {
+        throw ApiException.notFound("event_not_found", "Event not found");
+      }
+      if (invitation.status == InvitationStatus.DECLINED) {
+        throw ApiException.conflict("invitation_declined", "You declined this invitation");
+      }
     }
 
     boolean hasLatitude = request.latitude() != null;
@@ -226,7 +235,11 @@ public class EventService {
     preference.travelRadiusMi = request.travelRadiusMi();
     preference.updatedAt = Instant.now();
 
-    participantPreferenceRepository.save(preference);
+    // Written to the database at once: the suggestions below are computed by a query, and a query
+    // sees only what has been written.
+    participantPreferenceRepository.saveAndFlush(preference);
+
+    suggestionService.suggestIfEveryoneIsKnown(eventId);
   }
 
   /** Only the creator cancels. The chat stays. */
@@ -237,11 +250,21 @@ public class EventService {
     if (event == null || !event.creatorUserAccountId.equals(me)) {
       throw ApiException.notFound("event_not_found", "Event not found");
     }
-    if (event.status != EventStatus.ACTIVE) {
-      throw ApiException.conflict("event_cancelled", "The event is already cancelled");
-    }
+    requireActive(event);
 
     event.status = EventStatus.CANCELLED;
+  }
+
+  /**
+   * Everything that changes an event happens only while it is ACTIVE. The refusal says which of the
+   * two ends it has met.
+   */
+  static void requireActive(Event event) {
+    switch (event.status) {
+      case ACTIVE -> { }
+      case CANCELLED -> throw ApiException.conflict("event_cancelled", "The event is cancelled");
+      case EXPIRED -> throw ApiException.conflict("event_expired", "The event is over");
+    }
   }
 
   @Transactional
@@ -268,9 +291,7 @@ public class EventService {
     }
 
     Event event = eventRepository.findById(invitation.eventId).orElseThrow();
-    if (event.status != EventStatus.ACTIVE) {
-      throw ApiException.conflict("event_cancelled", "The event is cancelled");
-    }
+    requireActive(event);
 
     invitation.status = answer;
     invitation.respondedAt = Instant.now();

@@ -131,6 +131,11 @@ public class Event extends TableImpl<EventRecord> {
      */
     public final TableField<EventRecord, String> TIME_ZONE = createField(DSL.name("time_zone"), SQLDataType.CLOB, this, "");
 
+    /**
+     * The column <code>public.event.suggested_at</code>.
+     */
+    public final TableField<EventRecord, Instant> SUGGESTED_AT = createField(DSL.name("suggested_at"), SQLDataType.INSTANT, this, "");
+
     private Event(Name alias, Table<EventRecord> aliased) {
         this(alias, aliased, (Field<?>[]) null, null);
     }
@@ -167,7 +172,7 @@ public class Event extends TableImpl<EventRecord> {
 
     @Override
     public List<Index> getIndexes() {
-        return Arrays.asList(Indexes.EVENT__CREATOR, Indexes.EVENT__SHARE_TOKEN);
+        return Arrays.asList(Indexes.EVENT__CREATOR, Indexes.EVENT__SHARE_TOKEN, Indexes.EVENT__STATUS);
     }
 
     @Override
@@ -191,7 +196,7 @@ public class Event extends TableImpl<EventRecord> {
             Internal.createCheck(this, DSL.name("event_check"), "(((0 <= distance_min_mi) AND (distance_min_mi <= distance_max_mi)))", true),
             Internal.createCheck(this, DSL.name("event_check1"), "(((0 <= price_min) AND (price_min <= price_max)))", true),
             Internal.createCheck(this, DSL.name("event_event_type_check"), "((event_type = ANY (ARRAY['BATH'::text, 'FOOD'::text, 'COFFEE'::text, 'BAR'::text, 'WALK'::text, 'CINEMA'::text, 'SPORT'::text, 'BOARD_GAMES'::text, 'OTHER'::text])))", true),
-            Internal.createCheck(this, DSL.name("event_status_check"), "((status = ANY (ARRAY['ACTIVE'::text, 'CANCELLED'::text])))", true)
+            Internal.createCheck(this, DSL.name("event_status_check"), "((status = ANY (ARRAY['ACTIVE'::text, 'CANCELLED'::text, 'EXPIRED'::text])))", true)
         );
     }
 

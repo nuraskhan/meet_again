@@ -13,8 +13,11 @@ import kz.nuraskhan.meet_again.model.enums.EventType;
  * @param shareToken    the secret part of the link to the event; only the creator gets it, null
  *                      for everyone else
  * @param invitees      everyone invited or joined by the link, in the order they appeared
+ * @param suggestedAt   when places were last suggested; null = never
+ * @param suggestions   the places suggested, best first; empty while never suggested, and when
+ *                      nothing suitable was found
  * @param myPreference  what the caller said about themselves for this event - their place and how
- *                      far they travel; null until they say it (and always for the creator)
+ *                      far they travel; null until they say it
  */
 public record EventDto(
     Long id,
@@ -33,6 +36,8 @@ public record EventDto(
     Long creatorId,
     String creatorName,
     List<InviteeDto> invitees,
-    PreferenceDto myPreference
+    PreferenceDto myPreference,
+    Instant suggestedAt,
+    List<SuggestionDto> suggestions
 ) {
 }

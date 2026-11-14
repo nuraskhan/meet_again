@@ -73,6 +73,13 @@ public class Event {
   @Column(name = "time_zone")
   public String timeZone;
 
+  /**
+   * When places were last suggested for the event. Empty = never; filled while there are no
+   * {@link EventSuggestion}s = looked for, and nothing suitable was found.
+   */
+  @Column(name = "suggested_at")
+  public Instant suggestedAt;
+
   @Column(name = "created_at", nullable = false)
   public Instant createdAt;
 }

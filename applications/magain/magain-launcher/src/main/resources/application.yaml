@@ -43,8 +43,9 @@ magain:
     resend-api-key: ${MAGAIN_RESEND_API_KEY:}
     from: ${MAGAIN_MAIL_FROM:Meet Again <onboarding@resend.dev>}
     public-url: ${MAGAIN_PUBLIC_URL:http://localhost:19000}
-  reminder:
-    # The timer that sends reminders about upcoming events. The tests turn it off.
+  timers:
+    # The timers of the server: reminders about upcoming events (every ten minutes) and the expiry
+    # of events whose dates are behind (every minute). The tests turn them off.
     enabled: true
 
 management:

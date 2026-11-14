@@ -141,7 +141,7 @@ class PreferenceApiTest extends ApiTestBase {
   }
 
   @Test
-  void savePreference__isOnlyForAGuestWhoHasNotDeclined() {
+  void savePreference__isForTheCreatorAndForAGuestWhoHasNotDeclined() {
     TestUser creator = register();
     TestUser guest = register();
     TestUser decliner = register();
@@ -160,7 +160,8 @@ class PreferenceApiTest extends ApiTestBase {
     //
     //
 
-    assertThat(byCreator.status()).isEqualTo(404);
+    assertThat(byCreator.status()).isEqualTo(200);
+    assertThat(byCreator.body().get("myPreference").get("travelRadiusMi").asInt()).isEqualTo(5);
     assertThat(byStranger.status()).isEqualTo(404);
     assertThat(byDecliner.status()).isEqualTo(409);
     assertThat(byDecliner.body().get("code").asString()).isEqualTo("invitation_declined");

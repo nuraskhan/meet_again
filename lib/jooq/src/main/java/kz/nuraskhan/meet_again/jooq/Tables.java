@@ -11,10 +11,12 @@ import kz.nuraskhan.meet_again.jooq.tables.ChatMessage;
 import kz.nuraskhan.meet_again.jooq.tables.EmailVerification;
 import kz.nuraskhan.meet_again.jooq.tables.Event;
 import kz.nuraskhan.meet_again.jooq.tables.EventReminder;
+import kz.nuraskhan.meet_again.jooq.tables.EventSuggestion;
 import kz.nuraskhan.meet_again.jooq.tables.EventTimeOption;
 import kz.nuraskhan.meet_again.jooq.tables.Friendship;
 import kz.nuraskhan.meet_again.jooq.tables.Invitation;
 import kz.nuraskhan.meet_again.jooq.tables.ParticipantPreference;
+import kz.nuraskhan.meet_again.jooq.tables.Place;
 import kz.nuraskhan.meet_again.jooq.tables.Profile;
 import kz.nuraskhan.meet_again.jooq.tables.UserAccount;
 
@@ -61,6 +63,11 @@ public class Tables {
     public static final EventReminder EVENT_REMINDER = EventReminder.EVENT_REMINDER;
 
     /**
+     * The table <code>public.event_suggestion</code>.
+     */
+    public static final EventSuggestion EVENT_SUGGESTION = EventSuggestion.EVENT_SUGGESTION;
+
+    /**
      * The table <code>public.event_time_option</code>.
      */
     public static final EventTimeOption EVENT_TIME_OPTION = EventTimeOption.EVENT_TIME_OPTION;
@@ -79,6 +86,11 @@ public class Tables {
      * The table <code>public.participant_preference</code>.
      */
     public static final ParticipantPreference PARTICIPANT_PREFERENCE = ParticipantPreference.PARTICIPANT_PREFERENCE;
+
+    /**
+     * The table <code>public.place</code>.
+     */
+    public static final Place PLACE = Place.PLACE;
 
     /**
      * The table <code>public.profile</code>.

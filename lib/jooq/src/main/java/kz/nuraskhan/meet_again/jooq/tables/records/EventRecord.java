@@ -218,6 +218,20 @@ public class EventRecord extends UpdatableRecordImpl<EventRecord> {
         return (String) get(13);
     }
 
+    /**
+     * Setter for <code>public.event.suggested_at</code>.
+     */
+    public void setSuggestedAt(Instant value) {
+        set(14, value);
+    }
+
+    /**
+     * Getter for <code>public.event.suggested_at</code>.
+     */
+    public Instant getSuggestedAt() {
+        return (Instant) get(14);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -241,7 +255,7 @@ public class EventRecord extends UpdatableRecordImpl<EventRecord> {
     /**
      * Create a detached, initialised EventRecord
      */
-    public EventRecord(Long id, Long creator_UserAccountId, Long chatId, EventType eventType, String title, String description, Integer distanceMinMi, Integer distanceMaxMi, Integer priceMin, Integer priceMax, EventStatus status, Instant createdAt, String shareToken, String timeZone) {
+    public EventRecord(Long id, Long creator_UserAccountId, Long chatId, EventType eventType, String title, String description, Integer distanceMinMi, Integer distanceMaxMi, Integer priceMin, Integer priceMax, EventStatus status, Instant createdAt, String shareToken, String timeZone, Instant suggestedAt) {
         super(Event.EVENT);
 
         setId(id);
@@ -258,6 +272,7 @@ public class EventRecord extends UpdatableRecordImpl<EventRecord> {
         setCreatedAt(createdAt);
         setShareToken(shareToken);
         setTimeZone(timeZone);
+        setSuggestedAt(suggestedAt);
         resetTouchedOnNotNull();
     }
 }

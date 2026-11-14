@@ -24,10 +24,13 @@ public class EventController {
 
   private final EventService eventService;
   private final EventQuery eventQuery;
+  private final SuggestionService suggestionService;
 
-  public EventController(EventService eventService, EventQuery eventQuery) {
+  public EventController(EventService eventService, EventQuery eventQuery,
+                         SuggestionService suggestionService) {
     this.eventService = eventService;
     this.eventQuery = eventQuery;
+    this.suggestionService = suggestionService;
   }
 
   /** What the invitation form offers: the types, each with its pre-filled values. */
@@ -72,6 +75,17 @@ public class EventController {
                                  @Valid @RequestBody SavePreferenceRequest request) {
     Long me = CurrentUser.id(principal);
     eventService.savePreference(me, eventId, request);
+    return eventQuery.get(me, eventId).orElseThrow();
+  }
+
+  /**
+   * "Suggest places": looks for the best places for the people coming, and keeps the answer with
+   * the event. Every later reading of the event shows what was kept; calling this again replaces it.
+   */
+  @PostMapping("/{eventId}/suggestion/refresh")
+  public EventDto refreshSuggestions(Principal principal, @PathVariable("eventId") Long eventId) {
+    Long me = CurrentUser.id(principal);
+    suggestionService.refresh(me, eventId);
     return eventQuery.get(me, eventId).orElseThrow();
   }
 

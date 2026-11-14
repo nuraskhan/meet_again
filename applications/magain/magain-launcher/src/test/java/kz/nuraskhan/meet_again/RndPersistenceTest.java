@@ -9,12 +9,15 @@ import kz.nuraskhan.meet_again.model.entity.ChatMessage;
 import kz.nuraskhan.meet_again.model.entity.EmailVerification;
 import kz.nuraskhan.meet_again.model.entity.Event;
 import kz.nuraskhan.meet_again.model.entity.EventReminder;
+import kz.nuraskhan.meet_again.model.entity.EventSuggestion;
 import kz.nuraskhan.meet_again.model.entity.EventTimeOption;
 import kz.nuraskhan.meet_again.model.entity.Friendship;
 import kz.nuraskhan.meet_again.model.entity.Invitation;
 import kz.nuraskhan.meet_again.model.entity.ParticipantPreference;
+import kz.nuraskhan.meet_again.model.entity.Place;
 import kz.nuraskhan.meet_again.model.entity.Profile;
 import kz.nuraskhan.meet_again.model.entity.UserAccount;
+import kz.nuraskhan.meet_again.model.enums.EventType;
 import kz.nuraskhan.meet_again.model.enums.FriendshipStatus;
 import kz.nuraskhan.meet_again.model.repository.AvatarRepository;
 import kz.nuraskhan.meet_again.model.repository.ChatMemberRepository;
@@ -23,10 +26,12 @@ import kz.nuraskhan.meet_again.model.repository.ChatRepository;
 import kz.nuraskhan.meet_again.model.repository.EmailVerificationRepository;
 import kz.nuraskhan.meet_again.model.repository.EventReminderRepository;
 import kz.nuraskhan.meet_again.model.repository.EventRepository;
+import kz.nuraskhan.meet_again.model.repository.EventSuggestionRepository;
 import kz.nuraskhan.meet_again.model.repository.EventTimeOptionRepository;
 import kz.nuraskhan.meet_again.model.repository.FriendshipRepository;
 import kz.nuraskhan.meet_again.model.repository.InvitationRepository;
 import kz.nuraskhan.meet_again.model.repository.ParticipantPreferenceRepository;
+import kz.nuraskhan.meet_again.model.repository.PlaceRepository;
 import kz.nuraskhan.meet_again.model.repository.ProfileRepository;
 import kz.nuraskhan.meet_again.model.repository.UserAccountRepository;
 import kz.nuraskhan.meet_again.model.rnd.RND;
@@ -51,6 +56,8 @@ class RndPersistenceTest extends ApiTestBase {
   @Autowired EventReminderRepository eventReminderRepository;
   @Autowired EventTimeOptionRepository eventTimeOptionRepository;
   @Autowired InvitationRepository invitationRepository;
+  @Autowired PlaceRepository placeRepository;
+  @Autowired EventSuggestionRepository eventSuggestionRepository;
   @Autowired ParticipantPreferenceRepository participantPreferenceRepository;
 
   @Test
@@ -75,6 +82,9 @@ class RndPersistenceTest extends ApiTestBase {
         emailVerificationRepository.save(RND.emailVerification(user1.id));
     EventReminder reminder = eventReminderRepository.save(RND.eventReminder(event.id, user1.id));
     Invitation invitation = invitationRepository.save(RND.invitation(event.id, user2.id));
+    Place place = placeRepository.save(RND.place(EventType.COFFEE));
+    EventSuggestion suggestion =
+        eventSuggestionRepository.save(RND.eventSuggestion(event.id, place.id, 1));
     ParticipantPreference preference =
         participantPreferenceRepository.save(RND.participantPreference(event.id, user2.id));
     //
@@ -105,6 +115,10 @@ class RndPersistenceTest extends ApiTestBase {
         .usingRecursiveComparison().isEqualTo(reminder);
     assertThat(invitationRepository.findById(invitation.id).orElseThrow())
         .usingRecursiveComparison().isEqualTo(invitation);
+    assertThat(placeRepository.findById(place.id).orElseThrow())
+        .usingRecursiveComparison().isEqualTo(place);
+    assertThat(eventSuggestionRepository.findById(suggestion.id).orElseThrow())
+        .usingRecursiveComparison().isEqualTo(suggestion);
     assertThat(participantPreferenceRepository.findById(preference.id).orElseThrow())
         .usingRecursiveComparison().isEqualTo(preference);
 

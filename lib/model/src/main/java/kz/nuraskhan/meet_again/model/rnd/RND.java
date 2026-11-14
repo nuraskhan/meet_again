@@ -11,10 +11,12 @@ import kz.nuraskhan.meet_again.model.entity.ChatMessage;
 import kz.nuraskhan.meet_again.model.entity.EmailVerification;
 import kz.nuraskhan.meet_again.model.entity.Event;
 import kz.nuraskhan.meet_again.model.entity.EventReminder;
+import kz.nuraskhan.meet_again.model.entity.EventSuggestion;
 import kz.nuraskhan.meet_again.model.entity.EventTimeOption;
 import kz.nuraskhan.meet_again.model.entity.Friendship;
 import kz.nuraskhan.meet_again.model.entity.Invitation;
 import kz.nuraskhan.meet_again.model.entity.ParticipantPreference;
+import kz.nuraskhan.meet_again.model.entity.Place;
 import kz.nuraskhan.meet_again.model.entity.Profile;
 import kz.nuraskhan.meet_again.model.entity.UserAccount;
 import kz.nuraskhan.meet_again.model.enums.EventStatus;
@@ -198,6 +200,39 @@ public final class RND {
     x.inviteeUserAccountId = inviteeUserAccountId;
     x.status = InvitationStatus.PENDING;
     x.createdAt = pastInstant();
+    return x;
+  }
+
+  /** Somewhere on the globe, away from the poles and the date line. Not marked as a sample. */
+  public static Place place(EventType category) {
+    Place x = new Place();
+    x.name = "Place " + str(10);
+    x.category = category;
+    x.description = "About " + str(30);
+    x.address = intBetween(1, 999) + " " + str(8) + " St";
+    x.latitude = intBetween(-60_000, 60_000) / 1000.0;
+    x.longitude = intBetween(-170_000, 170_000) / 1000.0;
+    x.rating = intBetween(0, 50) / 10.0;
+    x.priceMin = intBetween(0, 3000);
+    x.priceMax = x.priceMin + intBetween(0, 10000);
+    x.website = "https://rnd.test/place/" + str(10);
+    x.phone = "+1 555 " + intBetween(100, 999) + " " + intBetween(1000, 9999);
+    x.sample = false;
+    x.createdAt = now();
+    return x;
+  }
+
+  public static EventSuggestion eventSuggestion(Long eventId, Long placeId, int rank) {
+    EventSuggestion x = new EventSuggestion();
+    x.eventId = eventId;
+    x.placeId = placeId;
+    x.rank = rank;
+    x.averageDistanceMi = intBetween(0, 200) / 10.0;
+    x.farthestDistanceMi = x.averageDistanceMi + intBetween(0, 100) / 10.0;
+    x.withinEveryonesReach = bool();
+    x.fitsBudget = bool();
+    x.participantsConsidered = intBetween(1, 8);
+    x.createdAt = now();
     return x;
   }
 

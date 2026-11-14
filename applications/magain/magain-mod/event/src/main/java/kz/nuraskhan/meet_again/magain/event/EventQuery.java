@@ -1,9 +1,11 @@
 package kz.nuraskhan.meet_again.magain.event;
 
 import static kz.nuraskhan.meet_again.jooq.Tables.EVENT;
+import static kz.nuraskhan.meet_again.jooq.Tables.EVENT_SUGGESTION;
 import static kz.nuraskhan.meet_again.jooq.Tables.EVENT_TIME_OPTION;
 import static kz.nuraskhan.meet_again.jooq.Tables.INVITATION;
 import static kz.nuraskhan.meet_again.jooq.Tables.PARTICIPANT_PREFERENCE;
+import static kz.nuraskhan.meet_again.jooq.Tables.PLACE;
 import static kz.nuraskhan.meet_again.jooq.Tables.PROFILE;
 
 import java.time.Instant;
@@ -16,6 +18,7 @@ import kz.nuraskhan.meet_again.magain.event.dto.EventDto;
 import kz.nuraskhan.meet_again.magain.event.dto.InvitationDto;
 import kz.nuraskhan.meet_again.magain.event.dto.InviteeDto;
 import kz.nuraskhan.meet_again.magain.event.dto.PreferenceDto;
+import kz.nuraskhan.meet_again.magain.event.dto.SuggestionDto;
 import kz.nuraskhan.meet_again.magain.event.dto.PublicEventDto;
 import kz.nuraskhan.meet_again.model.enums.EventStatus;
 import kz.nuraskhan.meet_again.model.enums.InvitationStatus;
@@ -108,8 +111,8 @@ public class EventQuery {
   }
 
   /**
-   * Four queries whatever the number of events: the events, the guests of all of them, the
-   * proposed dates of all of them, the caller's own preferences for them.
+   * Five queries whatever the number of events: the events, the guests of all of them, the
+   * proposed dates of all of them, the caller's own preferences for them, the suggested places.
    */
   private List<EventDto> events(Long me, Condition condition) {
     var eventRows = dsl
@@ -165,6 +168,44 @@ public class EventQuery {
             row.get(PARTICIPANT_PREFERENCE.LOCATION_TEXT),
             row.get(PARTICIPANT_PREFERENCE.TRAVEL_RADIUS_MI)));
 
+    // The places suggested, as they were saved. Only the caller's own distance is worked out now,
+    // from the caller's own saved coordinates: nobody else's location takes part in the answer.
+    Map<Long, List<SuggestionDto>> suggestionsByEventId = dsl
+        .select(EVENT_SUGGESTION.asterisk(), PLACE.asterisk())
+        .from(EVENT_SUGGESTION)
+        .join(PLACE).on(PLACE.ID.eq(EVENT_SUGGESTION.PLACE_ID))
+        .where(EVENT_SUGGESTION.EVENT_ID.in(eventIds))
+        .orderBy(EVENT_SUGGESTION.RANK)
+        .fetchGroups(EVENT_SUGGESTION.EVENT_ID, row -> {
+          PreferenceDto mine = myPreferenceByEventId.get(row.get(EVENT_SUGGESTION.EVENT_ID));
+          Double myDistanceMi = mine == null || mine.latitude() == null
+              ? null
+              : Geo.round1(Geo.distanceMi(mine.latitude(), mine.longitude(),
+                  row.get(PLACE.LATITUDE), row.get(PLACE.LONGITUDE)));
+
+          return new SuggestionDto(
+              row.get(EVENT_SUGGESTION.RANK),
+              row.get(PLACE.ID),
+              row.get(PLACE.NAME),
+              row.get(PLACE.CATEGORY),
+              row.get(PLACE.DESCRIPTION),
+              row.get(PLACE.ADDRESS),
+              row.get(PLACE.LATITUDE),
+              row.get(PLACE.LONGITUDE),
+              row.get(PLACE.RATING),
+              row.get(PLACE.PRICE_MIN),
+              row.get(PLACE.PRICE_MAX),
+              row.get(PLACE.WEBSITE),
+              row.get(PLACE.PHONE),
+              row.get(EVENT_SUGGESTION.AVERAGE_DISTANCE_MI),
+              row.get(EVENT_SUGGESTION.FARTHEST_DISTANCE_MI),
+              row.get(EVENT_SUGGESTION.WITHIN_EVERYONES_REACH),
+              row.get(EVENT_SUGGESTION.FITS_BUDGET),
+              row.get(EVENT_SUGGESTION.PARTICIPANTS_CONSIDERED),
+              myDistanceMi,
+              row.get(PLACE.SAMPLE));
+        });
+
     List<EventDto> result = new ArrayList<>();
     for (var row : eventRows) {
       Long eventId = row.get(EVENT.ID);
@@ -187,7 +228,9 @@ public class EventQuery {
           creatorId,
           row.get(PROFILE.DISPLAY_NAME),
           inviteesByEventId.getOrDefault(eventId, List.of()),
-          myPreferenceByEventId.get(eventId)));
+          myPreferenceByEventId.get(eventId),
+          row.get(EVENT.SUGGESTED_AT),
+          suggestionsByEventId.getOrDefault(eventId, List.of())));
     }
     return result;
   }

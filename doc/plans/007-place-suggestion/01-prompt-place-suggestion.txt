@@ -1,0 +1,1 @@
+now lets add coordinate support and after considering preferred location and distance of all particapence (or just via button) will suggest better option from db (check coordinate and category then suggeest higher leveled ones 2-3 options with details) . Or it will be availiable every check of card (but it will be saved in db once)

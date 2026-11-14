@@ -1,0 +1,1 @@
+also add cron for check every minute to check expired events (also add statuses of events)
