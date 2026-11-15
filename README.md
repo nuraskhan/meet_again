@@ -7,6 +7,14 @@ plan. Not another group chat, not another calendar: just the plan.
 
 Try it: https://meet-again-ui-112b5408b3d1.herokuapp.com/
 
+## Watch the demo
+
+[![Watch the Hangelo demo on YouTube](https://img.youtube.com/vi/LBUlGUmj4EQ/hqdefault.jpg)](https://www.youtube.com/watch?v=LBUlGUmj4EQ)
+
+▶ [Watch the walk-through on YouTube](https://www.youtube.com/watch?v=LBUlGUmj4EQ). The same video plays
+right on the [welcome page](https://meet-again-ui-112b5408b3d1.herokuapp.com/), and "Try demo" there
+opens the application as Steve Jobs or Steve Wozniak with no sign-up.
+
 Link to fronend-repo: https://github.com/nuraskhan/meet_again_ui
 
 ## Why

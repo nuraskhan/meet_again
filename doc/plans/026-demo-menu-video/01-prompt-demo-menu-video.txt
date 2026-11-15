@@ -1,0 +1,3 @@
+Try demo should be visible and attentioned
+also after clicking will be drop down with options to sign in as jobs or wosniak
+also add https://www.youtube.com/watch?v=LBUlGUmj4EQ in landing and in readme with player
