@@ -88,4 +88,8 @@ public class Event {
 
   @Column(name = "created_at", nullable = false)
   public Instant createdAt;
+
+  /** Filled = deleted by its creator: the event and its chat are gone for everyone. */
+  @Column(name = "deleted_at")
+  public Instant deletedAt;
 }

@@ -74,6 +74,7 @@ public class EventQuery {
         .from(EVENT)
         .join(PROFILE).on(PROFILE.USER_ACCOUNT_ID.eq(EVENT.CREATOR__USER_ACCOUNT_ID))
         .where(EVENT.SHARE_TOKEN.eq(shareToken))
+        .and(EVENT.DELETED_AT.isNull())
         .fetchOne();
 
     if (row == null) {
@@ -112,7 +113,10 @@ public class EventQuery {
             .and(INVITATION.INVITEE__USER_ACCOUNT_ID.eq(me))
             // Someone the creator removed is out: the event is no longer theirs to open.
             // Someone who only asked to join is not in yet: the feed shows them what is public.
-            .and(INVITATION.STATUS.notIn(InvitationStatus.REMOVED, InvitationStatus.REQUESTED))));
+            .and(INVITATION.STATUS.notIn(InvitationStatus.REMOVED, InvitationStatus.REQUESTED))
+            // Not coming to something that is over or cancelled: nothing of theirs is left in it.
+            // (This is also how a guest clears a closed event from their list: by leaving it.)
+            .and(INVITATION.STATUS.ne(InvitationStatus.DECLINED).or(EVENT.STATUS.eq(EventStatus.ACTIVE)))));
   }
 
   /**
@@ -125,6 +129,8 @@ public class EventQuery {
         .from(EVENT)
         .join(PROFILE).on(PROFILE.USER_ACCOUNT_ID.eq(EVENT.CREATOR__USER_ACCOUNT_ID))
         .where(condition)
+        // Deleted by its creator: gone for everyone.
+        .and(EVENT.DELETED_AT.isNull())
         .orderBy(EVENT.ID.desc())
         .fetch();
 

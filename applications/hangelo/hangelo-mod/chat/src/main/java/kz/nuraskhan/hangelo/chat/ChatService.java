@@ -92,6 +92,21 @@ public class ChatService {
     }
   }
 
+  /**
+   * Closes the chat for everyone: every member is taken out, so it leaves their lists and nobody
+   * can read or write in it. Called when the event the chat belongs to is deleted. The messages
+   * stay in the database.
+   */
+  @Transactional
+  public void close(Long chatId) {
+    Instant now = Instant.now();
+    for (ChatMember member : chatMemberRepository.findByChatId(chatId)) {
+      if (member.leftAt == null) {
+        member.leftAt = now;
+      }
+    }
+  }
+
   /** @return id of the message */
   @Transactional
   public Long postMessage(Long me, Long chatId, String text) {

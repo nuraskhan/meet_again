@@ -12,6 +12,7 @@ import kz.nuraskhan.hangelo.chat.ChatService;
 import kz.nuraskhan.hangelo.event.dto.CreateEventRequest;
 import kz.nuraskhan.hangelo.notification.NotificationService;
 import kz.nuraskhan.hangelo.event.dto.SavePreferenceRequest;
+import kz.nuraskhan.hangelo.event.dto.SuggestRequest;
 import kz.nuraskhan.hangelo.model.entity.Event;
 import kz.nuraskhan.hangelo.model.entity.EventTimeOption;
 import kz.nuraskhan.hangelo.model.entity.Invitation;
@@ -339,11 +340,20 @@ public class EventService {
       invitation.respondedAt = Instant.now();
       return;
     }
+    Event event = invitation == null ? null : eventRepository.findById(eventId).orElse(null);
+
+    // An event that is over or cancelled: a guest takes it, and its chat, off their own lists.
+    // Nobody is told - there is nothing left to come to.
+    if (event != null && event.status != EventStatus.ACTIVE && invitation.status.isIn()) {
+      invitation.status = InvitationStatus.DECLINED;
+      invitation.respondedAt = Instant.now();
+      chatService.leave(event.chatId, me);
+      return;
+    }
+
     if (invitation == null || invitation.status != InvitationStatus.ACCEPTED) {
       throw ApiException.notFound("event_not_found", "Event not found");
     }
-
-    Event event = eventRepository.findById(eventId).orElseThrow();
     requireActive(event);
 
     invitation.status = InvitationStatus.DECLINED;
@@ -438,6 +448,78 @@ public class EventService {
     participantPreferenceRepository.saveAndFlush(preference);
 
     suggestionService.suggestIfEveryoneIsKnown(eventId);
+  }
+
+  /**
+   * "Suggest places" for someone who may not have said where they are yet: if the caller sends
+   * their position and has no saved location for the event, the position is saved as theirs (as
+   * the location form would), and then the places are looked for. One press is enough for a
+   * person planning alone.
+   *
+   * @param request the caller's position; null or empty = use only what is saved
+   */
+  @Transactional
+  public void suggest(Long me, Long eventId, SuggestRequest request) {
+    boolean hasLatitude = request != null && request.latitude() != null;
+    boolean hasLongitude = request != null && request.longitude() != null;
+    if (hasLatitude != hasLongitude) {
+      throw ApiException.badRequest("bad_location", "Latitude and longitude go together");
+    }
+
+    if (hasLatitude) {
+      Event event = eventRepository.findById(eventId).orElse(null);
+      // Who may ask is decided by SuggestionService.refresh below; here only: is there an event
+      // to save a location for. A stranger's position is never saved - refresh refuses them
+      // first, and the whole transaction, this save included, is rolled back.
+      if (event != null && event.status == EventStatus.ACTIVE) {
+        ParticipantPreference preference = participantPreferenceRepository
+            .findByEventIdAndUserAccountId(eventId, me)
+            .orElseGet(() -> {
+              ParticipantPreference created = new ParticipantPreference();
+              created.eventId = eventId;
+              created.userAccountId = me;
+              return created;
+            });
+
+        // A location the person chose themselves is never overwritten by where the device is.
+        if (preference.latitude == null) {
+          preference.latitude = request.latitude();
+          preference.longitude = request.longitude();
+          if (preference.travelRadiusMi == null) {
+            // Not asked: the farthest the invitation itself speaks of.
+            preference.travelRadiusMi = Math.clamp(event.distanceMaxMi, 1, 500);
+          }
+          preference.updatedAt = Instant.now();
+          participantPreferenceRepository.saveAndFlush(preference);
+        }
+      }
+    }
+
+    suggestionService.refresh(me, eventId);
+  }
+
+  /**
+   * The creator deletes the event: it disappears for everyone, and its chat with it. An event that
+   * is still on is cancelled first, so the guests are told it is off. Nothing is removed
+   * physically.
+   */
+  @Transactional
+  public void delete(Long me, Long eventId) {
+    Event event = eventRepository.findById(eventId).orElse(null);
+
+    if (event == null || !event.creatorUserAccountId.equals(me) || event.deletedAt != null) {
+      throw ApiException.notFound("event_not_found", "Event not found");
+    }
+
+    if (event.status == EventStatus.ACTIVE) {
+      event.status = EventStatus.CANCELLED;
+      for (Long guestId : invitationRepository.findGuestIds(eventId)) {
+        notificationService.tell(guestId, NotificationKind.EVENT_CANCELLED, me, eventId);
+      }
+    }
+
+    event.deletedAt = Instant.now();
+    chatService.close(event.chatId);
   }
 
   /** Only the creator cancels. The chat stays. */

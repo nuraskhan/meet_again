@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import kz.nuraskhan.hangelo.event.dto.CreateEventRequest;
 import kz.nuraskhan.hangelo.event.dto.SavePreferenceRequest;
+import kz.nuraskhan.hangelo.event.dto.SuggestRequest;
 import kz.nuraskhan.hangelo.event.dto.EventDto;
 import kz.nuraskhan.hangelo.event.dto.EventTypeDto;
 import kz.nuraskhan.hangelo.model.enums.EventType;
@@ -95,7 +96,8 @@ public class EventController {
 
   /**
    * A guest who said yes is not coming after all, and leaves the chat. They may join again.
-   * Someone whose request to join is still waiting takes it back with the same call.
+   * Someone whose request to join is still waiting takes it back with the same call. A guest of
+   * an event that is over or cancelled takes it, and its chat, off their own lists.
    */
   @PostMapping("/{eventId}/leave")
   public void leave(Principal principal, @PathVariable("eventId") Long eventId) {
@@ -138,10 +140,20 @@ public class EventController {
    * the event. Every later reading of the event shows what was kept; calling this again replaces it.
    */
   @PostMapping("/{eventId}/suggestion/refresh")
-  public EventDto refreshSuggestions(Principal principal, @PathVariable("eventId") Long eventId) {
+  public EventDto refreshSuggestions(Principal principal,
+                                     @PathVariable("eventId") Long eventId,
+                                     @Valid @RequestBody(required = false) SuggestRequest request) {
     Long me = CurrentUser.id(principal);
-    suggestionService.refresh(me, eventId);
+    // With the caller's position in the body, one press is enough for someone who has not said
+    // where they are yet: see EventService.suggest.
+    eventService.suggest(me, eventId, request);
     return eventQuery.get(me, eventId).orElseThrow();
+  }
+
+  /** The creator deletes the event: it and its chat disappear for everyone. */
+  @PostMapping("/{eventId}/delete")
+  public void delete(Principal principal, @PathVariable("eventId") Long eventId) {
+    eventService.delete(CurrentUser.id(principal), eventId);
   }
 
   @PostMapping("/{eventId}/cancel")

@@ -142,6 +142,11 @@ public class Event extends TableImpl<EventRecord> {
      */
     public final TableField<EventRecord, EventVisibility> VISIBILITY = createField(DSL.name("visibility"), SQLDataType.CLOB.nullable(false).defaultValue(DSL.field(DSL.raw("'PRIVATE'::text"), SQLDataType.CLOB)), this, "", new EnumConverter<String, EventVisibility>(String.class, EventVisibility.class));
 
+    /**
+     * The column <code>public.event.deleted_at</code>.
+     */
+    public final TableField<EventRecord, Instant> DELETED_AT = createField(DSL.name("deleted_at"), SQLDataType.INSTANT, this, "");
+
     private Event(Name alias, Table<EventRecord> aliased) {
         this(alias, aliased, (Field<?>[]) null, null);
     }

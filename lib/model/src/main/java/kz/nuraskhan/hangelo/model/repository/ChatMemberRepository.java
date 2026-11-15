@@ -8,4 +8,7 @@ public interface ChatMemberRepository extends JpaRepository<ChatMember, Long> {
 
   /** Also returns a member who has left: check {@code leftAt}. */
   Optional<ChatMember> findByChatIdAndUserAccountId(Long chatId, Long userAccountId);
+
+  /** Everyone who is or was in the chat. */
+  java.util.List<ChatMember> findByChatId(Long chatId);
 }

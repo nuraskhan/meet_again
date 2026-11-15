@@ -280,6 +280,73 @@ class SuggestionApiTest extends ApiTestBase {
   }
 
   @Test
+  void refresh__withThePositionOfSomeonePlanningAlone_suggestsInOnePress_andKeepsThePositionAsTheirs() {
+    TestUser creator = register();
+    long eventId = event(creator, "COFFEE"); // nobody invited, nothing said about a location
+    place("Near", EventType.COFFEE, 1, 4.5);
+
+    //
+    //
+    Response response = post("/event/" + eventId + "/suggestion/refresh", creator,
+        Map.of("latitude", northOfBase(0), "longitude", baseLongitude));
+    //
+    //
+
+    assertThat(response.status()).isEqualTo(200);
+    assertThat(names(response.body().get("suggestions"))).containsExactly("Near");
+    assertThat(response.body().get("suggestions").get(0).get("myDistanceMi").asDouble())
+        .isCloseTo(1.0, within(0.1));
+    // Saved as the location form would have saved it; the radius is the invitation's farthest.
+    JsonNode mine = response.body().get("myPreference");
+    assertThat(mine.get("latitude").asDouble()).isCloseTo(northOfBase(0), within(0.000001));
+    assertThat(mine.get("travelRadiusMi").asInt())
+        .isEqualTo(response.body().get("distanceMaxMi").asInt());
+  }
+
+  @Test
+  void refresh__withAPosition_neverMovesALocationThePersonChoseThemselves() {
+    TestUser creator = register();
+    long eventId = event(creator, "COFFEE");
+    locate(creator, eventId, 0, 7);
+    place("Near", EventType.COFFEE, 1, 4.5);
+
+    //
+    //
+    Response response = post("/event/" + eventId + "/suggestion/refresh", creator,
+        Map.of("latitude", northOfBase(300), "longitude", baseLongitude));
+    //
+    //
+
+    assertThat(response.status()).isEqualTo(200);
+    assertThat(response.body().get("myPreference").get("latitude").asDouble())
+        .isCloseTo(northOfBase(0), within(0.000001));
+    assertThat(response.body().get("myPreference").get("travelRadiusMi").asInt()).isEqualTo(7);
+    assertThat(names(response.body().get("suggestions"))).containsExactly("Near");
+  }
+
+  @Test
+  void refresh__withAPosition_fromAStranger_isRefused_andSavesNothing() {
+    TestUser creator = register();
+    TestUser stranger = register();
+    long eventId = event(creator, "COFFEE");
+
+    //
+    //
+    Response byStranger = post("/event/" + eventId + "/suggestion/refresh", stranger,
+        Map.of("latitude", northOfBase(0), "longitude", baseLongitude));
+    Response halfAPosition = post("/event/" + eventId + "/suggestion/refresh", creator,
+        Map.of("latitude", northOfBase(0)));
+    //
+    //
+
+    assertThat(byStranger.status()).isEqualTo(404);
+    assertThat(halfAPosition.status()).isEqualTo(400);
+    // Nobody is on the map: neither the stranger's position nor half of one was kept.
+    assertThat(post("/event/" + eventId + "/suggestion/refresh", creator).body().get("code").asString())
+        .isEqualTo("no_coordinates");
+  }
+
+  @Test
   void refresh__isOnlyForPeopleOfTheEvent_whileItIsActive() {
     TestUser creator = register();
     TestUser guest = register();
