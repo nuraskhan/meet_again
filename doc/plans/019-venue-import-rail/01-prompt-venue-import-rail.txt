@@ -1,0 +1,2 @@
+HANGELO_2GIS_KEY i have added it
+and dont scroll vertically and horizontally right panel with calendar and etc if you need page will be height of those panel and no need to scrolle bars

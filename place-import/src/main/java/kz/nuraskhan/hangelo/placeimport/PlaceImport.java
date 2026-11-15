@@ -44,8 +44,17 @@ public final class PlaceImport {
   /** How many venues of one category are kept for one city. */
   static final int PER_CATEGORY = 20;
 
-  /** How many the directory is asked for, to choose those from: its largest page. */
-  private static final int PAGE_SIZE = 50;
+  /**
+   * How many venues one request brings. WHY 10 and not the 50 the documentation allows: a demo
+   * key is refused anything larger ("Length of parameter 'page_size' should be from 1 to 10").
+   */
+  private static final int PAGE_SIZE = 10;
+
+  /**
+   * How many pages are read for one category of one city: 30 candidates to choose the 20 from.
+   * More pages would choose better, but every page is a request, and a key has a daily limit.
+   */
+  private static final int PAGES = 3;
 
   /** A city: its name as people here write it, its centre, and how far around it to look. */
   record City(String name, double latitude, double longitude, int radiusM) {
@@ -101,7 +110,26 @@ public final class PlaceImport {
     try (Connection connection = DriverManager.getConnection(url, user, password)) {
       for (City city : CITIES) {
         for (Map.Entry<String, String> category : QUERIES.entrySet()) {
-          List<Venue> found = TwoGisParser.parse(ask(key, city, category.getValue()));
+          List<Venue> found = new java.util.ArrayList<>();
+          for (int page = 1; page <= PAGES; page++) {
+            List<Venue> onPage;
+            try {
+              onPage = TwoGisParser.parse(ask(key, city, category.getValue(), page));
+            } catch (IllegalStateException e) {
+              // The first page failing is a real failure. A later page being refused (some keys
+              // may not read past the first pages) only means: work with what there is.
+              if (page == 1) {
+                throw e;
+              }
+              System.out.println("  page " + page + " refused: " + e.getMessage());
+              break;
+            }
+            found.addAll(onPage);
+            if (onPage.size() < PAGE_SIZE) {
+              break; // the last page
+            }
+            Thread.sleep(300);
+          }
           List<Venue> chosen = mostPopular(found, PER_CATEGORY);
           for (Venue venue : chosen) {
             save(connection, venue, category.getKey(), city.name());
@@ -129,7 +157,8 @@ public final class PlaceImport {
         .toList();
   }
 
-  private static String ask(String key, City city, String query) throws IOException, InterruptedException {
+  private static String ask(String key, City city, String query, int page)
+      throws IOException, InterruptedException {
     // type=branch: businesses and their branches - not streets, buildings or bus stops that
     // happen to carry the word.
     String address = "https://catalog.api.2gis.com/3.0/items"
@@ -137,6 +166,7 @@ public final class PlaceImport {
         + "&point=" + city.longitude() + "," + city.latitude() // the API wants longitude first
         + "&radius=" + city.radiusM()
         + "&type=branch"
+        + "&page=" + page
         + "&page_size=" + PAGE_SIZE
         + "&locale=ru_KZ"
         + "&fields=items.point,items.reviews,items.full_address_name"
@@ -147,7 +177,8 @@ public final class PlaceImport {
         HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
 
     // WHY the address is not in the message: it carries the key.
-    if (response.statusCode() / 100 != 2 && response.statusCode() != 404) {
+    // A refusal (4xx) comes with a body that says why; the parser turns it into the error.
+    if (response.statusCode() >= 500) {
       throw new IOException("2GIS answered HTTP " + response.statusCode() + " for \"" + query + "\" in " + city.name());
     }
     return response.body();
