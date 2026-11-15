@@ -194,10 +194,17 @@ public class SuggestionService {
             }
           }
 
-          boolean fitsBudget = row.get(PLACE.PRICE_MIN) <= event.priceMax
-              && row.get(PLACE.PRICE_MAX) >= event.priceMin;
+          // A place whose prices are not known is not judged by the budget: leaving it out for
+          // what we do not know would hide most real venues.
+          Integer placeMin = row.get(PLACE.PRICE_MIN);
+          Integer placeMax = row.get(PLACE.PRICE_MAX);
+          boolean fitsBudget = placeMin == null || placeMax == null
+              || (placeMin <= event.priceMax && placeMax >= event.priceMin);
 
-          candidates.add(new Candidate(row.get(PLACE.ID), row.get(PLACE.RATING),
+          // Not rated counts as the lowest rating: among places that suit, a rated one goes first.
+          Double rated = row.get(PLACE.RATING);
+
+          candidates.add(new Candidate(row.get(PLACE.ID), rated == null ? 0 : rated,
               total / people.size(), farthest, withinEveryonesReach, fitsBudget));
         });
 

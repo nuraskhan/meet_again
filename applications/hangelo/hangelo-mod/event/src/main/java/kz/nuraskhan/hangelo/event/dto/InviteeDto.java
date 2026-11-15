@@ -13,6 +13,8 @@ import kz.nuraskhan.hangelo.model.enums.InvitationStatus;
  * @param locationText   the place as the guest typed it; null if they shared coordinates only or
  *                       said nothing
  * @param locationShared the guest shared the location of their device
+ * @param noShow         the creator marked, after the event, that this guest said "coming" and
+ *                       did not come
  */
 public record InviteeDto(
     Long invitationId,
@@ -22,6 +24,7 @@ public record InviteeDto(
     Instant respondedAt,
     Integer travelRadiusMi,
     String locationText,
-    boolean locationShared
+    boolean locationShared,
+    boolean noShow
 ) {
 }

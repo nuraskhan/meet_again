@@ -90,6 +90,16 @@ public class Invitation extends TableImpl<InvitationRecord> {
      */
     public final TableField<InvitationRecord, Instant> RESPONDED_AT = createField(DSL.name("responded_at"), SQLDataType.INSTANT, this, "");
 
+    /**
+     * The column <code>public.invitation.left_at</code>.
+     */
+    public final TableField<InvitationRecord, Instant> LEFT_AT = createField(DSL.name("left_at"), SQLDataType.INSTANT, this, "");
+
+    /**
+     * The column <code>public.invitation.no_show</code>.
+     */
+    public final TableField<InvitationRecord, Boolean> NO_SHOW = createField(DSL.name("no_show"), SQLDataType.BOOLEAN.nullable(false).defaultValue(DSL.field(DSL.raw("false"), SQLDataType.BOOLEAN)), this, "");
+
     private Invitation(Name alias, Table<InvitationRecord> aliased) {
         this(alias, aliased, (Field<?>[]) null, null);
     }

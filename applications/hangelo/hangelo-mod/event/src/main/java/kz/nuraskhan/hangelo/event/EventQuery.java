@@ -17,6 +17,7 @@ import java.util.Optional;
 import kz.nuraskhan.hangelo.event.dto.EventDto;
 import kz.nuraskhan.hangelo.event.dto.InvitationDto;
 import kz.nuraskhan.hangelo.event.dto.InviteeDto;
+import kz.nuraskhan.hangelo.event.dto.PlaceDto;
 import kz.nuraskhan.hangelo.event.dto.PreferenceDto;
 import kz.nuraskhan.hangelo.event.dto.SuggestionDto;
 import kz.nuraskhan.hangelo.event.dto.PublicEventDto;
@@ -144,7 +145,7 @@ public class EventQuery {
     // coordinates exist leave the server; the coordinates themselves go to their owner alone.
     Map<Long, List<InviteeDto>> inviteesByEventId = dsl
         .select(INVITATION.EVENT_ID, INVITATION.ID, PROFILE.USER_ACCOUNT_ID, PROFILE.DISPLAY_NAME,
-            INVITATION.STATUS, INVITATION.RESPONDED_AT,
+            INVITATION.STATUS, INVITATION.RESPONDED_AT, INVITATION.NO_SHOW,
             PARTICIPANT_PREFERENCE.TRAVEL_RADIUS_MI, PARTICIPANT_PREFERENCE.LOCATION_TEXT,
             PARTICIPANT_PREFERENCE.LATITUDE)
         .from(INVITATION)
@@ -162,9 +163,14 @@ public class EventQuery {
             row.get(INVITATION.RESPONDED_AT),
             row.get(PARTICIPANT_PREFERENCE.TRAVEL_RADIUS_MI),
             row.get(PARTICIPANT_PREFERENCE.LOCATION_TEXT),
-            row.get(PARTICIPANT_PREFERENCE.LATITUDE) != null));
+            row.get(PARTICIPANT_PREFERENCE.LATITUDE) != null,
+            row.get(INVITATION.NO_SHOW)));
 
     Map<Long, List<Instant>> timesByEventId = proposedTimes(eventIds);
+
+    // The venue chosen for each event that has one.
+    Map<Long, PlaceDto> placeById = places(PLACE.ID.in(eventRows.getValues(EVENT.PLACE_ID)), 1000).stream()
+        .collect(java.util.stream.Collectors.toMap(PlaceDto::id, place -> place));
 
     Map<Long, PreferenceDto> myPreferenceByEventId = dsl
         .select(PARTICIPANT_PREFERENCE.EVENT_ID, PARTICIPANT_PREFERENCE.LATITUDE,
@@ -242,12 +248,85 @@ public class EventQuery {
           // Who is asking to join is the creator's business alone, until the creator says yes.
           inviteesByEventId.getOrDefault(eventId, List.of()).stream()
               .filter(invitee -> creatorId.equals(me) || invitee.status() != InvitationStatus.REQUESTED)
+              // Who was marked as not having come is between the creator and that guest's rating:
+              // the other guests are not told (the guest themselves included - they see it in
+              // their rating, not as a label next to their name).
+              .map(invitee -> creatorId.equals(me) || !invitee.noShow() ? invitee : withoutNoShow(invitee))
               .toList(),
           myPreferenceByEventId.get(eventId),
           row.get(EVENT.SUGGESTED_AT),
-          suggestionsByEventId.getOrDefault(eventId, List.of())));
+          suggestionsByEventId.getOrDefault(eventId, List.of()),
+          row.get(EVENT.PLACE_ID) == null ? null : placeById.get(row.get(EVENT.PLACE_ID))));
     }
     return result;
+  }
+
+  /**
+   * Venues to choose from: of one category and one city, by a part of the name - each condition
+   * only if given. The best rated first, among equals the one with more reviews.
+   *
+   * @param category null = any
+   * @param city     null = any; compared without regard to case
+   * @param text     a part of the name or the address; null = any
+   */
+  public List<PlaceDto> searchPlaces(kz.nuraskhan.hangelo.model.enums.EventType category,
+                                     String city, String text, int limit) {
+    Condition condition = PLACE.DEACTIVATED_AT.isNull();
+    if (category != null) {
+      condition = condition.and(PLACE.CATEGORY.eq(category));
+    }
+    if (city != null && !city.isBlank()) {
+      condition = condition.and(PLACE.CITY.equalIgnoreCase(city.trim()));
+    }
+    if (text != null && !text.isBlank()) {
+      // The person's text is a plain piece of a name: % and _ in it mean themselves.
+      String pattern = "%" + text.trim().replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%";
+      condition = condition.and(PLACE.NAME.likeIgnoreCase(pattern, '\\')
+          .or(PLACE.ADDRESS.likeIgnoreCase(pattern, '\\')));
+    }
+    return places(condition, limit);
+  }
+
+  /** The cities there are venues in, by the number of venues. */
+  public List<String> placeCities() {
+    return dsl
+        .select(PLACE.CITY)
+        .from(PLACE)
+        .where(PLACE.DEACTIVATED_AT.isNull())
+        .and(PLACE.CITY.isNotNull())
+        .groupBy(PLACE.CITY)
+        .orderBy(DSL.count().desc(), PLACE.CITY)
+        .fetch(PLACE.CITY);
+  }
+
+  private List<PlaceDto> places(Condition condition, int limit) {
+    return dsl
+        .select(PLACE.asterisk())
+        .from(PLACE)
+        .where(condition)
+        .orderBy(PLACE.RATING.desc().nullsLast(), PLACE.REVIEW_COUNT.desc().nullsLast(), PLACE.ID)
+        .limit(limit)
+        .fetch(row -> new PlaceDto(
+            row.get(PLACE.ID),
+            row.get(PLACE.NAME),
+            row.get(PLACE.CATEGORY),
+            row.get(PLACE.DESCRIPTION),
+            row.get(PLACE.ADDRESS),
+            row.get(PLACE.CITY),
+            row.get(PLACE.LATITUDE),
+            row.get(PLACE.LONGITUDE),
+            row.get(PLACE.RATING),
+            row.get(PLACE.REVIEW_COUNT),
+            row.get(PLACE.PRICE_MIN),
+            row.get(PLACE.PRICE_MAX),
+            row.get(PLACE.WEBSITE),
+            row.get(PLACE.PHONE),
+            row.get(PLACE.SAMPLE)));
+  }
+
+  private static InviteeDto withoutNoShow(InviteeDto invitee) {
+    return new InviteeDto(invitee.invitationId(), invitee.userId(), invitee.displayName(), invitee.status(),
+        invitee.respondedAt(), invitee.travelRadiusMi(), invitee.locationText(), invitee.locationShared(), false);
   }
 
   /** The proposed dates of each event, earliest first. Events without dates are absent. */

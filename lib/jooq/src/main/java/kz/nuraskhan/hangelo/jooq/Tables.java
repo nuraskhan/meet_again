@@ -4,6 +4,7 @@
 package kz.nuraskhan.hangelo.jooq;
 
 
+import kz.nuraskhan.hangelo.jooq.tables.Availability;
 import kz.nuraskhan.hangelo.jooq.tables.Chat;
 import kz.nuraskhan.hangelo.jooq.tables.ChatMember;
 import kz.nuraskhan.hangelo.jooq.tables.ChatMessage;
@@ -29,6 +30,11 @@ import kz.nuraskhan.hangelo.jooq.tables.UserAccount;
  */
 @SuppressWarnings({ "all", "unchecked", "rawtypes", "this-escape" })
 public class Tables {
+
+    /**
+     * The table <code>public.availability</code>.
+     */
+    public static final Availability AVAILABILITY = Availability.AVAILABILITY;
 
     /**
      * The table <code>public.chat</code>.

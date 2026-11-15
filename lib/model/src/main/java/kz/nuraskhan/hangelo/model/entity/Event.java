@@ -92,4 +92,8 @@ public class Event {
   /** Filled = deleted by its creator: the event and its chat are gone for everyone. */
   @Column(name = "deleted_at")
   public Instant deletedAt;
+
+  /** The venue the creator chose for the event; null = not chosen. */
+  @Column(name = "place_id")
+  public Long placeId;
 }

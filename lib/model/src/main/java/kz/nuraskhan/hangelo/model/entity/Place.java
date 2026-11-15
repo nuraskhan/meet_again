@@ -40,15 +40,18 @@ public class Place {
   @Column(name = "longitude", nullable = false)
   public Double longitude;
 
-  /** How good the place is, 0 to 5. */
-  @Column(name = "rating", nullable = false)
+  /** How good the place is, 0 to 5; null = nobody has rated it. */
+  @Column(name = "rating")
   public Double rating;
 
-  /** Expected spending per person, in the same units as the budget of an event. */
-  @Column(name = "price_min", nullable = false)
+  /**
+   * Expected spending per person, in the same units as the budget of an event; both null = not
+   * known (the place is then never left out for the budget).
+   */
+  @Column(name = "price_min")
   public Integer priceMin;
 
-  @Column(name = "price_max", nullable = false)
+  @Column(name = "price_max")
   public Integer priceMax;
 
   @Column(name = "website")
@@ -67,4 +70,20 @@ public class Place {
   /** Filled = no longer suggested. */
   @Column(name = "deactivated_at")
   public Instant deactivatedAt;
+
+  /** The city it is in: "Astana", "Almaty". Null for places put in before cities were kept. */
+  @Column(name = "city")
+  public String city;
+
+  /** Where the record came from ("2GIS"); null = entered by hand. */
+  @Column(name = "source")
+  public String source;
+
+  /** Its id at the source: loading the same place again updates this row instead of adding one. */
+  @Column(name = "external_id")
+  public String externalId;
+
+  /** How many reviews the rating rests on; null = unknown. */
+  @Column(name = "review_count")
+  public Integer reviewCount;
 }

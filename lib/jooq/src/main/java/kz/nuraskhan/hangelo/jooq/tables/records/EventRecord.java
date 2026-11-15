@@ -261,6 +261,20 @@ public class EventRecord extends UpdatableRecordImpl<EventRecord> {
         return (Instant) get(16);
     }
 
+    /**
+     * Setter for <code>public.event.place_id</code>.
+     */
+    public void setPlaceId(Long value) {
+        set(17, value);
+    }
+
+    /**
+     * Getter for <code>public.event.place_id</code>.
+     */
+    public Long getPlaceId() {
+        return (Long) get(17);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -284,7 +298,7 @@ public class EventRecord extends UpdatableRecordImpl<EventRecord> {
     /**
      * Create a detached, initialised EventRecord
      */
-    public EventRecord(Long id, Long creator_UserAccountId, Long chatId, EventType eventType, String title, String description, Integer distanceMinMi, Integer distanceMaxMi, Integer priceMin, Integer priceMax, EventStatus status, Instant createdAt, String shareToken, String timeZone, Instant suggestedAt, EventVisibility visibility, Instant deletedAt) {
+    public EventRecord(Long id, Long creator_UserAccountId, Long chatId, EventType eventType, String title, String description, Integer distanceMinMi, Integer distanceMaxMi, Integer priceMin, Integer priceMax, EventStatus status, Instant createdAt, String shareToken, String timeZone, Instant suggestedAt, EventVisibility visibility, Instant deletedAt, Long placeId) {
         super(Event.EVENT);
 
         setId(id);
@@ -304,6 +318,7 @@ public class EventRecord extends UpdatableRecordImpl<EventRecord> {
         setSuggestedAt(suggestedAt);
         setVisibility(visibility);
         setDeletedAt(deletedAt);
+        setPlaceId(placeId);
         resetTouchedOnNotNull();
     }
 }

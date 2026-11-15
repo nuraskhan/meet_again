@@ -231,6 +231,62 @@ public class PlaceRecord extends UpdatableRecordImpl<PlaceRecord> {
         return (Instant) get(14);
     }
 
+    /**
+     * Setter for <code>public.place.city</code>.
+     */
+    public void setCity(String value) {
+        set(15, value);
+    }
+
+    /**
+     * Getter for <code>public.place.city</code>.
+     */
+    public String getCity() {
+        return (String) get(15);
+    }
+
+    /**
+     * Setter for <code>public.place.source</code>.
+     */
+    public void setSource(String value) {
+        set(16, value);
+    }
+
+    /**
+     * Getter for <code>public.place.source</code>.
+     */
+    public String getSource() {
+        return (String) get(16);
+    }
+
+    /**
+     * Setter for <code>public.place.external_id</code>.
+     */
+    public void setExternalId(String value) {
+        set(17, value);
+    }
+
+    /**
+     * Getter for <code>public.place.external_id</code>.
+     */
+    public String getExternalId() {
+        return (String) get(17);
+    }
+
+    /**
+     * Setter for <code>public.place.review_count</code>.
+     */
+    public void setReviewCount(Integer value) {
+        set(18, value);
+    }
+
+    /**
+     * Getter for <code>public.place.review_count</code>.
+     */
+    public Integer getReviewCount() {
+        return (Integer) get(18);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -254,7 +310,7 @@ public class PlaceRecord extends UpdatableRecordImpl<PlaceRecord> {
     /**
      * Create a detached, initialised PlaceRecord
      */
-    public PlaceRecord(Long id, String name, EventType category, String description, String address, Double latitude, Double longitude, Double rating, Integer priceMin, Integer priceMax, String website, String phone, Boolean sample, Instant createdAt, Instant deactivatedAt) {
+    public PlaceRecord(Long id, String name, EventType category, String description, String address, Double latitude, Double longitude, Double rating, Integer priceMin, Integer priceMax, String website, String phone, Boolean sample, Instant createdAt, Instant deactivatedAt, String city, String source, String externalId, Integer reviewCount) {
         super(Place.PLACE);
 
         setId(id);
@@ -272,6 +328,10 @@ public class PlaceRecord extends UpdatableRecordImpl<PlaceRecord> {
         setSample(sample);
         setCreatedAt(createdAt);
         setDeactivatedAt(deactivatedAt);
+        setCity(city);
+        setSource(source);
+        setExternalId(externalId);
+        setReviewCount(reviewCount);
         resetTouchedOnNotNull();
     }
 }

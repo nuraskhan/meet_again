@@ -150,6 +150,44 @@ public class EventController {
     return eventQuery.get(me, eventId).orElseThrow();
   }
 
+  /** The creator chooses the venue of the event (or changes it). */
+  @PostMapping("/{eventId}/place/{placeId}/attach")
+  public EventDto attachPlace(Principal principal,
+                              @PathVariable("eventId") Long eventId,
+                              @PathVariable("placeId") Long placeId) {
+    Long me = CurrentUser.id(principal);
+    eventService.attachPlace(me, eventId, placeId);
+    return eventQuery.get(me, eventId).orElseThrow();
+  }
+
+  /** The creator takes the venue off the event. */
+  @PostMapping("/{eventId}/place/detach")
+  public EventDto detachPlace(Principal principal, @PathVariable("eventId") Long eventId) {
+    Long me = CurrentUser.id(principal);
+    eventService.detachPlace(me, eventId);
+    return eventQuery.get(me, eventId).orElseThrow();
+  }
+
+  /** After the event the creator marks a guest who said "coming" and did not come. */
+  @PostMapping("/{eventId}/guest/{userId}/no-show")
+  public EventDto noShow(Principal principal,
+                         @PathVariable("eventId") Long eventId,
+                         @PathVariable("userId") Long userId) {
+    Long me = CurrentUser.id(principal);
+    eventService.markNoShow(me, eventId, userId, true);
+    return eventQuery.get(me, eventId).orElseThrow();
+  }
+
+  /** The creator takes the "did not come" mark back. */
+  @PostMapping("/{eventId}/guest/{userId}/came")
+  public EventDto came(Principal principal,
+                       @PathVariable("eventId") Long eventId,
+                       @PathVariable("userId") Long userId) {
+    Long me = CurrentUser.id(principal);
+    eventService.markNoShow(me, eventId, userId, false);
+    return eventQuery.get(me, eventId).orElseThrow();
+  }
+
   /** The creator deletes the event: it and its chat disappear for everyone. */
   @PostMapping("/{eventId}/delete")
   public void delete(Principal principal, @PathVariable("eventId") Long eventId) {

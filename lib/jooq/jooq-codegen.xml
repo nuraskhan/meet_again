@@ -51,6 +51,11 @@
           <includeExpression>public\.notification\.kind</includeExpression>
         </forcedType>
         <forcedType>
+          <userType>kz.nuraskhan.hangelo.model.enums.AvailabilityKind</userType>
+          <enumConverter>true</enumConverter>
+          <includeExpression>public\.availability\.kind</includeExpression>
+        </forcedType>
+        <forcedType>
           <userType>kz.nuraskhan.hangelo.model.enums.Privilege</userType>
           <enumConverter>true</enumConverter>
           <includeExpression>public\.profile\.privilege</includeExpression>

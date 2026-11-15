@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.ThreadLocalRandom;
+import kz.nuraskhan.hangelo.model.entity.Availability;
 import kz.nuraskhan.hangelo.model.entity.Chat;
 import kz.nuraskhan.hangelo.model.entity.ChatMember;
 import kz.nuraskhan.hangelo.model.entity.ChatMessage;
@@ -23,6 +24,7 @@ import kz.nuraskhan.hangelo.model.entity.ProfilePhoto;
 import kz.nuraskhan.hangelo.model.entity.ProfilePrompt;
 import kz.nuraskhan.hangelo.model.entity.UserAccount;
 import kz.nuraskhan.hangelo.model.enums.EventStatus;
+import kz.nuraskhan.hangelo.model.enums.AvailabilityKind;
 import kz.nuraskhan.hangelo.model.enums.EventType;
 import kz.nuraskhan.hangelo.model.enums.EventVisibility;
 import kz.nuraskhan.hangelo.model.enums.FriendshipStatus;
@@ -204,6 +206,19 @@ public final class RND {
     EventTimeOption x = new EventTimeOption();
     x.eventId = eventId;
     x.startsAt = futureInstant();
+    return x;
+  }
+
+  /** A few busy days starting within the next two months. */
+  public static Availability availability(Long userAccountId) {
+    Availability x = new Availability();
+    x.userAccountId = userAccountId;
+    x.kind = oneOf(AvailabilityKind.class);
+    x.fromDate = java.time.LocalDate.of(2030, 1, 1).plusDays(intBetween(0, 60));
+    x.toDate = x.fromDate.plusDays(intBetween(0, 6));
+    x.city = "City " + str(8);
+    x.note = "Note " + str(20);
+    x.createdAt = now();
     return x;
   }
 

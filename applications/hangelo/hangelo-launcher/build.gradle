@@ -7,6 +7,8 @@ plugins {
 
 dependencies {
     implementation project(':applications:hangelo:hangelo-mod:notification')
+    implementation project(':applications:hangelo:hangelo-mod:reliability')
+    implementation project(':applications:hangelo:hangelo-mod:calendar')
     implementation project(':applications:hangelo:hangelo-mod:auth')
     implementation project(':applications:hangelo:hangelo-mod:profile')
     implementation project(':applications:hangelo:hangelo-mod:friend')

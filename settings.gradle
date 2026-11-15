@@ -9,9 +9,14 @@ include 'lib:mail'    // sending e-mail (Resend), and the look of our letters
 // Database migrations (make upgradeDbAll).
 include 'migration'
 
+// Loads venues from the 2GIS directory into the table "place" (make places).
+include 'place-import'
+
 // Application "hangelo": the launcher builds the boot-jar, every feature is a module.
 include 'applications:hangelo:hangelo-launcher'
 include 'applications:hangelo:hangelo-mod:notification'
+include 'applications:hangelo:hangelo-mod:reliability'
+include 'applications:hangelo:hangelo-mod:calendar'
 include 'applications:hangelo:hangelo-mod:auth'
 include 'applications:hangelo:hangelo-mod:profile'
 include 'applications:hangelo:hangelo-mod:friend'

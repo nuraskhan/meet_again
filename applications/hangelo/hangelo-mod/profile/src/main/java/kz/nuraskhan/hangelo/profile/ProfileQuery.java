@@ -18,6 +18,7 @@ import kz.nuraskhan.hangelo.profile.dto.ProfileCardDto;
 import kz.nuraskhan.hangelo.profile.dto.ProfileDto;
 import kz.nuraskhan.hangelo.profile.dto.PromptDto;
 import kz.nuraskhan.hangelo.model.enums.Privilege;
+import kz.nuraskhan.hangelo.reliability.ReliabilityQuery;
 import org.jooq.DSLContext;
 import org.jooq.Record;
 import org.jooq.Records;
@@ -30,9 +31,11 @@ public class ProfileQuery {
   private static final int SEARCH_LIMIT = 20;
 
   private final DSLContext dsl;
+  private final ReliabilityQuery reliabilityQuery;
 
-  public ProfileQuery(DSLContext dsl) {
+  public ProfileQuery(DSLContext dsl, ReliabilityQuery reliabilityQuery) {
     this.dsl = dsl;
+    this.reliabilityQuery = reliabilityQuery;
   }
 
   /** The caller's own profile, with what only they may see. */
@@ -69,7 +72,8 @@ public class ProfileQuery {
         privilege.maxPhotos,
         photos(me),
         interests(me),
-        prompts(me)));
+        prompts(me),
+        reliabilityQuery.of(me)));
   }
 
   /** A person as anyone logged in sees them. Empty for a deactivated account too. */
@@ -101,7 +105,8 @@ public class ProfileQuery {
         row.get(PROFILE.PRIVILEGE),
         photos(userId),
         interests(userId),
-        prompts(userId)));
+        prompts(userId),
+        reliabilityQuery.of(userId)));
   }
 
   /**

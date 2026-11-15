@@ -1,6 +1,7 @@
 package kz.nuraskhan.hangelo.event;
 
 import static kz.nuraskhan.hangelo.jooq.Tables.EVENT;
+import static kz.nuraskhan.hangelo.jooq.Tables.PLACE;
 import static kz.nuraskhan.hangelo.jooq.Tables.INVITATION;
 import static kz.nuraskhan.hangelo.jooq.Tables.PROFILE;
 import static kz.nuraskhan.hangelo.jooq.Tables.USER_ACCOUNT;
@@ -14,6 +15,8 @@ import kz.nuraskhan.hangelo.model.enums.EventStatus;
 import kz.nuraskhan.hangelo.model.enums.EventType;
 import kz.nuraskhan.hangelo.model.enums.EventVisibility;
 import kz.nuraskhan.hangelo.model.enums.InvitationStatus;
+import kz.nuraskhan.hangelo.reliability.ReliabilityDto;
+import kz.nuraskhan.hangelo.reliability.ReliabilityQuery;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
@@ -28,10 +31,12 @@ public class FeedQuery {
 
   private final DSLContext dsl;
   private final EventQuery eventQuery;
+  private final ReliabilityQuery reliabilityQuery;
 
-  public FeedQuery(DSLContext dsl, EventQuery eventQuery) {
+  public FeedQuery(DSLContext dsl, EventQuery eventQuery, ReliabilityQuery reliabilityQuery) {
     this.dsl = dsl;
     this.eventQuery = eventQuery;
+    this.reliabilityQuery = reliabilityQuery;
   }
 
   /**
@@ -46,9 +51,10 @@ public class FeedQuery {
     Condition older = beforeId == null ? DSL.noCondition() : EVENT.ID.lt(beforeId);
 
     var rows = dsl
-        .select(EVENT.asterisk(), PROFILE.DISPLAY_NAME, PROFILE.AVATAR_URL, PROFILE.CITY)
+        .select(EVENT.asterisk(), PROFILE.DISPLAY_NAME, PROFILE.AVATAR_URL, PROFILE.CITY, PLACE.NAME)
         .from(EVENT)
         .join(PROFILE).on(PROFILE.USER_ACCOUNT_ID.eq(EVENT.CREATOR__USER_ACCOUNT_ID))
+        .leftJoin(PLACE).on(PLACE.ID.eq(EVENT.PLACE_ID))
         .join(USER_ACCOUNT).on(USER_ACCOUNT.ID.eq(EVENT.CREATOR__USER_ACCOUNT_ID))
         .where(EVENT.VISIBILITY.eq(EventVisibility.PUBLIC))
         .and(EVENT.STATUS.eq(EventStatus.ACTIVE))
@@ -65,6 +71,10 @@ public class FeedQuery {
     }
 
     List<Long> eventIds = rows.getValues(EVENT.ID);
+
+    // How reliable each inviter is: one look for all of them.
+    Map<Long, ReliabilityDto> reliabilityByUserId =
+        reliabilityQuery.of(rows.getValues(EVENT.CREATOR__USER_ACCOUNT_ID));
 
     Map<Long, List<Instant>> timesByEventId = eventQuery.proposedTimes(eventIds);
 
@@ -123,7 +133,9 @@ public class FeedQuery {
           going.size(),
           going.stream().limit(FACES).toList(),
           takenByEventId.getOrDefault(eventId, 0) >= EventService.MAX_GUESTS,
-          myStanding));
+          myStanding,
+          reliabilityByUserId.getOrDefault(creatorId, ReliabilityDto.NONE).score(),
+          row.get(PLACE.NAME)));
     }
     return result;
   }

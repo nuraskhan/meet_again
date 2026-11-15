@@ -20,6 +20,7 @@ import kz.nuraskhan.hangelo.model.enums.EventVisibility;
  *                      nothing suitable was found
  * @param myPreference  what the caller said about themselves for this event - their place and how
  *                      far they travel; null until they say it
+ * @param place         the venue the creator chose for the event; null = not chosen
  */
 public record EventDto(
     Long id,
@@ -41,6 +42,7 @@ public record EventDto(
     List<InviteeDto> invitees,
     PreferenceDto myPreference,
     Instant suggestedAt,
-    List<SuggestionDto> suggestions
+    List<SuggestionDto> suggestions,
+    PlaceDto place
 ) {
 }

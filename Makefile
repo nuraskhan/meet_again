@@ -15,7 +15,7 @@ export APP_DATA_ROOT ?= $(CURDIR)/.data
 COMPOSE := docker compose -f docker/local/docker-compose.yaml
 LAUNCHER := :applications:hangelo:hangelo-launcher
 
-.PHONY: start stop dockerUp up recreate purge upgradeDbAll data jooq compile test test-tz
+.PHONY: start stop dockerUp up recreate purge upgradeDbAll data places jooq compile test test-tz
 
 # ---------------------------------------------------------------- whole stack on the host
 
@@ -55,6 +55,13 @@ upgradeDbAll: dockerUp
 # Loads demo data into the local database. Does nothing if it is already there.
 data: upgradeDbAll
 	$(GRADLE) $(LAUNCHER):populateLocalDb
+
+# Loads venues (Astana, Almaty: the popular ones of every category) from the 2GIS directory into
+# the local database. Needs the key in the environment variable HANGELO_2GIS_KEY. Running it again
+# updates the same venues, never doubles them. Separate from `data`: it calls an outside service
+# and needs a key, demo data does neither.
+places: upgradeDbAll
+	$(GRADLE) :place-import:importLocal
 
 # Regenerates the jOOQ classes (lib/jooq) from the local database. Run after adding a migration,
 # commit the result.

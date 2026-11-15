@@ -7,6 +7,7 @@ package kz.nuraskhan.hangelo.jooq;
 import java.util.Arrays;
 import java.util.List;
 
+import kz.nuraskhan.hangelo.jooq.tables.Availability;
 import kz.nuraskhan.hangelo.jooq.tables.Chat;
 import kz.nuraskhan.hangelo.jooq.tables.ChatMember;
 import kz.nuraskhan.hangelo.jooq.tables.ChatMessage;
@@ -44,6 +45,11 @@ public class Public extends SchemaImpl {
      * The reference instance of <code>public</code>
      */
     public static final Public PUBLIC = new Public();
+
+    /**
+     * The table <code>public.availability</code>.
+     */
+    public final Availability AVAILABILITY = Availability.AVAILABILITY;
 
     /**
      * The table <code>public.chat</code>.
@@ -151,6 +157,7 @@ public class Public extends SchemaImpl {
     @Override
     public final List<Table<?>> getTables() {
         return Arrays.asList(
+            Availability.AVAILABILITY,
             Chat.CHAT,
             ChatMember.CHAT_MEMBER,
             ChatMessage.CHAT_MESSAGE,

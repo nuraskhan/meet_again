@@ -147,6 +147,11 @@ public class Event extends TableImpl<EventRecord> {
      */
     public final TableField<EventRecord, Instant> DELETED_AT = createField(DSL.name("deleted_at"), SQLDataType.INSTANT, this, "");
 
+    /**
+     * The column <code>public.event.place_id</code>.
+     */
+    public final TableField<EventRecord, Long> PLACE_ID = createField(DSL.name("place_id"), SQLDataType.BIGINT, this, "");
+
     private Event(Name alias, Table<EventRecord> aliased) {
         this(alias, aliased, (Field<?>[]) null, null);
     }
@@ -198,7 +203,7 @@ public class Event extends TableImpl<EventRecord> {
 
     @Override
     public List<ForeignKey<EventRecord, ?>> getReferences() {
-        return Arrays.asList(Keys.EVENT__EVENT_CHAT_ID_FKEY, Keys.EVENT__EVENT_CREATOR__USER_ACCOUNT_ID_FKEY);
+        return Arrays.asList(Keys.EVENT__EVENT_CHAT_ID_FKEY, Keys.EVENT__EVENT_CREATOR__USER_ACCOUNT_ID_FKEY, Keys.EVENT__EVENT_PLACE_ID_FKEY);
     }
 
     @Override

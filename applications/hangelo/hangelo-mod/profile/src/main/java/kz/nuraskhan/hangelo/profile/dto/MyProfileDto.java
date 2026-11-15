@@ -1,5 +1,7 @@
 package kz.nuraskhan.hangelo.profile.dto;
 
+import kz.nuraskhan.hangelo.reliability.ReliabilityDto;
+
 import java.time.LocalDate;
 import java.util.List;
 import kz.nuraskhan.hangelo.model.enums.Privilege;
@@ -11,6 +13,7 @@ import kz.nuraskhan.hangelo.model.enums.Privilege;
  * @param birthDate     as the person entered it; others see only {@code age}
  * @param privilege     the privilege level; the person cannot change it
  * @param maxPhotos     how many photos that level allows
+ * @param reliability   how reliable the person is, counted from their history of events
  */
 public record MyProfileDto(
     Long userId,
@@ -31,6 +34,7 @@ public record MyProfileDto(
     int maxPhotos,
     List<PhotoDto> photos,
     List<String> interests,
-    List<PromptDto> prompts
+    List<PromptDto> prompts,
+    ReliabilityDto reliability
 ) {
 }

@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import kz.nuraskhan.hangelo.model.entity.ProfileInterest;
 import kz.nuraskhan.hangelo.model.entity.ProfilePhoto;
 import kz.nuraskhan.hangelo.model.entity.ProfilePrompt;
+import kz.nuraskhan.hangelo.model.entity.Availability;
 import kz.nuraskhan.hangelo.model.entity.Chat;
 import kz.nuraskhan.hangelo.model.entity.ChatMember;
 import kz.nuraskhan.hangelo.model.entity.ChatMessage;
@@ -25,6 +26,7 @@ import kz.nuraskhan.hangelo.model.enums.FriendshipStatus;
 import kz.nuraskhan.hangelo.model.repository.ProfileInterestRepository;
 import kz.nuraskhan.hangelo.model.repository.ProfilePhotoRepository;
 import kz.nuraskhan.hangelo.model.repository.ProfilePromptRepository;
+import kz.nuraskhan.hangelo.model.repository.AvailabilityRepository;
 import kz.nuraskhan.hangelo.model.repository.ChatMemberRepository;
 import kz.nuraskhan.hangelo.model.repository.ChatMessageRepository;
 import kz.nuraskhan.hangelo.model.repository.ChatRepository;
@@ -68,6 +70,7 @@ class RndPersistenceTest extends ApiTestBase {
   @Autowired EventSuggestionRepository eventSuggestionRepository;
   @Autowired ParticipantPreferenceRepository participantPreferenceRepository;
   @Autowired NotificationRepository notificationRepository;
+  @Autowired AvailabilityRepository availabilityRepository;
 
   @Test
   void everyRndEntity__isSavedAndReadBackUnchanged() {
@@ -99,6 +102,7 @@ class RndPersistenceTest extends ApiTestBase {
     ParticipantPreference preference =
         participantPreferenceRepository.save(RND.participantPreference(event.id, user2.id));
     Notification notification = notificationRepository.save(RND.notification(user1.id, user2.id));
+    Availability availability = availabilityRepository.save(RND.availability(user1.id));
     //
     //
 
@@ -139,6 +143,9 @@ class RndPersistenceTest extends ApiTestBase {
         .usingRecursiveComparison().isEqualTo(preference);
     assertThat(notificationRepository.findById(notification.id).orElseThrow())
         .usingRecursiveComparison().isEqualTo(notification);
+    // The days in particular: a date must come back the same date in any time zone.
+    assertThat(availabilityRepository.findById(availability.id).orElseThrow())
+        .usingRecursiveComparison().isEqualTo(availability);
 
     assertThat(friendshipRepository.countFriendsAmong(user1.id, java.util.List.of(user2.id)))
         .isEqualTo(1);

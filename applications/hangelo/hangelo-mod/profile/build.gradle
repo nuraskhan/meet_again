@@ -1,0 +1,5 @@
+// Profiles and their photos. A profile carries the person's reliability rating.
+
+dependencies {
+    implementation project(':applications:hangelo:hangelo-mod:reliability')
+}

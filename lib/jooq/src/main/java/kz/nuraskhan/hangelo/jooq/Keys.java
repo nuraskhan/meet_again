@@ -4,6 +4,7 @@
 package kz.nuraskhan.hangelo.jooq;
 
 
+import kz.nuraskhan.hangelo.jooq.tables.Availability;
 import kz.nuraskhan.hangelo.jooq.tables.Chat;
 import kz.nuraskhan.hangelo.jooq.tables.ChatMember;
 import kz.nuraskhan.hangelo.jooq.tables.ChatMessage;
@@ -22,6 +23,7 @@ import kz.nuraskhan.hangelo.jooq.tables.ProfileInterest;
 import kz.nuraskhan.hangelo.jooq.tables.ProfilePhoto;
 import kz.nuraskhan.hangelo.jooq.tables.ProfilePrompt;
 import kz.nuraskhan.hangelo.jooq.tables.UserAccount;
+import kz.nuraskhan.hangelo.jooq.tables.records.AvailabilityRecord;
 import kz.nuraskhan.hangelo.jooq.tables.records.ChatMemberRecord;
 import kz.nuraskhan.hangelo.jooq.tables.records.ChatMessageRecord;
 import kz.nuraskhan.hangelo.jooq.tables.records.ChatRecord;
@@ -60,6 +62,7 @@ public class Keys {
     // UNIQUE and PRIMARY KEY definitions
     // -------------------------------------------------------------------------
 
+    public static final UniqueKey<AvailabilityRecord> AVAILABILITY_PKEY = Internal.createUniqueKey(Availability.AVAILABILITY, DSL.name("availability_pkey"), new TableField[] { Availability.AVAILABILITY.ID }, true);
     public static final UniqueKey<ChatRecord> CHAT_PKEY = Internal.createUniqueKey(Chat.CHAT, DSL.name("chat_pkey"), new TableField[] { Chat.CHAT.ID }, true);
     public static final UniqueKey<ChatMemberRecord> CHAT_MEMBER_CHAT_ID_USER_ACCOUNT_ID_KEY = Internal.createUniqueKey(ChatMember.CHAT_MEMBER, DSL.name("chat_member_chat_id_user_account_id_key"), new TableField[] { ChatMember.CHAT_MEMBER.CHAT_ID, ChatMember.CHAT_MEMBER.USER_ACCOUNT_ID }, true);
     public static final UniqueKey<ChatMemberRecord> CHAT_MEMBER_PKEY = Internal.createUniqueKey(ChatMember.CHAT_MEMBER, DSL.name("chat_member_pkey"), new TableField[] { ChatMember.CHAT_MEMBER.ID }, true);
@@ -96,6 +99,7 @@ public class Keys {
     // FOREIGN KEY definitions
     // -------------------------------------------------------------------------
 
+    public static final ForeignKey<AvailabilityRecord, UserAccountRecord> AVAILABILITY__AVAILABILITY_USER_ACCOUNT_ID_FKEY = Internal.createForeignKey(Availability.AVAILABILITY, DSL.name("availability_user_account_id_fkey"), new TableField[] { Availability.AVAILABILITY.USER_ACCOUNT_ID }, Keys.USER_ACCOUNT_PKEY, new TableField[] { UserAccount.USER_ACCOUNT.ID }, true, ForeignKeyRule.NO_ACTION, ForeignKeyRule.NO_ACTION);
     public static final ForeignKey<ChatMemberRecord, ChatRecord> CHAT_MEMBER__CHAT_MEMBER_CHAT_ID_FKEY = Internal.createForeignKey(ChatMember.CHAT_MEMBER, DSL.name("chat_member_chat_id_fkey"), new TableField[] { ChatMember.CHAT_MEMBER.CHAT_ID }, Keys.CHAT_PKEY, new TableField[] { Chat.CHAT.ID }, true, ForeignKeyRule.NO_ACTION, ForeignKeyRule.NO_ACTION);
     public static final ForeignKey<ChatMemberRecord, ChatMessageRecord> CHAT_MEMBER__CHAT_MEMBER_LAST_READ__CHAT_MESSAGE_ID_FKEY = Internal.createForeignKey(ChatMember.CHAT_MEMBER, DSL.name("chat_member_last_read__chat_message_id_fkey"), new TableField[] { ChatMember.CHAT_MEMBER.LAST_READ__CHAT_MESSAGE_ID }, Keys.CHAT_MESSAGE_PKEY, new TableField[] { ChatMessage.CHAT_MESSAGE.ID }, true, ForeignKeyRule.NO_ACTION, ForeignKeyRule.NO_ACTION);
     public static final ForeignKey<ChatMemberRecord, UserAccountRecord> CHAT_MEMBER__CHAT_MEMBER_USER_ACCOUNT_ID_FKEY = Internal.createForeignKey(ChatMember.CHAT_MEMBER, DSL.name("chat_member_user_account_id_fkey"), new TableField[] { ChatMember.CHAT_MEMBER.USER_ACCOUNT_ID }, Keys.USER_ACCOUNT_PKEY, new TableField[] { UserAccount.USER_ACCOUNT.ID }, true, ForeignKeyRule.NO_ACTION, ForeignKeyRule.NO_ACTION);
@@ -104,6 +108,7 @@ public class Keys {
     public static final ForeignKey<EmailVerificationRecord, UserAccountRecord> EMAIL_VERIFICATION__EMAIL_VERIFICATION_USER_ACCOUNT_ID_FKEY = Internal.createForeignKey(EmailVerification.EMAIL_VERIFICATION, DSL.name("email_verification_user_account_id_fkey"), new TableField[] { EmailVerification.EMAIL_VERIFICATION.USER_ACCOUNT_ID }, Keys.USER_ACCOUNT_PKEY, new TableField[] { UserAccount.USER_ACCOUNT.ID }, true, ForeignKeyRule.NO_ACTION, ForeignKeyRule.NO_ACTION);
     public static final ForeignKey<EventRecord, ChatRecord> EVENT__EVENT_CHAT_ID_FKEY = Internal.createForeignKey(Event.EVENT, DSL.name("event_chat_id_fkey"), new TableField[] { Event.EVENT.CHAT_ID }, Keys.CHAT_PKEY, new TableField[] { Chat.CHAT.ID }, true, ForeignKeyRule.NO_ACTION, ForeignKeyRule.NO_ACTION);
     public static final ForeignKey<EventRecord, UserAccountRecord> EVENT__EVENT_CREATOR__USER_ACCOUNT_ID_FKEY = Internal.createForeignKey(Event.EVENT, DSL.name("event_creator__user_account_id_fkey"), new TableField[] { Event.EVENT.CREATOR__USER_ACCOUNT_ID }, Keys.USER_ACCOUNT_PKEY, new TableField[] { UserAccount.USER_ACCOUNT.ID }, true, ForeignKeyRule.NO_ACTION, ForeignKeyRule.NO_ACTION);
+    public static final ForeignKey<EventRecord, PlaceRecord> EVENT__EVENT_PLACE_ID_FKEY = Internal.createForeignKey(Event.EVENT, DSL.name("event_place_id_fkey"), new TableField[] { Event.EVENT.PLACE_ID }, Keys.PLACE_PKEY, new TableField[] { Place.PLACE.ID }, true, ForeignKeyRule.NO_ACTION, ForeignKeyRule.NO_ACTION);
     public static final ForeignKey<EventReminderRecord, EventRecord> EVENT_REMINDER__EVENT_REMINDER_EVENT_ID_FKEY = Internal.createForeignKey(EventReminder.EVENT_REMINDER, DSL.name("event_reminder_event_id_fkey"), new TableField[] { EventReminder.EVENT_REMINDER.EVENT_ID }, Keys.EVENT_PKEY, new TableField[] { Event.EVENT.ID }, true, ForeignKeyRule.NO_ACTION, ForeignKeyRule.NO_ACTION);
     public static final ForeignKey<EventReminderRecord, UserAccountRecord> EVENT_REMINDER__EVENT_REMINDER_USER_ACCOUNT_ID_FKEY = Internal.createForeignKey(EventReminder.EVENT_REMINDER, DSL.name("event_reminder_user_account_id_fkey"), new TableField[] { EventReminder.EVENT_REMINDER.USER_ACCOUNT_ID }, Keys.USER_ACCOUNT_PKEY, new TableField[] { UserAccount.USER_ACCOUNT.ID }, true, ForeignKeyRule.NO_ACTION, ForeignKeyRule.NO_ACTION);
     public static final ForeignKey<EventSuggestionRecord, EventRecord> EVENT_SUGGESTION__EVENT_SUGGESTION_EVENT_ID_FKEY = Internal.createForeignKey(EventSuggestion.EVENT_SUGGESTION, DSL.name("event_suggestion_event_id_fkey"), new TableField[] { EventSuggestion.EVENT_SUGGESTION.EVENT_ID }, Keys.EVENT_PKEY, new TableField[] { Event.EVENT.ID }, true, ForeignKeyRule.NO_ACTION, ForeignKeyRule.NO_ACTION);

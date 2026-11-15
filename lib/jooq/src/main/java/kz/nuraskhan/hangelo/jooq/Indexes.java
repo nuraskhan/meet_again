@@ -4,6 +4,7 @@
 package kz.nuraskhan.hangelo.jooq;
 
 
+import kz.nuraskhan.hangelo.jooq.tables.Availability;
 import kz.nuraskhan.hangelo.jooq.tables.ChatMember;
 import kz.nuraskhan.hangelo.jooq.tables.ChatMessage;
 import kz.nuraskhan.hangelo.jooq.tables.EmailVerification;
@@ -29,6 +30,7 @@ public class Indexes {
     // INDEX definitions
     // -------------------------------------------------------------------------
 
+    public static final Index AVAILABILITY__USER = Internal.createIndex(DSL.name("availability__user"), Availability.AVAILABILITY, new OrderField[] { Availability.AVAILABILITY.USER_ACCOUNT_ID, Availability.AVAILABILITY.FROM_DATE }, false);
     public static final Index CHAT_MEMBER__USER = Internal.createIndex(DSL.name("chat_member__user"), ChatMember.CHAT_MEMBER, new OrderField[] { ChatMember.CHAT_MEMBER.USER_ACCOUNT_ID }, false);
     public static final Index CHAT_MESSAGE__CHAT = Internal.createIndex(DSL.name("chat_message__chat"), ChatMessage.CHAT_MESSAGE, new OrderField[] { ChatMessage.CHAT_MESSAGE.CHAT_ID, ChatMessage.CHAT_MESSAGE.ID }, false);
     public static final Index EMAIL_VERIFICATION__USER = Internal.createIndex(DSL.name("email_verification__user"), EmailVerification.EMAIL_VERIFICATION, new OrderField[] { EmailVerification.EMAIL_VERIFICATION.USER_ACCOUNT_ID, EmailVerification.EMAIL_VERIFICATION.CREATED_AT }, false);
@@ -41,5 +43,6 @@ public class Indexes {
     public static final Index INVITATION__REQUESTED = Internal.createIndex(DSL.name("invitation__requested"), Invitation.INVITATION, new OrderField[] { Invitation.INVITATION.EVENT_ID }, false);
     public static final Index NOTIFICATION__RECIPIENT = Internal.createIndex(DSL.name("notification__recipient"), Notification.NOTIFICATION, new OrderField[] { Notification.NOTIFICATION.USER_ACCOUNT_ID, Notification.NOTIFICATION.ID.desc() }, false);
     public static final Index NOTIFICATION__UNREAD = Internal.createIndex(DSL.name("notification__unread"), Notification.NOTIFICATION, new OrderField[] { Notification.NOTIFICATION.USER_ACCOUNT_ID }, false);
+    public static final Index PLACE__EXTERNAL = Internal.createIndex(DSL.name("place__external"), Place.PLACE, new OrderField[] { Place.PLACE.SOURCE, Place.PLACE.EXTERNAL_ID }, true);
     public static final Index PLACE__SEARCH = Internal.createIndex(DSL.name("place__search"), Place.PLACE, new OrderField[] { Place.PLACE.CATEGORY, Place.PLACE.LATITUDE, Place.PLACE.LONGITUDE }, false);
 }

@@ -35,4 +35,18 @@ public class Invitation {
 
   @Column(name = "responded_at")
   public Instant respondedAt;
+
+  /**
+   * Filled = the person said "coming" and then left while the event was still on. Cleared if they
+   * come back. Counts against their reliability.
+   */
+  @Column(name = "left_at")
+  public Instant leftAt;
+
+  /**
+   * The creator marked, after the event, that this guest said "coming" and did not come. Counts
+   * against the guest's reliability.
+   */
+  @Column(name = "no_show", nullable = false)
+  public boolean noShow;
 }

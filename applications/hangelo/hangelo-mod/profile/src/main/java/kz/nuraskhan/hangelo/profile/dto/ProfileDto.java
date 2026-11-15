@@ -1,5 +1,7 @@
 package kz.nuraskhan.hangelo.profile.dto;
 
+import kz.nuraskhan.hangelo.reliability.ReliabilityDto;
+
 import java.util.List;
 import kz.nuraskhan.hangelo.model.enums.Privilege;
 
@@ -12,6 +14,7 @@ import kz.nuraskhan.hangelo.model.enums.Privilege;
  * @param avatarUrl the address of the main photo (the first of {@code photos}); null without photos
  * @param photos    all photos, the main one first
  * @param privilege the privilege level of the person
+ * @param reliability how reliable the person is, counted from their history of events
  */
 public record ProfileDto(
     Long userId,
@@ -28,6 +31,7 @@ public record ProfileDto(
     Privilege privilege,
     List<PhotoDto> photos,
     List<String> interests,
-    List<PromptDto> prompts
+    List<PromptDto> prompts,
+    ReliabilityDto reliability
 ) {
 }

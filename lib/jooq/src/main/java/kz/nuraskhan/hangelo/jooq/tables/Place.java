@@ -97,17 +97,17 @@ public class Place extends TableImpl<PlaceRecord> {
     /**
      * The column <code>public.place.rating</code>.
      */
-    public final TableField<PlaceRecord, Double> RATING = createField(DSL.name("rating"), SQLDataType.DOUBLE.nullable(false), this, "");
+    public final TableField<PlaceRecord, Double> RATING = createField(DSL.name("rating"), SQLDataType.DOUBLE, this, "");
 
     /**
      * The column <code>public.place.price_min</code>.
      */
-    public final TableField<PlaceRecord, Integer> PRICE_MIN = createField(DSL.name("price_min"), SQLDataType.INTEGER.nullable(false), this, "");
+    public final TableField<PlaceRecord, Integer> PRICE_MIN = createField(DSL.name("price_min"), SQLDataType.INTEGER, this, "");
 
     /**
      * The column <code>public.place.price_max</code>.
      */
-    public final TableField<PlaceRecord, Integer> PRICE_MAX = createField(DSL.name("price_max"), SQLDataType.INTEGER.nullable(false), this, "");
+    public final TableField<PlaceRecord, Integer> PRICE_MAX = createField(DSL.name("price_max"), SQLDataType.INTEGER, this, "");
 
     /**
      * The column <code>public.place.website</code>.
@@ -133,6 +133,26 @@ public class Place extends TableImpl<PlaceRecord> {
      * The column <code>public.place.deactivated_at</code>.
      */
     public final TableField<PlaceRecord, Instant> DEACTIVATED_AT = createField(DSL.name("deactivated_at"), SQLDataType.INSTANT, this, "");
+
+    /**
+     * The column <code>public.place.city</code>.
+     */
+    public final TableField<PlaceRecord, String> CITY = createField(DSL.name("city"), SQLDataType.CLOB, this, "");
+
+    /**
+     * The column <code>public.place.source</code>.
+     */
+    public final TableField<PlaceRecord, String> SOURCE = createField(DSL.name("source"), SQLDataType.CLOB, this, "");
+
+    /**
+     * The column <code>public.place.external_id</code>.
+     */
+    public final TableField<PlaceRecord, String> EXTERNAL_ID = createField(DSL.name("external_id"), SQLDataType.CLOB, this, "");
+
+    /**
+     * The column <code>public.place.review_count</code>.
+     */
+    public final TableField<PlaceRecord, Integer> REVIEW_COUNT = createField(DSL.name("review_count"), SQLDataType.INTEGER, this, "");
 
     private Place(Name alias, Table<PlaceRecord> aliased) {
         this(alias, aliased, (Field<?>[]) null, null);
@@ -170,7 +190,7 @@ public class Place extends TableImpl<PlaceRecord> {
 
     @Override
     public List<Index> getIndexes() {
-        return Arrays.asList(Indexes.PLACE__SEARCH);
+        return Arrays.asList(Indexes.PLACE__EXTERNAL, Indexes.PLACE__SEARCH);
     }
 
     @Override

@@ -105,6 +105,34 @@ public class InvitationRecord extends UpdatableRecordImpl<InvitationRecord> {
         return (Instant) get(5);
     }
 
+    /**
+     * Setter for <code>public.invitation.left_at</code>.
+     */
+    public void setLeftAt(Instant value) {
+        set(6, value);
+    }
+
+    /**
+     * Getter for <code>public.invitation.left_at</code>.
+     */
+    public Instant getLeftAt() {
+        return (Instant) get(6);
+    }
+
+    /**
+     * Setter for <code>public.invitation.no_show</code>.
+     */
+    public void setNoShow(Boolean value) {
+        set(7, value);
+    }
+
+    /**
+     * Getter for <code>public.invitation.no_show</code>.
+     */
+    public Boolean getNoShow() {
+        return (Boolean) get(7);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -128,7 +156,7 @@ public class InvitationRecord extends UpdatableRecordImpl<InvitationRecord> {
     /**
      * Create a detached, initialised InvitationRecord
      */
-    public InvitationRecord(Long id, Long eventId, Long invitee_UserAccountId, InvitationStatus status, Instant createdAt, Instant respondedAt) {
+    public InvitationRecord(Long id, Long eventId, Long invitee_UserAccountId, InvitationStatus status, Instant createdAt, Instant respondedAt, Instant leftAt, Boolean noShow) {
         super(Invitation.INVITATION);
 
         setId(id);
@@ -137,6 +165,8 @@ public class InvitationRecord extends UpdatableRecordImpl<InvitationRecord> {
         setStatus(status);
         setCreatedAt(createdAt);
         setRespondedAt(respondedAt);
+        setLeftAt(leftAt);
+        setNoShow(noShow);
         resetTouchedOnNotNull();
     }
 }

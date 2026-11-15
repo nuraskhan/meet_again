@@ -1,0 +1,31 @@
+// Loads venues from the 2GIS Places API into the table "place".
+//
+// A tool, not a part of the server: it is run by hand (make places), never deployed, and the
+// server does not depend on it. It writes with plain JDBC, so it needs nothing of the application.
+//
+// The key of the API is read from the environment variable HANGELO_2GIS_KEY at run time; it is
+// never written into a file or a command line.
+
+dependencies {
+    implementation 'tools.jackson.core:jackson-databind'
+    runtimeOnly libs.postgresql
+}
+
+tasks.register('importLocal', JavaExec) {
+    description = 'Loads venues from 2GIS into the local database'
+    group = 'database'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'kz.nuraskhan.hangelo.placeimport.PlaceImport'
+    args 'jdbc:postgresql://localhost:20000/hangelo', 'hangelo', 'hangelo'
+}
+
+// Another database (the live one): the address and the credentials come from the environment,
+// never from the command line - a command line is seen in the list of processes and kept in the
+// shell history.
+//   HANGELO_IMPORT_DB_URL, HANGELO_IMPORT_DB_USER, HANGELO_IMPORT_DB_PASSWORD
+tasks.register('importTo', JavaExec) {
+    description = 'Loads venues from 2GIS into the database named by HANGELO_IMPORT_DB_*'
+    group = 'database'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'kz.nuraskhan.hangelo.placeimport.PlaceImport'
+}

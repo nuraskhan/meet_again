@@ -17,6 +17,7 @@ import kz.nuraskhan.hangelo.model.entity.Event;
 import kz.nuraskhan.hangelo.model.entity.EventTimeOption;
 import kz.nuraskhan.hangelo.model.entity.Invitation;
 import kz.nuraskhan.hangelo.model.entity.ParticipantPreference;
+import kz.nuraskhan.hangelo.model.entity.Place;
 import kz.nuraskhan.hangelo.model.enums.EventStatus;
 import kz.nuraskhan.hangelo.model.enums.EventType;
 import kz.nuraskhan.hangelo.model.enums.EventVisibility;
@@ -27,6 +28,7 @@ import kz.nuraskhan.hangelo.model.repository.EventTimeOptionRepository;
 import kz.nuraskhan.hangelo.model.repository.FriendshipRepository;
 import kz.nuraskhan.hangelo.model.repository.InvitationRepository;
 import kz.nuraskhan.hangelo.model.repository.ParticipantPreferenceRepository;
+import kz.nuraskhan.hangelo.model.repository.PlaceRepository;
 import kz.nuraskhan.hangelo.web.ApiException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,6 +56,7 @@ public class EventService {
   private final ChatService chatService;
   private final SuggestionService suggestionService;
   private final NotificationService notificationService;
+  private final PlaceRepository placeRepository;
 
   public EventService(EventRepository eventRepository,
                       EventTimeOptionRepository eventTimeOptionRepository,
@@ -62,7 +65,8 @@ public class EventService {
                       ParticipantPreferenceRepository participantPreferenceRepository,
                       ChatService chatService,
                       SuggestionService suggestionService,
-                      NotificationService notificationService) {
+                      NotificationService notificationService,
+                      PlaceRepository placeRepository) {
     this.eventRepository = eventRepository;
     this.eventTimeOptionRepository = eventTimeOptionRepository;
     this.invitationRepository = invitationRepository;
@@ -71,6 +75,7 @@ public class EventService {
     this.chatService = chatService;
     this.suggestionService = suggestionService;
     this.notificationService = notificationService;
+    this.placeRepository = placeRepository;
   }
 
   /**
@@ -245,6 +250,7 @@ public class EventService {
 
     request.status = InvitationStatus.ACCEPTED;
     request.respondedAt = Instant.now();
+    request.leftAt = null; // came back: the leaving is forgiven
     chatService.join(event.chatId, userId);
 
     notificationService.tell(userId, NotificationKind.JOIN_APPROVED, me, eventId);
@@ -316,6 +322,7 @@ public class EventService {
     }
     invitation.status = InvitationStatus.ACCEPTED;
     invitation.respondedAt = now;
+    invitation.leftAt = null; // came back: the leaving is forgiven
     invitationRepository.save(invitation);
 
     chatService.join(event.chatId, me);
@@ -358,6 +365,9 @@ public class EventService {
 
     invitation.status = InvitationStatus.DECLINED;
     invitation.respondedAt = Instant.now();
+    // Said "coming" and went back on it while the event was still on: it counts against the
+    // person's reliability (ReliabilityQuery). Coming back clears it.
+    invitation.leftAt = invitation.respondedAt;
     chatService.leave(event.chatId, me);
 
     notificationService.tell(event.creatorUserAccountId, NotificationKind.GUEST_LEFT, me, event.id);
@@ -520,6 +530,51 @@ public class EventService {
 
     event.deletedAt = Instant.now();
     chatService.close(event.chatId);
+  }
+
+  /**
+   * The creator says, after the event, whether a guest who said "coming" came. A guest marked as
+   * absent loses reliability (ReliabilityQuery); the mark can be taken back.
+   *
+   * <p>Only once the event is over: before that nobody has failed to come yet.
+   */
+  @Transactional
+  public void markNoShow(Long me, Long eventId, Long guestId, boolean noShow) {
+    Event event = eventRepository.findById(eventId).orElse(null);
+    if (event == null || !event.creatorUserAccountId.equals(me) || event.deletedAt != null) {
+      throw ApiException.notFound("event_not_found", "Event not found");
+    }
+    if (event.status != EventStatus.EXPIRED) {
+      throw ApiException.conflict("event_not_over", "You can say who came once the plan is over");
+    }
+
+    Invitation invitation =
+        invitationRepository.findByEventIdAndInviteeUserAccountId(eventId, guestId).orElse(null);
+    if (invitation == null || invitation.status != InvitationStatus.ACCEPTED) {
+      throw ApiException.notFound("guest_not_found", "This person was not coming to the event");
+    }
+    invitation.noShow = noShow;
+  }
+
+  /**
+   * The creator chooses the venue of the event, or changes it. Any venue that is still offered
+   * can be chosen - not only the suggested ones.
+   */
+  @Transactional
+  public void attachPlace(Long me, Long eventId, Long placeId) {
+    Event event = requireOwnActiveEvent(me, eventId);
+
+    Place place = placeRepository.findById(placeId).orElse(null);
+    if (place == null || place.deactivatedAt != null) {
+      throw ApiException.notFound("place_not_found", "This place does not exist");
+    }
+    event.placeId = placeId;
+  }
+
+  /** The creator takes the venue off the event: where to go is open again. */
+  @Transactional
+  public void detachPlace(Long me, Long eventId) {
+    requireOwnActiveEvent(me, eventId).placeId = null;
   }
 
   /** Only the creator cancels. The chat stays. */

@@ -18,6 +18,9 @@ import kz.nuraskhan.hangelo.model.enums.EventType;
  * @param full        no place is left
  * @param myStanding  CREATOR, or the reader's own answer (PENDING, ACCEPTED, DECLINED, REMOVED), or
  *                    NONE for someone who has nothing to do with the event yet
+ * @param creatorReliability the inviter's reliability, 0 to 100; null while there is too little
+ *                    history to judge by
+ * @param placeName   the name of the venue chosen for the event; null = not chosen
  */
 public record FeedItemDto(
     Long id,
@@ -38,7 +41,9 @@ public record FeedItemDto(
     int goingCount,
     List<Person> going,
     boolean full,
-    String myStanding
+    String myStanding,
+    Integer creatorReliability,
+    String placeName
 ) {
 
   /** Someone in the feed: enough to show a face and to open their profile. */

@@ -3,5 +3,6 @@
 dependencies {
     implementation project(':applications:hangelo:hangelo-mod:chat')
     implementation project(':applications:hangelo:hangelo-mod:notification')
+    implementation project(':applications:hangelo:hangelo-mod:reliability') // the inviter's rating in the feed
     implementation project(':lib:mail') // reminders about upcoming events
 }
