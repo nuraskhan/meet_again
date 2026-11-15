@@ -271,6 +271,19 @@ public class EventQuery {
    */
   public List<PlaceDto> searchPlaces(kz.nuraskhan.hangelo.model.enums.EventType category,
                                      String city, String text, int limit) {
+    return searchPlaces(category, city, text, null, null, limit);
+  }
+
+  /**
+   * The same, measured from a point: each venue says how far it is from there, and the nearest
+   * come first (among equally near - the better rated).
+   *
+   * @param latitude  the point to measure from; null (with longitude) = no point: the best rated
+   *                  first, no distances
+   */
+  public List<PlaceDto> searchPlaces(kz.nuraskhan.hangelo.model.enums.EventType category,
+                                     String city, String text,
+                                     Double latitude, Double longitude, int limit) {
     Condition condition = PLACE.DEACTIVATED_AT.isNull();
     if (category != null) {
       condition = condition.and(PLACE.CATEGORY.eq(category));
@@ -284,7 +297,29 @@ public class EventQuery {
       condition = condition.and(PLACE.NAME.likeIgnoreCase(pattern, '\\')
           .or(PLACE.ADDRESS.likeIgnoreCase(pattern, '\\')));
     }
-    return places(condition, limit);
+    if (latitude == null || longitude == null) {
+      return places(condition, limit);
+    }
+
+    // Nearest first. The order is worked out in the database with a flat approximation (degrees
+    // of latitude, and degrees of longitude shortened by the cosine of the latitude): exact
+    // enough to order places of one region, and it lets the database cut the list. The distance
+    // each venue reports is then measured properly, along the globe.
+    double cos = Math.max(0.1, Math.cos(Math.toRadians(latitude)));
+    var dLat = PLACE.LATITUDE.minus(latitude);
+    var dLon = PLACE.LONGITUDE.minus(longitude).times(cos);
+    var flatDistance = dLat.times(dLat).plus(dLon.times(dLon));
+
+    return placeRows(condition, limit, flatDistance.asc(), PLACE.RATING.desc().nullsLast(), PLACE.ID.asc()).stream()
+        .map(place -> withDistance(place,
+            Geo.round1(Geo.distanceMi(latitude, longitude, place.latitude(), place.longitude()))))
+        .toList();
+  }
+
+  private static PlaceDto withDistance(PlaceDto place, Double distanceMi) {
+    return new PlaceDto(place.id(), place.name(), place.category(), place.description(), place.address(),
+        place.city(), place.latitude(), place.longitude(), place.rating(), place.reviewCount(),
+        place.priceMin(), place.priceMax(), place.website(), place.phone(), place.sample(), distanceMi);
   }
 
   /** The cities there are venues in, by the number of venues. */
@@ -299,12 +334,18 @@ public class EventQuery {
         .fetch(PLACE.CITY);
   }
 
+  /** The best rated first; among equals the one more reviews stand behind. */
   private List<PlaceDto> places(Condition condition, int limit) {
+    return placeRows(condition, limit,
+        PLACE.RATING.desc().nullsLast(), PLACE.REVIEW_COUNT.desc().nullsLast(), PLACE.ID.asc());
+  }
+
+  private List<PlaceDto> placeRows(Condition condition, int limit, org.jooq.OrderField<?>... order) {
     return dsl
         .select(PLACE.asterisk())
         .from(PLACE)
         .where(condition)
-        .orderBy(PLACE.RATING.desc().nullsLast(), PLACE.REVIEW_COUNT.desc().nullsLast(), PLACE.ID)
+        .orderBy(order)
         .limit(limit)
         .fetch(row -> new PlaceDto(
             row.get(PLACE.ID),
@@ -321,7 +362,8 @@ public class EventQuery {
             row.get(PLACE.PRICE_MAX),
             row.get(PLACE.WEBSITE),
             row.get(PLACE.PHONE),
-            row.get(PLACE.SAMPLE)));
+            row.get(PLACE.SAMPLE),
+            null));
   }
 
   private static InviteeDto withoutNoShow(InviteeDto invitee) {

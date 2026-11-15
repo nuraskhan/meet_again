@@ -151,17 +151,56 @@ public class SuggestionService {
     eventRepository.findById(event.id).orElseThrow().suggestedAt = now;
   }
 
-  /** Every suitable place near these people, the best first. */
+  /**
+   * How far around the people to look when nothing is within anyone's travel radius: about a city
+   * across.
+   */
+  static final int WIDER_MI = 30;
+
+  /** When looking wider, only this many of the nearest places are considered. */
+  private static final int NEAREST_WHEN_WIDER = 10;
+
+  /**
+   * Every suitable place near these people, the best first.
+   *
+   * <p>WHY it looks twice. First within the largest travel radius anyone gave. A person who
+   * presses "Suggest places" without having said how far they go gets the invitation's own
+   * distance as their radius - often two or three miles - and in a real city the nearest place of
+   * the right kind is easily farther. Answering "nothing" then is useless: the person asked for
+   * ideas. So if the first look finds nothing, the nearest places within {@link #WIDER_MI} are
+   * offered instead, each honestly marked as beyond someone's reach.
+   */
   private List<Candidate> rank(Event event, List<Person> people) {
-    // A box that holds everything any of them could reach: their own bounding box, widened by the
-    // largest travel radius. Narrowing in the database keeps the measuring below small.
+    int largestRadius = people.stream().mapToInt(Person::travelRadiusMi).max().orElseThrow();
+
+    List<Candidate> near = rank(event, people, largestRadius);
+    if (!near.isEmpty() || largestRadius >= WIDER_MI) {
+      return near;
+    }
+
+    // Wider: the nearest few, and among them the usual order (budget, rating, distance).
+    List<Candidate> nearest = rank(event, people, WIDER_MI).stream()
+        .sorted(Comparator.comparingDouble(Candidate::averageMi))
+        .limit(NEAREST_WHEN_WIDER)
+        .toList();
+    return nearest.stream()
+        .sorted(Comparator
+            .comparing(Candidate::fitsBudget).reversed()
+            .thenComparing(Comparator.comparingDouble(Candidate::rating).reversed())
+            .thenComparingDouble(Candidate::averageMi)
+            .thenComparing(Candidate::placeId))
+        .toList();
+  }
+
+  /** Every suitable place within so many miles around these people, the best first. */
+  private List<Candidate> rank(Event event, List<Person> people, int marginMi) {
+    // A box that holds everything within the margin: their own bounding box, widened by it.
+    // Narrowing in the database keeps the measuring below small.
     double minLat = people.stream().mapToDouble(Person::latitude).min().orElseThrow();
     double maxLat = people.stream().mapToDouble(Person::latitude).max().orElseThrow();
     double minLon = people.stream().mapToDouble(Person::longitude).min().orElseThrow();
     double maxLon = people.stream().mapToDouble(Person::longitude).max().orElseThrow();
-    int largestRadius = people.stream().mapToInt(Person::travelRadiusMi).max().orElseThrow();
-
-    double latMargin = largestRadius / Geo.MILES_PER_DEGREE;
+    double latMargin = marginMi / Geo.MILES_PER_DEGREE;
     // A degree of longitude shrinks towards the poles. The floor keeps the margin finite there.
     double cos = Math.max(0.1, Math.cos(Math.toRadians((minLat + maxLat) / 2)));
     double lonMargin = latMargin / cos;

@@ -10,6 +10,8 @@ import kz.nuraskhan.hangelo.model.enums.EventType;
  * @param rating      how good it is, 0 to 5
  * @param reviewCount how many reviews the rating rests on; null = unknown
  * @param sample      an invented demonstration place, not a real business
+ * @param distanceMi  how far it is from the point the caller asked from, as the crow flies, miles;
+ *                    null when no point was given
  */
 public record PlaceDto(
     Long id,
@@ -26,6 +28,7 @@ public record PlaceDto(
     Integer priceMax,
     String website,
     String phone,
-    boolean sample
+    boolean sample,
+    Double distanceMi
 ) {
 }

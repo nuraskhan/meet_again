@@ -105,9 +105,20 @@ public final class PlaceImport {
       System.err.println("No database: pass <jdbc url> <user> <password>, or set HANGELO_IMPORT_DB_URL/USER/PASSWORD");
       System.exit(2);
     }
+    if (user == null || user.isBlank()) {
+      System.err.println("No database user: pass it after the address, or set HANGELO_IMPORT_DB_USER");
+      System.exit(2);
+    }
 
     int loaded = 0;
-    try (Connection connection = DriverManager.getConnection(url, user, password)) {
+    try (Connection connection = DriverManager.getConnection(withoutCredentials(url), user, password)) {
+      // On a release (see the Procfile) the import runs every time; it should load the venues
+      // once, not ask the directory again on every deploy.
+      if ("1".equals(System.getenv("HANGELO_IMPORT_ONLY_IF_EMPTY")) && alreadyLoaded(connection)) {
+        System.out.println("Venues from 2GIS are already there: nothing to do");
+        return;
+      }
+
       for (City city : CITIES) {
         for (Map.Entry<String, String> category : QUERIES.entrySet()) {
           List<Venue> found = new java.util.ArrayList<>();
@@ -143,6 +154,29 @@ public final class PlaceImport {
       }
     }
     System.out.println("Done: " + loaded + " venues loaded or updated");
+  }
+
+  private static boolean alreadyLoaded(Connection connection) throws SQLException {
+    try (PreparedStatement statement = connection.prepareStatement(
+        "select exists (select 1 from place where source = '2GIS')");
+         java.sql.ResultSet result = statement.executeQuery()) {
+      return result.next() && result.getBoolean(1);
+    }
+  }
+
+  /**
+   * The address without the user and the password that some hosts put into it (Heroku does:
+   * "...?user=...&password=..."). They are passed separately.
+   *
+   * <p>WHY: the driver may print the address it was given - in a log line, in an error. A release
+   * log is read by many; a password must not be in it. (The same was once learned the hard way
+   * by the migration program: see Migrate.withoutCredentials.)
+   */
+  static String withoutCredentials(String url) {
+    String cleaned = url.replaceAll("([?&])(user|password)=[^&]*", "$1");
+    // What is left of "?user=..&password=..&sslmode=require" is "?&&sslmode=require": tidy it.
+    cleaned = cleaned.replaceAll("&{2,}", "&").replace("?&", "?");
+    return cleaned.replaceAll("[?&]$", "");
   }
 
   /**

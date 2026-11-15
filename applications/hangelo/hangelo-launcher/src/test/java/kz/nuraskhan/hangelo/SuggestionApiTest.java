@@ -183,6 +183,46 @@ class SuggestionApiTest extends ApiTestBase {
   }
 
   @Test
+  void refresh__looksWider_whenNothingIsWithinAnyonesRadius_andSaysThePlacesAreAStretch() {
+    TestUser creator = register();
+    long eventId = event(creator, "COFFEE");
+    locate(creator, eventId, 0, 2);                       // goes no farther than 2 miles
+    place("Twelve miles, good", EventType.COFFEE, 12, 4.9);
+    place("Eight miles, fine", EventType.COFFEE, 8, 4.0);
+    place("Too far even so", EventType.COFFEE, 45, 5.0);   // beyond the wider look as well
+
+    //
+    //
+    JsonNode suggestions = post("/event/" + eventId + "/suggestion/refresh", creator).body().get("suggestions");
+    //
+    //
+
+    // Nothing is within two miles, so the nearest ones in the wider circle are offered - the
+    // better rated first - and each says honestly that it is beyond the person's reach.
+    assertThat(names(suggestions)).containsExactly("Twelve miles, good", "Eight miles, fine");
+    assertThat(suggestions.get(0).get("withinEveryonesReach").asBoolean()).isFalse();
+    assertThat(suggestions.get(1).get("withinEveryonesReach").asBoolean()).isFalse();
+    assertThat(suggestions.get(0).get("myDistanceMi").asDouble()).isCloseTo(12.0, within(0.1));
+  }
+
+  @Test
+  void refresh__doesNotLookWider_whenSomethingIsWithinReach() {
+    TestUser creator = register();
+    long eventId = event(creator, "COFFEE");
+    locate(creator, eventId, 0, 2);
+    place("Near", EventType.COFFEE, 1, 3.0);
+    place("Far and better", EventType.COFFEE, 10, 5.0);
+
+    //
+    //
+    JsonNode suggestions = post("/event/" + eventId + "/suggestion/refresh", creator).body().get("suggestions");
+    //
+    //
+
+    assertThat(names(suggestions)).containsExactly("Near");
+  }
+
+  @Test
   void refresh__forAnEventOfTheTypeOther_considersEveryCategory() {
     TestUser creator = register();
     long eventId = event(creator, "OTHER");

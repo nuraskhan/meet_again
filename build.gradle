@@ -82,7 +82,7 @@ subprojects { Project p ->
 // otherwise it runs `build`, and build/stage, which the Procfile starts from, does not appear.
 // The work is done by the `stage` tasks of the launcher and of the migration module.
 tasks.register('stage') {
-    description = 'Prepares build/stage for Heroku: the server jar and the migration program'
+    description = 'Prepares build/stage for Heroku: the server jar, the migration program, the venue import tool'
     group = 'distribution'
-    dependsOn ':applications:hangelo:hangelo-launcher:stage', ':migration:stage'
+    dependsOn ':applications:hangelo:hangelo-launcher:stage', ':migration:stage', ':place-import:stage'
 }

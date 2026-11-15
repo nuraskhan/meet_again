@@ -1,0 +1,1 @@
+also fix object now during choose a place and suggest place I cannot see anything related stufef ,also during list of them show name + rating + distance

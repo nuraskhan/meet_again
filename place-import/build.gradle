@@ -29,3 +29,14 @@ tasks.register('importTo', JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
     mainClass = 'kz.nuraskhan.hangelo.placeimport.PlaceImport'
 }
+
+// Heroku: part of the root task `stage`. Puts the tool and its libraries into
+// build/stage/place-import, where the release command of the Procfile finds them. The tool runs
+// there only if the application has a 2GIS key (see the Procfile).
+tasks.register('stage', Sync) {
+    description = 'Copies the venue import tool and its libraries to build/stage/place-import'
+    group = 'distribution'
+    from tasks.named('jar')
+    from configurations.named('runtimeClasspath')
+    into rootProject.layout.buildDirectory.dir('stage/place-import')
+}

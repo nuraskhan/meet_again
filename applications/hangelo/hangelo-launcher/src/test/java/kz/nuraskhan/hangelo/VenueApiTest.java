@@ -145,6 +145,53 @@ class VenueApiTest extends ApiTestBase {
   }
 
   @Test
+  void list__fromAPoint_putsTheNearestFirst_andSaysHowFarEachIs() {
+    TestUser reader = register();
+    String city = "Testburg" + RND.str(8);
+    // A point in the open ocean, so that only the venues of this test are near it.
+    double lat = -40 - RND.intBetween(0, 9000) / 1000.0;
+    double lon = -120 - RND.intBetween(0, 9000) / 1000.0;
+    double milesPerDegree = 69.0934;
+    venueAt("Three miles", city, lat + 3 / milesPerDegree, lon, 3.0);
+    venueAt("One mile", city, lat + 1 / milesPerDegree, lon, 2.0);
+    venueAt("Ten miles, the best", city, lat + 10 / milesPerDegree, lon, 5.0);
+
+    //
+    //
+    JsonNode fromThePoint = post("/place/search", reader,
+        Map.of("city", city, "latitude", lat, "longitude", lon)).body();
+    JsonNode withoutAPoint = post("/place/search", reader, Map.of("city", city)).body();
+    Response halfAPoint = post("/place/search", reader, Map.of("city", city, "latitude", lat));
+    Response noSuchPoint = post("/place/search", reader, Map.of("city", city, "latitude", 95, "longitude", 10));
+    //
+    //
+
+    assertThat(fromThePoint.valueStream().map(p -> p.get("name").asString()).toList())
+        .containsExactly("One mile", "Three miles", "Ten miles, the best");
+    assertThat(fromThePoint.get(0).get("distanceMi").asDouble()).isEqualTo(1.0);
+    assertThat(fromThePoint.get(1).get("distanceMi").asDouble()).isEqualTo(3.0);
+    assertThat(fromThePoint.get(2).get("distanceMi").asDouble()).isEqualTo(10.0);
+
+    // Without a point: the best rated first, and no distances.
+    assertThat(withoutAPoint.valueStream().map(p -> p.get("name").asString()).toList())
+        .containsExactly("Ten miles, the best", "Three miles", "One mile");
+    assertThat(withoutAPoint.get(0).get("distanceMi").isNull()).isTrue();
+
+    assertThat(halfAPoint.status()).isEqualTo(400);
+    assertThat(noSuchPoint.status()).isEqualTo(400);
+  }
+
+  private void venueAt(String name, String city, double latitude, double longitude, double rating) {
+    Place place = RND.place(EventType.COFFEE);
+    place.name = name;
+    place.city = city;
+    place.latitude = latitude;
+    place.longitude = longitude;
+    place.rating = rating;
+    placeRepository.save(place);
+  }
+
+  @Test
   void list__treatsThePercentSignAsItself() {
     TestUser reader = register();
     String city = "Testburg" + RND.str(8);
