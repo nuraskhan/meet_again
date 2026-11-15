@@ -1,0 +1,2 @@
+also first pull there should be changes in readme.md, then add to landing:
+1) Pricing and Try Demo(or etc) at the top
