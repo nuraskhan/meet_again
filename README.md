@@ -7,6 +7,8 @@ plan. Not another group chat, not another calendar: just the plan.
 
 Try it: https://meet-again-ui-112b5408b3d1.herokuapp.com/
 
+Link to fronend-repo: https://github.com/nuraskhan/meet_again_ui
+
 ## Why
 
 We talk to our friends all the time and see them far less. Plans die in the details: someone says
