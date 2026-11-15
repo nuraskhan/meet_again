@@ -1,0 +1,16 @@
+ В меню профиля: "Upgrade to Plus".
+- Клик → модальное окно:
+  Hangelo Plus
+  $3.99/month or $29.99/year
+  ✓ Unlimited active plans
+  ✓ 3 ranked alternatives for every plan
+  ✓ Saved crews — reuse a group in one tap
+  ✓ Automatic reminders
+  [Start Plus]
+  мелко: "Demo — no real payment"
+- Start Plus → у пользователя plan = "plus" (в БД),
+  в шапке появляется бейдж "Plus", окно закрывается.
+- Лимит планов НЕ вводить: жюри должно спокойно
+  создавать планы.
+
+that pricing plancs also should be in landing

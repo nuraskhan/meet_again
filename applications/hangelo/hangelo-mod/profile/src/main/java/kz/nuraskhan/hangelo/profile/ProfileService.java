@@ -7,6 +7,7 @@ import java.util.Set;
 import kz.nuraskhan.hangelo.profile.dto.PromptDto;
 import kz.nuraskhan.hangelo.profile.dto.UpdateProfileRequest;
 import kz.nuraskhan.hangelo.model.entity.Profile;
+import kz.nuraskhan.hangelo.model.enums.Privilege;
 import kz.nuraskhan.hangelo.model.entity.ProfileInterest;
 import kz.nuraskhan.hangelo.model.entity.ProfilePrompt;
 import kz.nuraskhan.hangelo.model.repository.ProfileInterestRepository;
@@ -95,5 +96,33 @@ public class ProfileService {
 
   private static String blankToNull(String text) {
     return text == null || text.isBlank() ? null : text.trim();
+  }
+
+  /**
+   * "Start Plus": the person moves to the Plus plan.
+   *
+   * <p>A DEMONSTRATION: no payment is taken and none is asked for - the level is switched, and
+   * that is all. When payments come, this is where a paid subscription will be checked first.
+   *
+   * <p>Only from the free plan. Someone on a higher level stays there: taking Plus must never
+   * lower what a person already has.
+   */
+  @Transactional
+  public void startPlus(Long me) {
+    Profile profile = profileRepository.findById(me)
+        .orElseThrow(() -> ApiException.notFound("profile_not_found", "Profile not found"));
+    if (profile.privilege == Privilege.STANDARD) {
+      profile.privilege = Privilege.PLUS;
+    }
+  }
+
+  /** Back to the free plan. Only from Plus: a level that was given is not dropped this way. */
+  @Transactional
+  public void cancelPlus(Long me) {
+    Profile profile = profileRepository.findById(me)
+        .orElseThrow(() -> ApiException.notFound("profile_not_found", "Profile not found"));
+    if (profile.privilege == Privilege.PLUS) {
+      profile.privilege = Privilege.STANDARD;
+    }
   }
 }

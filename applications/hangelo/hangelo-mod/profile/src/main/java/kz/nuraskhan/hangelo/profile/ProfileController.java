@@ -41,6 +41,22 @@ public class ProfileController {
     return profileQuery.my(me).orElseThrow(ProfileController::notFound);
   }
 
+  /** "Start Plus": moves the caller to the Plus plan. A demonstration - no payment is taken. */
+  @PostMapping("/plus/start")
+  public MyProfileDto startPlus(Principal principal) {
+    Long me = CurrentUser.id(principal);
+    profileService.startPlus(me);
+    return profileQuery.my(me).orElseThrow(ProfileController::notFound);
+  }
+
+  /** Back to the free plan. */
+  @PostMapping("/plus/cancel")
+  public MyProfileDto cancelPlus(Principal principal) {
+    Long me = CurrentUser.id(principal);
+    profileService.cancelPlus(me);
+    return profileQuery.my(me).orElseThrow(ProfileController::notFound);
+  }
+
   @GetMapping("/search")
   public List<ProfileCardDto> search(Principal principal, @RequestParam("text") String text) {
     return profileQuery.search(CurrentUser.id(principal), text);

@@ -1,8 +1,9 @@
 package kz.nuraskhan.hangelo.model.enums;
 
 /**
- * The privilege level of a person: the base of the future subscription plans. Everyone starts at
- * {@link #STANDARD}; a person cannot change their own level.
+ * The privilege level of a person: the subscription plan. Everyone starts at {@link #STANDARD}
+ * (the free plan). {@link #PLUS} is the plan a person takes themselves ("Upgrade to Plus"); the
+ * levels above it are given, never taken.
  *
  * <p>What a level allows is written here, next to the level, and nowhere else: code asks the level
  * ("how many photos may this person have?") and never compares levels by name. A new allowance is
@@ -13,6 +14,8 @@ package kz.nuraskhan.hangelo.model.enums;
  */
 public enum Privilege {
   STANDARD(3),
+  /** Hangelo Plus. For now a demonstration: switched on by the person, no payment taken. */
+  PLUS(6),
   PRO(6),
   MAX(Privilege.PHOTO_CEILING),
   ;
