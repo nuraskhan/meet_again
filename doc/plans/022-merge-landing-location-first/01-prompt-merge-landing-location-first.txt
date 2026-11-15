@@ -1,0 +1,3 @@
+also pull frontend there should be changes in landing , after that merge or make it up-to-date and all stuff shoudl be pushed
+
+also ask for location at the creeating card and move upper in card after creating, before selecting or suggesting заведении
