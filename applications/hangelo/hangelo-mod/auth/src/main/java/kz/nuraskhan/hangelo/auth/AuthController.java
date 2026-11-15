@@ -17,12 +17,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/auth")
 public class AuthController {
 
+  private final DemoLoginService demoLoginService;
+
   private static final Logger log = LoggerFactory.getLogger(AuthController.class);
 
   private final AuthService authService;
   private final EmailVerificationService emailVerificationService;
 
-  public AuthController(AuthService authService, EmailVerificationService emailVerificationService) {
+  public AuthController(AuthService authService, EmailVerificationService emailVerificationService,
+                        DemoLoginService demoLoginService) {
+    this.demoLoginService = demoLoginService;
     this.authService = authService;
     this.emailVerificationService = emailVerificationService;
   }
@@ -48,6 +52,15 @@ public class AuthController {
   }
 
   /** The link from the confirmation letter. No token: the link itself is the proof. */
+  /**
+   * Signs in as a demonstration account, with no password: "steve-jobs" or "steve-wozniak".
+   * See DemoLoginService for what that means and how it is switched off.
+   */
+  @PostMapping("/demo/{who}")
+  public AuthResponse demoLogin(@org.springframework.web.bind.annotation.PathVariable("who") String who) {
+    return demoLoginService.login(who);
+  }
+
   @PostMapping("/verify-email")
   public void verifyEmail(@Valid @RequestBody VerifyEmailRequest request) {
     emailVerificationService.verify(request.token());

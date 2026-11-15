@@ -12,6 +12,7 @@ import kz.nuraskhan.hangelo.jooq.tables.Event;
 import kz.nuraskhan.hangelo.jooq.tables.Friendship;
 import kz.nuraskhan.hangelo.jooq.tables.Invitation;
 import kz.nuraskhan.hangelo.jooq.tables.Notification;
+import kz.nuraskhan.hangelo.jooq.tables.PageView;
 import kz.nuraskhan.hangelo.jooq.tables.Place;
 
 import org.jooq.Index;
@@ -43,6 +44,7 @@ public class Indexes {
     public static final Index INVITATION__REQUESTED = Internal.createIndex(DSL.name("invitation__requested"), Invitation.INVITATION, new OrderField[] { Invitation.INVITATION.EVENT_ID }, false);
     public static final Index NOTIFICATION__RECIPIENT = Internal.createIndex(DSL.name("notification__recipient"), Notification.NOTIFICATION, new OrderField[] { Notification.NOTIFICATION.USER_ACCOUNT_ID, Notification.NOTIFICATION.ID.desc() }, false);
     public static final Index NOTIFICATION__UNREAD = Internal.createIndex(DSL.name("notification__unread"), Notification.NOTIFICATION, new OrderField[] { Notification.NOTIFICATION.USER_ACCOUNT_ID }, false);
+    public static final Index PAGE_VIEW__CREATED = Internal.createIndex(DSL.name("page_view__created"), PageView.PAGE_VIEW, new OrderField[] { PageView.PAGE_VIEW.CREATED_AT }, false);
     public static final Index PLACE__EXTERNAL = Internal.createIndex(DSL.name("place__external"), Place.PLACE, new OrderField[] { Place.PLACE.SOURCE, Place.PLACE.EXTERNAL_ID }, true);
     public static final Index PLACE__SEARCH = Internal.createIndex(DSL.name("place__search"), Place.PLACE, new OrderField[] { Place.PLACE.CATEGORY, Place.PLACE.LATITUDE, Place.PLACE.LONGITUDE }, false);
 }

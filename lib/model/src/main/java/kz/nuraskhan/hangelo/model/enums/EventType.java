@@ -8,15 +8,16 @@ package kz.nuraskhan.hangelo.model.enums;
  * migration).
  */
 public enum EventType {
-  BATH("Bathhouse", 0, 10, 5000, 15000),
-  FOOD("Eat something together", 0, 3, 3000, 10000),
-  COFFEE("Coffee", 0, 2, 1500, 4000),
-  BAR("Bar", 0, 6, 5000, 20000),
+  // Prices are per person, in US dollars.
+  BATH("Bathhouse", 0, 10, 20, 60),
+  FOOD("Eat something together", 0, 3, 12, 40),
+  COFFEE("Coffee", 0, 2, 6, 16),
+  BAR("Bar", 0, 6, 20, 80),
   WALK("Walk", 0, 3, 0, 0),
-  CINEMA("Cinema", 0, 6, 2000, 5000),
-  SPORT("Sport", 0, 6, 0, 5000),
-  BOARD_GAMES("Board games", 0, 6, 0, 3000),
-  OTHER("Hang out", 0, 6, 0, 10000),
+  CINEMA("Cinema", 0, 6, 8, 20),
+  SPORT("Sport", 0, 6, 0, 20),
+  BOARD_GAMES("Board games", 0, 6, 0, 12),
+  OTHER("Hang out", 0, 6, 0, 40),
   ;
 
   public final String defaultTitle;

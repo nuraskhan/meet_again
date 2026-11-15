@@ -1,0 +1,5 @@
+also remove map and geo in card from guests(not organizers)
+also in card should be chat in right panel below people and etc.
+also add analytica of visiting site in /admin/analytica
+also add fast login two users as Steve Jobs and Steve Wozniak and create for them fl links to skip auth (for demo)
+also currencies should be in america and it should be aimed to america

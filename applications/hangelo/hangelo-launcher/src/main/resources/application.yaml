@@ -43,6 +43,14 @@ hangelo:
     resend-api-key: ${HANGELO_RESEND_API_KEY:}
     from: ${HANGELO_MAIL_FROM:Hangelo <onboarding@resend.dev>}
     public-url: ${HANGELO_PUBLIC_URL:http://localhost:19000}
+  demo-login:
+    # Signing in as one of the two demonstration accounts by a link, with no password
+    # (DemoLoginService). On unless switched off.
+    enabled: ${HANGELO_DEMO_LOGIN:true}
+  admin:
+    # Who may see /admin/analytica: e-mails, separated by commas. Not set = the demonstration
+    # account alone - so the page can be shown in a demo, and is closed to everyone else.
+    emails: ${HANGELO_ADMIN_EMAILS:steve.jobs@hangelo.demo}
   timers:
     # The timers of the server: reminders about upcoming events (every ten minutes) and the expiry
     # of events whose dates are behind (every minute). The tests turn them off.

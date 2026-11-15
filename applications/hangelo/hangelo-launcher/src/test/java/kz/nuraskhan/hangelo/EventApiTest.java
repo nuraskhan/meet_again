@@ -25,8 +25,8 @@ class EventApiTest extends ApiTestBase {
         .findFirst().orElseThrow();
     assertThat(bath.get("defaultTitle").asString()).isEqualTo("Bathhouse");
     assertThat(bath.get("defaultDistanceMaxMi").asInt()).isEqualTo(10);
-    assertThat(bath.get("defaultPriceMin").asInt()).isEqualTo(5000);
-    assertThat(bath.get("defaultPriceMax").asInt()).isEqualTo(15000);
+    assertThat(bath.get("defaultPriceMin").asInt()).isEqualTo(20);
+    assertThat(bath.get("defaultPriceMax").asInt()).isEqualTo(60);
   }
 
   @Test
@@ -116,8 +116,8 @@ class EventApiTest extends ApiTestBase {
     assertThat(event.get("title").asString()).isEqualTo("Bathhouse");
     assertThat(event.get("distanceMinMi").asInt()).isEqualTo(0);
     assertThat(event.get("distanceMaxMi").asInt()).isEqualTo(10);
-    assertThat(event.get("priceMin").asInt()).isEqualTo(5000);
-    assertThat(event.get("priceMax").asInt()).isEqualTo(15000);
+    assertThat(event.get("priceMin").asInt()).isEqualTo(20);
+    assertThat(event.get("priceMax").asInt()).isEqualTo(60);
     assertThat(event.get("proposedTimes").size()).isZero();
   }
 

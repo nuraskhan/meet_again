@@ -110,10 +110,10 @@ class SuggestionApiTest extends ApiTestBase {
   @Test
   void refresh__putsAPlaceThatFitsTheBudget_beforeABetterRatedOneThatDoesNot() {
     TestUser creator = register();
-    long eventId = event(creator, "COFFEE"); // the budget of a coffee: 1500 to 4000
+    long eventId = event(creator, "COFFEE"); // the budget of a coffee: 6 to 16
     locate(creator, eventId, 0, 10);
-    place("Affordable", EventType.COFFEE, 1, 3.9, 2000, 3500);
-    place("Luxurious", EventType.COFFEE, 1, 4.9, 9000, 20000);
+    place("Affordable", EventType.COFFEE, 1, 3.9, 8, 14);
+    place("Luxurious", EventType.COFFEE, 1, 4.9, 36, 80);
 
     //
     //
@@ -463,7 +463,7 @@ class SuggestionApiTest extends ApiTestBase {
 
   /** A place so many miles north of the spot, whose prices fit the budget of a coffee. */
   private Place place(String name, EventType category, double milesNorth, double rating) {
-    return place(name, category, milesNorth, rating, 2000, 3000);
+    return place(name, category, milesNorth, rating, 8, 12);
   }
 
   private Place place(String name, EventType category, double milesNorth, double rating,

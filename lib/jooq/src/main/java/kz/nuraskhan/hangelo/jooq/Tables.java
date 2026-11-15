@@ -16,6 +16,7 @@ import kz.nuraskhan.hangelo.jooq.tables.EventTimeOption;
 import kz.nuraskhan.hangelo.jooq.tables.Friendship;
 import kz.nuraskhan.hangelo.jooq.tables.Invitation;
 import kz.nuraskhan.hangelo.jooq.tables.Notification;
+import kz.nuraskhan.hangelo.jooq.tables.PageView;
 import kz.nuraskhan.hangelo.jooq.tables.ParticipantPreference;
 import kz.nuraskhan.hangelo.jooq.tables.Place;
 import kz.nuraskhan.hangelo.jooq.tables.Profile;
@@ -90,6 +91,11 @@ public class Tables {
      * The table <code>public.notification</code>.
      */
     public static final Notification NOTIFICATION = Notification.NOTIFICATION;
+
+    /**
+     * The table <code>public.page_view</code>.
+     */
+    public static final PageView PAGE_VIEW = PageView.PAGE_VIEW;
 
     /**
      * The table <code>public.participant_preference</code>.

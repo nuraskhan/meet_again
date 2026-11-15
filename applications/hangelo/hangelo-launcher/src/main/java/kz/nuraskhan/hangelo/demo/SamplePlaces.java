@@ -86,8 +86,10 @@ final class SamplePlaces {
     place.latitude = latitude;
     place.longitude = longitude;
     place.rating = rating;
-    place.priceMin = priceMin;
-    place.priceMax = priceMax;
+    // The figures of the list above were written when prices were in tenge; the application
+    // counts in dollars now, by the same factor as the default budgets (migration V017).
+    place.priceMin = priceMin / 250;
+    place.priceMax = priceMax / 250;
     place.sample = true;
     place.createdAt = Instant.now();
     places.add(place);

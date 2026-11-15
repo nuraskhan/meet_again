@@ -19,6 +19,7 @@ import kz.nuraskhan.hangelo.jooq.tables.EventTimeOption;
 import kz.nuraskhan.hangelo.jooq.tables.Friendship;
 import kz.nuraskhan.hangelo.jooq.tables.Invitation;
 import kz.nuraskhan.hangelo.jooq.tables.Notification;
+import kz.nuraskhan.hangelo.jooq.tables.PageView;
 import kz.nuraskhan.hangelo.jooq.tables.ParticipantPreference;
 import kz.nuraskhan.hangelo.jooq.tables.Place;
 import kz.nuraskhan.hangelo.jooq.tables.Profile;
@@ -107,6 +108,11 @@ public class Public extends SchemaImpl {
     public final Notification NOTIFICATION = Notification.NOTIFICATION;
 
     /**
+     * The table <code>public.page_view</code>.
+     */
+    public final PageView PAGE_VIEW = PageView.PAGE_VIEW;
+
+    /**
      * The table <code>public.participant_preference</code>.
      */
     public final ParticipantPreference PARTICIPANT_PREFERENCE = ParticipantPreference.PARTICIPANT_PREFERENCE;
@@ -169,6 +175,7 @@ public class Public extends SchemaImpl {
             Friendship.FRIENDSHIP,
             Invitation.INVITATION,
             Notification.NOTIFICATION,
+            PageView.PAGE_VIEW,
             ParticipantPreference.PARTICIPANT_PREFERENCE,
             Place.PLACE,
             Profile.PROFILE,
