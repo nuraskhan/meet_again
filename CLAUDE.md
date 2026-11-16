@@ -153,7 +153,7 @@ point of the check.
   the steps and the examples of right and wrong are in that repository's `CLAUDE.md`
   ("Releases: a card for every deploy").
 - **When a re-deploy is asked for: the card first, then the deploy**, and the web application is
-  deployed every time, because its welcome page shows the newest card.
+  deployed every time, because its page for developers shows the newest card.
 - **Why one list, in one repository**: the product is one thing to the people who use it. Two lists
-  would each be half of the answer to "what changed and when", and the welcome page can read only
+  would each be half of the answer to "what changed and when", and the page for developers can read only
   the one that is built into it.
