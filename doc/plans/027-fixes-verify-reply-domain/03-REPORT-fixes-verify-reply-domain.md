@@ -107,3 +107,15 @@ link to git.
   and wrong, why) and section 9 of this repository's `CLAUDE.md` pointing to it.
 - Checked: the card on the page at a wide screen and at 390 px (it shows v0.1.0 while v0.2.0 is
   pending); `npm run build`.
+
+## Changed afterwards: hangelo.brainb.kz instead of brainb.kz/hangelo/
+
+brainb.kz turned out to have no server of its own: at ps.kz there is only DNS, the bare domain is a
+redirect page of the registrar, and a bare domain cannot be pointed at Heroku with an ordinary
+record. `www.brainb.kz/hangelo/` was possible but, in the owner's words, looked bad. Decided the
+same day: the application gets its own address, `hangelo.brainb.kz`, and lives at its root again.
+
+- Web repository, release v0.3.0: `base` is `/` again; `server.js` leads addresses that still carry
+  `/hangelo` to the same place without it; `deploy/nginx-brainb.kz.conf` is removed.
+- Nothing changed in this repository. `HANGELO_PUBLIC_URL` becomes `https://hangelo.brainb.kz` once
+  the DNS record exists.
