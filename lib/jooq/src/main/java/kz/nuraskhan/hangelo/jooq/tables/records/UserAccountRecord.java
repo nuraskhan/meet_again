@@ -104,6 +104,20 @@ public class UserAccountRecord extends UpdatableRecordImpl<UserAccountRecord> {
         return (Instant) get(5);
     }
 
+    /**
+     * Setter for <code>public.user_account.admin</code>.
+     */
+    public void setAdmin(Boolean value) {
+        set(6, value);
+    }
+
+    /**
+     * Getter for <code>public.user_account.admin</code>.
+     */
+    public Boolean getAdmin() {
+        return (Boolean) get(6);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -127,7 +141,7 @@ public class UserAccountRecord extends UpdatableRecordImpl<UserAccountRecord> {
     /**
      * Create a detached, initialised UserAccountRecord
      */
-    public UserAccountRecord(Long id, String email, String passwordHash, Instant createdAt, Instant deactivatedAt, Instant emailVerifiedAt) {
+    public UserAccountRecord(Long id, String email, String passwordHash, Instant createdAt, Instant deactivatedAt, Instant emailVerifiedAt, Boolean admin) {
         super(UserAccount.USER_ACCOUNT);
 
         setId(id);
@@ -136,6 +150,7 @@ public class UserAccountRecord extends UpdatableRecordImpl<UserAccountRecord> {
         setCreatedAt(createdAt);
         setDeactivatedAt(deactivatedAt);
         setEmailVerifiedAt(emailVerifiedAt);
+        setAdmin(admin);
         resetTouchedOnNotNull();
     }
 }

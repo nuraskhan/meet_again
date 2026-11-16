@@ -105,8 +105,23 @@ public abstract class ApiTestBase {
     }
   }
 
-  /** Registers a new person with a random e-mail and name. */
+  @org.springframework.beans.factory.annotation.Autowired
+  private CapturingEmailSender capturedMail;
+
+  /**
+   * A new person with a random e-mail and name, who has confirmed the e-mail by the link from the
+   * letter - so the application is open to them, as it is to anyone who really uses it.
+   */
   protected TestUser register() {
+    TestUser user = registerUnconfirmed();
+    Response confirmed = post("/auth/verify-email", null,
+        Map.of("token", capturedMail.verificationToken(user.email())));
+    assertThat(confirmed.status()).isEqualTo(200);
+    return user;
+  }
+
+  /** A new person who has not opened the link from the letter yet: almost everything is closed. */
+  protected TestUser registerUnconfirmed() {
     String email = RND.email();
     String password = RND.str(12);
     String displayName = "Test " + RND.str(10);

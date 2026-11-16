@@ -5,82 +5,21 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.Map;
+import kz.nuraskhan.hangelo.model.entity.UserAccount;
+import kz.nuraskhan.hangelo.model.repository.UserAccountRepository;
 import kz.nuraskhan.hangelo.model.rnd.RND;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import tools.jackson.databind.JsonNode;
 
-/** Signing in as a demonstration account by a link, and the figures of visits for admins. */
-class DemoAndAnalyticsApiTest extends ApiTestBase {
+/** Counting visits, and the figures of them for the people marked as administrators. */
+class AnalyticsApiTest extends ApiTestBase {
 
-  // ------------------------------------------------------------------ demo login
-
-  @Test
-  void demoLogin__signsInAsTheDemoAccount_withoutAPassword_andTheTwoAreFriends() {
-    //
-    //
-    Response jobs = post("/auth/demo/steve-jobs", null);
-    Response wozniak = post("/auth/demo/steve-wozniak", null);
-    //
-    //
-
-    assertThat(jobs.status()).isEqualTo(200);
-    assertThat(wozniak.status()).isEqualTo(200);
-    TestUser steve = demo(jobs);
-    TestUser woz = demo(wozniak);
-
-    JsonNode profile = get("/profile/me", steve).body();
-    assertThat(profile.get("displayName").asString()).isEqualTo("Steve Jobs");
-    assertThat(profile.get("email").asString()).isEqualTo("steve.jobs@hangelo.demo");
-    assertThat(profile.get("emailVerified").asBoolean()).isTrue(); // no banner about a letter nobody gets
-    assertThat(get("/profile/me", woz).body().get("displayName").asString()).isEqualTo("Steve Wozniak");
-
-    // Friends from the first moment: one can invite the other at once.
-    assertThat(longs(get("/friend/list", steve).body(), "userId")).contains(woz.id());
-    assertThat(longs(get("/friend/list", woz).body(), "userId")).contains(steve.id());
-  }
-
-  @Test
-  void demoLogin__again_isTheSameAccount_notANewOne() {
-    long first = post("/auth/demo/steve-wozniak", null).body().get("userId").asLong();
-
-    //
-    //
-    Response again = post("/auth/demo/steve-wozniak", null);
-    //
-    //
-
-    assertThat(again.body().get("userId").asLong()).isEqualTo(first);
-    // Still one friendship between the two, not one more per login.
-    TestUser woz = demo(again);
-    long jobsId = post("/auth/demo/steve-jobs", null).body().get("userId").asLong();
-    assertThat(longs(get("/friend/list", woz).body(), "userId").stream().filter(id -> id == jobsId).count())
-        .isEqualTo(1);
-  }
-
-  @Test
-  void demoLogin__isOnlyForTheTwoAccounts_andNobodyGetsInWithAPassword() {
-    TestUser real = register();
-
-    //
-    //
-    Response unknown = post("/auth/demo/elon-musk", null);
-    Response aRealPerson = post("/auth/demo/" + real.email(), null);
-    Response byPassword = post("/auth/login", null,
-        Map.of("email", "steve.jobs@hangelo.demo", "password", "password"));
-    //
-    //
-
-    assertThat(unknown.status()).isEqualTo(404);
-    assertThat(unknown.body().get("code").asString()).isEqualTo("demo_not_found");
-    assertThat(aRealPerson.status()).isEqualTo(404);
-    assertThat(byPassword.status()).isEqualTo(401);
-  }
-
-  // ------------------------------------------------------------------ visits and their figures
+  @Autowired UserAccountRepository userAccountRepository;
 
   @Test
   void analytics__countsVisitsVisitorsAndPages_forAnAdmin() {
-    TestUser admin = demo(post("/auth/demo/steve-jobs", null)); // the admin unless configured otherwise
+    TestUser admin = registerAdmin();
     TestUser someone = register();
     // A page pattern of this test alone: the table is shared with every other test.
     String page = "/test/" + RND.str(12).toLowerCase() + "/:id";
@@ -103,11 +42,9 @@ class DemoAndAnalyticsApiTest extends ApiTestBase {
     assertThat(after.get("visitors").asLong() - before.get("visitors").asLong()).isEqualTo(2);
     assertThat(after.get("signedInVisits").asLong() - before.get("signedInVisits").asLong()).isEqualTo(1);
     assertThat(after.get("users").asLong()).isGreaterThanOrEqualTo(2);
-
     // Today is a UTC day, whatever zone the server runs in.
     assertThat(after.get("byDay").size()).isEqualTo(1);
     assertThat(after.get("byDay").get(0).get("day").asString()).isEqualTo(LocalDate.now(ZoneOffset.UTC).toString());
-
     // The 30-day view has every day of the stretch, also the ones nobody came on.
     assertThat(get("/admin/analytics", admin).body().get("byDay").size()).isEqualTo(30);
 
@@ -121,26 +58,40 @@ class DemoAndAnalyticsApiTest extends ApiTestBase {
   }
 
   @Test
-  void analytics__isClosedToEveryoneButAdmins() {
-    TestUser admin = demo(post("/auth/demo/steve-jobs", null));
+  void analytics__isClosedToEveryoneButThoseMarkedInTheDatabase() {
+    TestUser admin = registerAdmin();
     TestUser someone = register();
-    TestUser otherDemo = demo(post("/auth/demo/steve-wozniak", null));
 
     //
     //
     Response bySomeone = get("/admin/analytics", someone);
-    Response byTheOtherDemo = get("/admin/analytics", otherDemo);
     Response withoutToken = get("/admin/analytics", null);
+    Response byAdmin = get("/admin/analytics", admin);
     //
     //
 
     // For anyone but an admin the page "does not exist".
     assertThat(bySomeone.status()).isEqualTo(404);
-    assertThat(byTheOtherDemo.status()).isEqualTo(404);
     assertThat(withoutToken.status()).isEqualTo(401);
+    assertThat(byAdmin.status()).isEqualTo(200);
     assertThat(get("/admin/access", someone).body().get("admin").asBoolean()).isFalse();
     assertThat(get("/admin/access", admin).body().get("admin").asBoolean()).isTrue();
+  }
+
+  @Test
+  void analytics__closesAtOnce_whenTheMarkIsTakenAway() {
+    TestUser admin = registerAdmin();
     assertThat(get("/admin/analytics", admin).status()).isEqualTo(200);
+    mark(admin, false);
+
+    //
+    //
+    Response after = get("/admin/analytics", admin);
+    //
+    //
+
+    assertThat(after.status()).isEqualTo(404);
+    assertThat(get("/admin/access", admin).body().get("admin").asBoolean()).isFalse();
   }
 
   @Test
@@ -164,8 +115,16 @@ class DemoAndAnalyticsApiTest extends ApiTestBase {
     assertThat(tooLong.status()).isEqualTo(400);
   }
 
-  private TestUser demo(Response login) {
-    return new TestUser(login.body().get("userId").asLong(), login.body().get("token").asString(),
-        "", "", "");
+  /** A person marked as an administrator the only way there is: in the database. */
+  private TestUser registerAdmin() {
+    TestUser user = register();
+    mark(user, true);
+    return user;
+  }
+
+  private void mark(TestUser user, boolean admin) {
+    UserAccount account = userAccountRepository.findById(user.id()).orElseThrow();
+    account.admin = admin;
+    userAccountRepository.save(account);
   }
 }

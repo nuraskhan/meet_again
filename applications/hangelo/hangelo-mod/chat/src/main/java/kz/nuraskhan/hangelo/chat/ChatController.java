@@ -70,7 +70,7 @@ public class ChatController {
                                     @PathVariable("chatId") Long chatId,
                                     @Valid @RequestBody PostMessageRequest request) {
     Long me = CurrentUser.id(principal);
-    Long messageId = chatService.postMessage(me, chatId, request.text());
+    Long messageId = chatService.postMessage(me, chatId, request.text(), request.replyToId());
     ChatMessageDto message = chatQuery.message(messageId).orElseThrow();
 
     // The others in the chat get the message itself, pushed, so an open chat shows it at once.

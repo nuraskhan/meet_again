@@ -110,12 +110,31 @@ public class ChatService {
   /** @return id of the message */
   @Transactional
   public Long postMessage(Long me, Long chatId, String text) {
+    return postMessage(me, chatId, text, null);
+  }
+
+  /**
+   * @param replyToId the message being answered; null = an ordinary message
+   * @return id of the message
+   */
+  @Transactional
+  public Long postMessage(Long me, Long chatId, String text, Long replyToId) {
     ChatMember author = requireMember(me, chatId);
+
+    if (replyToId != null) {
+      // Only a message of this very chat can be answered: otherwise an answer would carry a line
+      // of somebody else's conversation into this one.
+      ChatMessage answered = chatMessageRepository.findById(replyToId).orElse(null);
+      if (answered == null || !answered.chatId.equals(chatId)) {
+        throw ApiException.badRequest("reply_not_found", "The message you are answering is not in this chat");
+      }
+    }
 
     ChatMessage message = new ChatMessage();
     message.chatId = chatId;
     message.authorUserAccountId = me;
     message.text = text;
+    message.replyToChatMessageId = replyToId;
     message.createdAt = Instant.now();
     message = chatMessageRepository.save(message);
 

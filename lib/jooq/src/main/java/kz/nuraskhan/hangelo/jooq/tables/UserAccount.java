@@ -84,6 +84,11 @@ public class UserAccount extends TableImpl<UserAccountRecord> {
      */
     public final TableField<UserAccountRecord, Instant> EMAIL_VERIFIED_AT = createField(DSL.name("email_verified_at"), SQLDataType.INSTANT, this, "");
 
+    /**
+     * The column <code>public.user_account.admin</code>.
+     */
+    public final TableField<UserAccountRecord, Boolean> ADMIN = createField(DSL.name("admin"), SQLDataType.BOOLEAN.nullable(false).defaultValue(DSL.field(DSL.raw("false"), SQLDataType.BOOLEAN)), this, "");
+
     private UserAccount(Name alias, Table<UserAccountRecord> aliased) {
         this(alias, aliased, (Field<?>[]) null, null);
     }

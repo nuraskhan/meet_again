@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
+    <!--
+      The two databases of the local stack (docker/local, port 20000 of the "Ports" table), ready in
+      the Database tool window: nothing to type. The user and the password are in the address on
+      purpose: they are the ones of the local stack, written in docker/local already, and the IDE
+      keeps a typed password in its own store, which a file cannot fill.
+      The production database is NOT here and must never be: this file is committed.
+    -->
+    <data-source source="LOCAL" name="hangelo (local)" uuid="5b0f4c1e-7a52-4a0e-9c11-2f6d3e8a9b01">
+      <driver-ref>postgresql</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+      <jdbc-url>jdbc:postgresql://localhost:20000/hangelo?user=hangelo&amp;password=hangelo</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
+    <data-source source="LOCAL" name="hangelo_test (local, tests)" uuid="5b0f4c1e-7a52-4a0e-9c11-2f6d3e8a9b02">
+      <driver-ref>postgresql</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+      <jdbc-url>jdbc:postgresql://localhost:20000/hangelo_test?user=hangelo&amp;password=hangelo</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
+  </component>
+</project>

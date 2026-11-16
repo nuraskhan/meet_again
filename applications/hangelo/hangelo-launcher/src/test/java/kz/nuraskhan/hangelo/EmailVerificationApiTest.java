@@ -23,7 +23,7 @@ class EmailVerificationApiTest extends ApiTestBase {
   void register__sendsOneConfirmationLetter_andTheAddressIsNotConfirmedYet() {
     //
     //
-    TestUser user = register();
+    TestUser user = registerUnconfirmed();
     //
     //
 
@@ -59,7 +59,7 @@ class EmailVerificationApiTest extends ApiTestBase {
 
   @Test
   void verifyEmail__confirmsTheAddress_withoutBeingLoggedIn() {
-    TestUser user = register();
+    TestUser user = registerUnconfirmed();
     String token = mail.verificationToken(user.email());
 
     //
@@ -74,7 +74,7 @@ class EmailVerificationApiTest extends ApiTestBase {
 
   @Test
   void verifyEmail__worksOnce() {
-    TestUser user = register();
+    TestUser user = registerUnconfirmed();
     String token = mail.verificationToken(user.email());
     post("/auth/verify-email", null, Map.of("token", token));
 
@@ -90,7 +90,7 @@ class EmailVerificationApiTest extends ApiTestBase {
 
   @Test
   void verifyEmail__refusesUnknownAndExpiredLink_withTheSameAnswer() {
-    TestUser user = register();
+    TestUser user = registerUnconfirmed();
     String token = mail.verificationToken(user.email());
 
     // Make the link a day and a minute old.
@@ -125,7 +125,7 @@ class EmailVerificationApiTest extends ApiTestBase {
 
   @Test
   void sendAgain__isRefusedWithinAMinuteOfTheLastLetter() {
-    TestUser user = register(); // the first letter has just gone out
+    TestUser user = registerUnconfirmed(); // the first letter has just gone out
 
     //
     //
@@ -140,7 +140,7 @@ class EmailVerificationApiTest extends ApiTestBase {
 
   @Test
   void sendAgain__sendsANewWorkingLink_onceTheMinuteHasPassed() {
-    TestUser user = register();
+    TestUser user = registerUnconfirmed();
     String firstToken = mail.verificationToken(user.email());
 
     // Make the first letter two minutes old.
@@ -165,7 +165,7 @@ class EmailVerificationApiTest extends ApiTestBase {
 
   @Test
   void sendAgain__isRefusedWhenTheAddressIsAlreadyConfirmed() {
-    TestUser user = register();
+    TestUser user = registerUnconfirmed();
     post("/auth/verify-email", null, Map.of("token", mail.verificationToken(user.email())));
 
     //
@@ -176,6 +176,73 @@ class EmailVerificationApiTest extends ApiTestBase {
 
     assertThat(response.status()).isEqualTo(409);
     assertThat(response.body().get("code").asString()).isEqualTo("already_verified");
+  }
+
+  // ------------------------------------------------------------------ closed until confirmed
+
+  @Test
+  void unconfirmed__everythingIsRefused_exceptFinishingTheConfirmation() {
+    TestUser friend = register();
+
+    //
+    //
+    TestUser user = registerUnconfirmed();
+    //
+    //
+
+    // Reading and writing alike, whatever the module.
+    for (Response refused : List.of(
+        get("/friend/list", user),
+        get("/event/list", user),
+        get("/chat/list", user),
+        get("/notification/list", user),
+        get("/profile/" + friend.id(), user),
+        post("/friend/request", user, Map.of("userId", friend.id())),
+        post("/profile/me", user, Map.of("displayName", "New name")),
+        post("/event/create", user, Map.of("eventType", "COFFEE", "inviteeIds", List.of())))) {
+      assertThat(refused.status()).isEqualTo(403);
+      assertThat(refused.body().get("code").asString()).isEqualTo("email_not_verified");
+    }
+    // What stays open: seeing whether the address is confirmed, and asking for the letter again
+    // (refused here only because one has just been sent).
+    assertThat(get("/profile/me", user).status()).isEqualTo(200);
+    assertThat(post("/account/email-verification/send", user).status()).isEqualTo(429);
+    // The refused request really did nothing.
+    assertThat(get("/friend/request/incoming", friend).body().size()).isZero();
+  }
+
+  @Test
+  void unconfirmed__theSameTokenOpensEverything_onceTheLinkWasOpened() {
+    TestUser user = registerUnconfirmed();
+    assertThat(get("/friend/list", user).status()).isEqualTo(403);
+
+    //
+    //
+    post("/auth/verify-email", null, Map.of("token", mail.verificationToken(user.email())));
+    //
+    //
+
+    assertThat(get("/friend/list", user).status()).isEqualTo(200);
+    assertThat(get("/event/list", user).status()).isEqualTo(200);
+  }
+
+  @Test
+  void registerAndLogin__sayWhetherTheEmailIsConfirmed() {
+    String email = RND.email();
+
+    //
+    //
+    Response registered = post("/auth/register", null,
+        Map.of("email", email, "password", "secret1", "displayName", "Someone"));
+    Response loginBefore = post("/auth/login", null, Map.of("email", email, "password", "secret1"));
+    post("/auth/verify-email", null, Map.of("token", mail.verificationToken(email)));
+    Response loginAfter = post("/auth/login", null, Map.of("email", email, "password", "secret1"));
+    //
+    //
+
+    assertThat(registered.body().get("emailVerified").asBoolean()).isFalse();
+    assertThat(loginBefore.body().get("emailVerified").asBoolean()).isFalse();
+    assertThat(loginAfter.body().get("emailVerified").asBoolean()).isTrue();
   }
 
   @Test

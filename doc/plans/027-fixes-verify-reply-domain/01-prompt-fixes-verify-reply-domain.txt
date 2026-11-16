@@ -1,0 +1,13 @@
+I have added, now fixes:
+
+- after opening notifications, they should reset unread count and stay "read"
+- chats should be repliable for messages during chat
+- remove Fast logins and remove steve * accs
+- dont allow to enter or any operations before verifying acc
+- admin should be marked in db and them only those guys will allowed to go /analytica
+- style of calendar and events still awful, make it as garmin does
+- air in reliability will not be as text, use emoji instead air
+- also in adaptive mode (when i open in phoen when double click it zooms and do discomfort, especially during the chatting)
+- I have domain brainb.kz and move from https://meet-again-ui-112b5408b3d1.herokuapp.com/ to brainb.kz/hangelo/
+- also mark some accs with tag but it will be done only in DB
+- add to this project IntelliJ Idea creds and connection to db in Database right tool bar

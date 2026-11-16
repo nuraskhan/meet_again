@@ -100,6 +100,8 @@ public class DemoData implements ApplicationRunner {
       log.info("Demo people loaded. Log in as {} / {}", FIRST_EMAIL, PASSWORD);
     }
 
+    confirmNamedPeople();
+
     if (placeRepository.existsBySampleTrue()) {
       log.info("Sample places are already there, nothing to do");
     } else {
@@ -144,8 +146,30 @@ public class DemoData implements ApplicationRunner {
   }
 
   private Long register(String name, String displayName) {
-    return authService.register(new RegisterRequest(name + "@demo.test", PASSWORD, displayName))
+    Long userId = authService.register(new RegisterRequest(name + "@demo.test", PASSWORD, displayName))
         .userId();
+    confirmEmail(userId);
+    return userId;
+  }
+
+  /**
+   * The named people are ready to log in as: their e-mail counts as confirmed. Nobody can open a
+   * letter sent to "@demo.test", and without a confirmed e-mail the application is closed.
+   */
+  private void confirmEmail(Long userId) {
+    UserAccount account = userAccountRepository.findById(userId).orElseThrow();
+    if (account.emailVerifiedAt == null) {
+      account.emailVerifiedAt = Instant.now();
+      userAccountRepository.save(account);
+    }
+  }
+
+  /** The same for named people loaded before the confirmation became required. */
+  private void confirmNamedPeople() {
+    for (String name : List.of("alice", "bob", "carol", "dan", "eve")) {
+      userAccountRepository.findByEmail(name + "@demo.test")
+          .ifPresent((UserAccount account) -> confirmEmail(account.id));
+    }
   }
 
   private void makeFriends(Long requester, Long addressee) {

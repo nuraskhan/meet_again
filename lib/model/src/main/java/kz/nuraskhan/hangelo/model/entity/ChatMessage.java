@@ -25,6 +25,10 @@ public class ChatMessage {
   @Column(name = "text", nullable = false)
   public String text;
 
+  /** The message this one answers, in the same chat. Null = answers nothing. */
+  @Column(name = "reply_to__chat_message_id")
+  public Long replyToChatMessageId;
+
   @Column(name = "created_at", nullable = false)
   public Instant createdAt;
 }

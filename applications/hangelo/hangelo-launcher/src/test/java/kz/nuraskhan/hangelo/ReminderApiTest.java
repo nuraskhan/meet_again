@@ -11,6 +11,7 @@ import kz.nuraskhan.hangelo.event.reminder.EventReminderJob;
 import kz.nuraskhan.hangelo.mail.Email;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import kz.nuraskhan.hangelo.model.entity.UserAccount;
 import tools.jackson.databind.JsonNode;
 
 /**
@@ -24,6 +25,7 @@ class ReminderApiTest extends ApiTestBase {
 
   @Autowired CapturingEmailSender mail;
   @Autowired EventReminderJob job;
+  @Autowired kz.nuraskhan.hangelo.model.repository.UserAccountRepository userAccountRepository;
 
   @Test
   void sendDue__remindsTheCreatorAndTheGuestsWhoSaidYes() {
@@ -56,9 +58,15 @@ class ReminderApiTest extends ApiTestBase {
 
   @Test
   void sendDue__neverWritesToAnAddressThatIsNotConfirmed() {
-    TestUser creator = register(); // registered, the link never opened
+    // An account from the time when a plan could be made before the e-mail was confirmed: today
+    // the application is closed until then, so such a person is made by taking the confirmation
+    // away after the plan exists.
+    TestUser creator = register();
     Instant now = Instant.now();
     eventWithDates(creator, now.plus(3, ChronoUnit.HOURS));
+    UserAccount account = userAccountRepository.findById(creator.id()).orElseThrow();
+    account.emailVerifiedAt = null;
+    userAccountRepository.save(account);
 
     //
     //
@@ -199,12 +207,9 @@ class ReminderApiTest extends ApiTestBase {
 
   // ------------------------------------------------------------------ helpers
 
-  /** A registered person who opened the link of the confirmation letter. */
+  /** A registered person who opened the link of the confirmation letter: what register() gives. */
   private TestUser confirmed() {
-    TestUser user = register();
-    Response verified = post("/auth/verify-email", null, Map.of("token", mail.verificationToken(user.email())));
-    assertThat(verified.status()).isEqualTo(200);
-    return user;
+    return register();
   }
 
   /** An event of {@code creator} with these proposed dates; no guests. */

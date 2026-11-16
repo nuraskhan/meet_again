@@ -9,6 +9,7 @@ import kz.nuraskhan.hangelo.model.enums.InvitationStatus;
  * <p>Coordinates are never here: where exactly a person is, is theirs alone. The others see the
  * place the person typed (if any) and the fact that a location was given.
  *
+ * @param tag            a word we put by the name ("Team"); null = none
  * @param travelRadiusMi the farthest the guest is ready to go, miles; null = not said yet
  * @param locationText   the place as the guest typed it; null if they shared coordinates only or
  *                       said nothing
@@ -20,6 +21,7 @@ public record InviteeDto(
     Long invitationId,
     Long userId,
     String displayName,
+    String tag,
     InvitationStatus status,
     Instant respondedAt,
     Integer travelRadiusMi,

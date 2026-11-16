@@ -31,6 +31,13 @@ public class Profile {
   @Column(name = "privilege", nullable = false)
   public Privilege privilege = Privilege.STANDARD;
 
+  /**
+   * A short word shown by the name ("Team"). Set by hand in the database only - it is not among
+   * the fields a profile update accepts. Null = no tag.
+   */
+  @Column(name = "tag")
+  public String tag;
+
   @Column(name = "display_name", nullable = false)
   public String displayName;
 

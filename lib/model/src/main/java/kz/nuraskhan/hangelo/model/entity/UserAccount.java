@@ -31,6 +31,10 @@ public class UserAccount {
   @Column(name = "email_verified_at")
   public Instant emailVerifiedAt;
 
+  /** Sees the analytics page. Set by hand in the database, never by the application. */
+  @Column(name = "admin", nullable = false)
+  public boolean admin;
+
   /** Filled = cannot log in. */
   @Column(name = "deactivated_at")
   public Instant deactivatedAt;

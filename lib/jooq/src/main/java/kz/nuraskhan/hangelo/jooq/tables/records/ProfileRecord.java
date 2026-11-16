@@ -204,6 +204,20 @@ public class ProfileRecord extends UpdatableRecordImpl<ProfileRecord> {
         return (String) get(12);
     }
 
+    /**
+     * Setter for <code>public.profile.tag</code>.
+     */
+    public void setTag(String value) {
+        set(13, value);
+    }
+
+    /**
+     * Getter for <code>public.profile.tag</code>.
+     */
+    public String getTag() {
+        return (String) get(13);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -227,7 +241,7 @@ public class ProfileRecord extends UpdatableRecordImpl<ProfileRecord> {
     /**
      * Create a detached, initialised ProfileRecord
      */
-    public ProfileRecord(Long userAccountId, String displayName, String bio, String city, LocalDate birthDate, String avatarUrl, Instant updatedAt, Privilege privilege, String occupation, String education, String hometown, String pronouns, String languages) {
+    public ProfileRecord(Long userAccountId, String displayName, String bio, String city, LocalDate birthDate, String avatarUrl, Instant updatedAt, Privilege privilege, String occupation, String education, String hometown, String pronouns, String languages, String tag) {
         super(Profile.PROFILE);
 
         setUserAccountId(userAccountId);
@@ -243,6 +257,7 @@ public class ProfileRecord extends UpdatableRecordImpl<ProfileRecord> {
         setHometown(hometown);
         setPronouns(pronouns);
         setLanguages(languages);
+        setTag(tag);
         resetTouchedOnNotNull();
     }
 }

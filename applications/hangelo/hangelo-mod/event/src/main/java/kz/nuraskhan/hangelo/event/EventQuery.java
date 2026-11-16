@@ -144,7 +144,7 @@ public class EventQuery {
     // A guest's preference, if they gave one. Of the place only the typed text and the fact that
     // coordinates exist leave the server; the coordinates themselves go to their owner alone.
     Map<Long, List<InviteeDto>> inviteesByEventId = dsl
-        .select(INVITATION.EVENT_ID, INVITATION.ID, PROFILE.USER_ACCOUNT_ID, PROFILE.DISPLAY_NAME,
+        .select(INVITATION.EVENT_ID, INVITATION.ID, PROFILE.USER_ACCOUNT_ID, PROFILE.DISPLAY_NAME, PROFILE.TAG,
             INVITATION.STATUS, INVITATION.RESPONDED_AT, INVITATION.NO_SHOW,
             PARTICIPANT_PREFERENCE.TRAVEL_RADIUS_MI, PARTICIPANT_PREFERENCE.LOCATION_TEXT,
             PARTICIPANT_PREFERENCE.LATITUDE)
@@ -159,6 +159,7 @@ public class EventQuery {
             row.get(INVITATION.ID),
             row.get(PROFILE.USER_ACCOUNT_ID),
             row.get(PROFILE.DISPLAY_NAME),
+            row.get(PROFILE.TAG),
             row.get(INVITATION.STATUS),
             row.get(INVITATION.RESPONDED_AT),
             row.get(PARTICIPANT_PREFERENCE.TRAVEL_RADIUS_MI),
@@ -367,7 +368,8 @@ public class EventQuery {
   }
 
   private static InviteeDto withoutNoShow(InviteeDto invitee) {
-    return new InviteeDto(invitee.invitationId(), invitee.userId(), invitee.displayName(), invitee.status(),
+    return new InviteeDto(invitee.invitationId(), invitee.userId(), invitee.displayName(), invitee.tag(),
+        invitee.status(),
         invitee.respondedAt(), invitee.travelRadiusMi(), invitee.locationText(), invitee.locationShared(), false);
   }
 

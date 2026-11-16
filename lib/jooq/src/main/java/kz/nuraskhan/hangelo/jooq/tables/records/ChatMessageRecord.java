@@ -90,6 +90,20 @@ public class ChatMessageRecord extends UpdatableRecordImpl<ChatMessageRecord> {
         return (Instant) get(4);
     }
 
+    /**
+     * Setter for <code>public.chat_message.reply_to__chat_message_id</code>.
+     */
+    public void setReplyTo_ChatMessageId(Long value) {
+        set(5, value);
+    }
+
+    /**
+     * Getter for <code>public.chat_message.reply_to__chat_message_id</code>.
+     */
+    public Long getReplyTo_ChatMessageId() {
+        return (Long) get(5);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -113,7 +127,7 @@ public class ChatMessageRecord extends UpdatableRecordImpl<ChatMessageRecord> {
     /**
      * Create a detached, initialised ChatMessageRecord
      */
-    public ChatMessageRecord(Long id, Long chatId, Long author_UserAccountId, String text, Instant createdAt) {
+    public ChatMessageRecord(Long id, Long chatId, Long author_UserAccountId, String text, Instant createdAt, Long replyTo_ChatMessageId) {
         super(ChatMessage.CHAT_MESSAGE);
 
         setId(id);
@@ -121,6 +135,7 @@ public class ChatMessageRecord extends UpdatableRecordImpl<ChatMessageRecord> {
         setAuthor_UserAccountId(author_UserAccountId);
         setText(text);
         setCreatedAt(createdAt);
+        setReplyTo_ChatMessageId(replyTo_ChatMessageId);
         resetTouchedOnNotNull();
     }
 }

@@ -11,6 +11,7 @@ import kz.nuraskhan.hangelo.model.enums.Privilege;
  *
  * @param emailVerified the person confirmed the address by the link we sent
  * @param birthDate     as the person entered it; others see only {@code age}
+ * @param tag           a word we put by the name ("Team"); null = none; the person cannot change it
  * @param privilege     the privilege level; the person cannot change it
  * @param maxPhotos     how many photos that level allows
  * @param reliability   how reliable the person is, counted from their history of events
@@ -20,6 +21,7 @@ public record MyProfileDto(
     String email,
     boolean emailVerified,
     String displayName,
+    String tag,
     LocalDate birthDate,
     Integer age,
     String pronouns,

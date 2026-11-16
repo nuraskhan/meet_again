@@ -123,6 +123,11 @@ public class Profile extends TableImpl<ProfileRecord> {
      */
     public final TableField<ProfileRecord, String> LANGUAGES = createField(DSL.name("languages"), SQLDataType.CLOB, this, "");
 
+    /**
+     * The column <code>public.profile.tag</code>.
+     */
+    public final TableField<ProfileRecord, String> TAG = createField(DSL.name("tag"), SQLDataType.CLOB, this, "");
+
     private Profile(Name alias, Table<ProfileRecord> aliased) {
         this(alias, aliased, (Field<?>[]) null, null);
     }
@@ -170,7 +175,8 @@ public class Profile extends TableImpl<ProfileRecord> {
     @Override
     public List<Check<ProfileRecord>> getChecks() {
         return Arrays.asList(
-            Internal.createCheck(this, DSL.name("profile_privilege_check"), "((privilege = ANY (ARRAY['STANDARD'::text, 'PRO'::text, 'MAX'::text])))", true)
+            Internal.createCheck(this, DSL.name("profile_privilege_check"), "((privilege = ANY (ARRAY['STANDARD'::text, 'PLUS'::text, 'PRO'::text, 'MAX'::text])))", true),
+            Internal.createCheck(this, DSL.name("profile_tag_check"), "(((tag IS NULL) OR ((char_length(tag) >= 1) AND (char_length(tag) <= 24))))", true)
         );
     }
 

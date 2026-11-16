@@ -144,3 +144,16 @@ point of the check.
 - **The remote is GitHub over HTTPS** (`origin` = the private repository `meet_again`).
   Authentication is the token in the environment variable `MEET_AGAIN_KEY`, read at run time by the
   repository's credential helper. The token is never written into a file, a URL or a command line.
+
+## 9. Releases
+
+- **Every deploy is a card in `RELEASES.md` of the web repository (`meet_again_ui`)**: version,
+  when it was applied (UTC), the deployed commit of each repository, and the batch of changes in the
+  words of a person who uses the product. Applies to a deploy of the server alone too. The format,
+  the steps and the examples of right and wrong are in that repository's `CLAUDE.md`
+  ("Releases: a card for every deploy").
+- **When a re-deploy is asked for: the card first, then the deploy**, and the web application is
+  deployed every time, because its welcome page shows the newest card.
+- **Why one list, in one repository**: the product is one thing to the people who use it. Two lists
+  would each be half of the answer to "what changed and when", and the welcome page can read only
+  the one that is built into it.

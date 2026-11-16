@@ -8,18 +8,14 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 import kz.nuraskhan.hangelo.analytics.dto.AnalyticsDto;
 import kz.nuraskhan.hangelo.web.ApiException;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.Record3;
 import org.jooq.impl.DSL;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,15 +26,9 @@ public class AnalyticsService {
   private static final int TOP_PAGES = 15;
 
   private final DSLContext dsl;
-  /** The e-mails of those who may see the figures, lower case. */
-  private final Set<String> adminEmails;
 
-  public AnalyticsService(DSLContext dsl, @Value("${hangelo.admin.emails:}") String adminEmails) {
+  public AnalyticsService(DSLContext dsl) {
     this.dsl = dsl;
-    this.adminEmails = Arrays.stream(adminEmails.split(","))
-        .map(email -> email.trim().toLowerCase())
-        .filter(email -> !email.isEmpty())
-        .collect(Collectors.toUnmodifiableSet());
   }
 
   /**
@@ -56,15 +46,19 @@ public class AnalyticsService {
         .execute();
   }
 
+  /**
+   * An administrator is whoever is marked so in the database ({@code user_account.admin}); the
+   * mark is set by hand, there is no way to get it from the application. Read on every call: taking
+   * the mark away works at once.
+   */
   public boolean isAdmin(Long userId) {
-    if (userId == null || adminEmails.isEmpty()) {
+    if (userId == null) {
       return false;
     }
-    String email = dsl.select(USER_ACCOUNT.EMAIL).from(USER_ACCOUNT)
-        .where(USER_ACCOUNT.ID.eq(userId))
-        .and(USER_ACCOUNT.DEACTIVATED_AT.isNull())
-        .fetchOne(USER_ACCOUNT.EMAIL);
-    return email != null && adminEmails.contains(email.toLowerCase());
+    return dsl.fetchExists(USER_ACCOUNT,
+        USER_ACCOUNT.ID.eq(userId)
+            .and(USER_ACCOUNT.ADMIN.isTrue())
+            .and(USER_ACCOUNT.DEACTIVATED_AT.isNull()));
   }
 
   /** For anyone but an admin the page "does not exist". */

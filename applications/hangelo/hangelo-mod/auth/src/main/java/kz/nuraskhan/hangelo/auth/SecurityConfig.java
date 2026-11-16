@@ -18,12 +18,17 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
+import kz.nuraskhan.hangelo.model.repository.UserAccountRepository;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 
 /**
  * Every request needs a bearer token, except registration, login, the health check and everything
  * under /public (an invitation opened by its link).
  * No sessions and no cookies, so no CSRF protection is needed.
+ *
+ * <p>A token alone is not enough: until the e-mail is confirmed, everything but finishing the
+ * confirmation is refused (EmailVerifiedFilter).
  */
 @Configuration
 @EnableConfigurationProperties(JwtProperties.class)
@@ -32,7 +37,8 @@ public class SecurityConfig {
   private static final int MIN_SECRET_BYTES = 32; // HS256 = HMAC with SHA-256 = a 256-bit key
 
   @Bean
-  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+  public SecurityFilterChain securityFilterChain(HttpSecurity http,
+                                                 UserAccountRepository userAccountRepository) throws Exception {
     http
         .csrf(csrf -> csrf.disable())
         .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -46,7 +52,9 @@ public class SecurityConfig {
             .requestMatchers("/auth/**", "/public/**", "/actuator/health/**", "/actuator/health")
             .permitAll()
             .anyRequest().authenticated())
-        .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));
+        .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
+        // After the token filter: it needs to know who is calling.
+        .addFilterAfter(new EmailVerifiedFilter(userAccountRepository), BearerTokenAuthenticationFilter.class);
 
     return http.build();
   }

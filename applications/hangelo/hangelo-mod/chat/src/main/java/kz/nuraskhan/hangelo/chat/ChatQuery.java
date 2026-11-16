@@ -86,14 +86,15 @@ public class ChatQuery {
                 row.get(last.AUTHOR__USER_ACCOUNT_ID),
                 row.get(PROFILE.DISPLAY_NAME),
                 row.get(last.TEXT),
-                row.get(last.CREATED_AT)),
+                row.get(last.CREATED_AT),
+                null), // a line of the chat list shows the message alone, not what it answers
             row.get(unreadCount)));
   }
 
   /** People in the chat now. */
   public List<ChatMemberDto> members(Long chatId) {
     return dsl
-        .select(PROFILE.USER_ACCOUNT_ID, PROFILE.DISPLAY_NAME, PROFILE.AVATAR_URL)
+        .select(PROFILE.USER_ACCOUNT_ID, PROFILE.DISPLAY_NAME, PROFILE.TAG, PROFILE.AVATAR_URL)
         .from(CHAT_MEMBER)
         .join(PROFILE).on(PROFILE.USER_ACCOUNT_ID.eq(CHAT_MEMBER.USER_ACCOUNT_ID))
         .where(CHAT_MEMBER.CHAT_ID.eq(chatId))
@@ -101,6 +102,9 @@ public class ChatQuery {
         .orderBy(PROFILE.DISPLAY_NAME, PROFILE.USER_ACCOUNT_ID)
         .fetch(Records.mapping(ChatMemberDto::new));
   }
+
+  /** How much of an answered message is shown above the answer. */
+  private static final int REPLY_PREVIEW_CHARS = 140;
 
   /**
    * A page of messages, newest first.
@@ -110,25 +114,52 @@ public class ChatQuery {
   public List<ChatMessageDto> messages(Long chatId, Long beforeId, int limit) {
     Condition older = beforeId == null ? DSL.noCondition() : CHAT_MESSAGE.ID.lt(beforeId);
 
-    return dsl
-        .select(CHAT_MESSAGE.ID, CHAT_MESSAGE.AUTHOR__USER_ACCOUNT_ID, PROFILE.DISPLAY_NAME,
-            CHAT_MESSAGE.TEXT, CHAT_MESSAGE.CREATED_AT)
-        .from(CHAT_MESSAGE)
-        .join(PROFILE).on(PROFILE.USER_ACCOUNT_ID.eq(CHAT_MESSAGE.AUTHOR__USER_ACCOUNT_ID))
+    return selectMessages()
         .where(CHAT_MESSAGE.CHAT_ID.eq(chatId))
         .and(older)
         .orderBy(CHAT_MESSAGE.ID.desc())
         .limit(limit)
-        .fetch(Records.mapping(ChatMessageDto::new));
+        .fetch(ChatQuery::toMessage);
   }
 
   public Optional<ChatMessageDto> message(Long messageId) {
+    return selectMessages()
+        .where(CHAT_MESSAGE.ID.eq(messageId))
+        .fetchOptional(ChatQuery::toMessage);
+  }
+
+  // The answered message and its author, under names of their own: the same two tables are
+  // already in the query as the message and its author.
+  private static final ChatMessage ANSWERED = CHAT_MESSAGE.as("answered");
+  private static final kz.nuraskhan.hangelo.jooq.tables.Profile ANSWERED_AUTHOR = PROFILE.as("answered_author");
+
+  private org.jooq.SelectOnConditionStep<? extends org.jooq.Record> selectMessages() {
     return dsl
         .select(CHAT_MESSAGE.ID, CHAT_MESSAGE.AUTHOR__USER_ACCOUNT_ID, PROFILE.DISPLAY_NAME,
-            CHAT_MESSAGE.TEXT, CHAT_MESSAGE.CREATED_AT)
+            CHAT_MESSAGE.TEXT, CHAT_MESSAGE.CREATED_AT,
+            ANSWERED.ID, ANSWERED.AUTHOR__USER_ACCOUNT_ID, ANSWERED_AUTHOR.DISPLAY_NAME, ANSWERED.TEXT)
         .from(CHAT_MESSAGE)
         .join(PROFILE).on(PROFILE.USER_ACCOUNT_ID.eq(CHAT_MESSAGE.AUTHOR__USER_ACCOUNT_ID))
-        .where(CHAT_MESSAGE.ID.eq(messageId))
-        .fetchOptional(Records.mapping(ChatMessageDto::new));
+        .leftJoin(ANSWERED).on(ANSWERED.ID.eq(CHAT_MESSAGE.REPLY_TO__CHAT_MESSAGE_ID))
+        .leftJoin(ANSWERED_AUTHOR).on(ANSWERED_AUTHOR.USER_ACCOUNT_ID.eq(ANSWERED.AUTHOR__USER_ACCOUNT_ID));
+  }
+
+  private static ChatMessageDto toMessage(org.jooq.Record row) {
+    ChatMessageDto.ReplyDto replyTo = null;
+    if (row.get(ANSWERED.ID) != null) {
+      String text = row.get(ANSWERED.TEXT);
+      replyTo = new ChatMessageDto.ReplyDto(
+          row.get(ANSWERED.ID),
+          row.get(ANSWERED.AUTHOR__USER_ACCOUNT_ID),
+          row.get(ANSWERED_AUTHOR.DISPLAY_NAME),
+          text.length() <= REPLY_PREVIEW_CHARS ? text : text.substring(0, REPLY_PREVIEW_CHARS) + "…");
+    }
+    return new ChatMessageDto(
+        row.get(CHAT_MESSAGE.ID),
+        row.get(CHAT_MESSAGE.AUTHOR__USER_ACCOUNT_ID),
+        row.get(PROFILE.DISPLAY_NAME),
+        row.get(CHAT_MESSAGE.TEXT),
+        row.get(CHAT_MESSAGE.CREATED_AT),
+        replyTo);
   }
 }

@@ -12,8 +12,9 @@ Try it: https://meet-again-ui-112b5408b3d1.herokuapp.com/
 [![Watch the Hangelo demo on YouTube](https://img.youtube.com/vi/LBUlGUmj4EQ/hqdefault.jpg)](https://www.youtube.com/watch?v=LBUlGUmj4EQ)
 
 ▶ [Watch the walk-through on YouTube](https://www.youtube.com/watch?v=LBUlGUmj4EQ). The same video plays
-right on the [welcome page](https://meet-again-ui-112b5408b3d1.herokuapp.com/), and "Try demo" there
-opens the application as Steve Jobs or Steve Wozniak with no sign-up.
+right on the [welcome page](https://meet-again-ui-112b5408b3d1.herokuapp.com/). To try the application,
+create an account and open the link in the confirmation letter: until the e-mail is confirmed,
+nothing else is open.
 
 Link to fronend-repo: https://github.com/nuraskhan/meet_again_ui
 

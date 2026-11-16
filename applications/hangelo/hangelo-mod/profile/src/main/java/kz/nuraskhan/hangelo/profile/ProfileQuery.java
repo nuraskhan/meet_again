@@ -58,6 +58,7 @@ public class ProfileQuery {
         row.get(USER_ACCOUNT.EMAIL),
         row.get(USER_ACCOUNT.EMAIL_VERIFIED_AT) != null,
         row.get(PROFILE.DISPLAY_NAME),
+        row.get(PROFILE.TAG),
         row.get(PROFILE.BIRTH_DATE),
         age(row.get(PROFILE.BIRTH_DATE)),
         row.get(PROFILE.PRONOUNS),
@@ -93,6 +94,7 @@ public class ProfileQuery {
     return Optional.of(new ProfileDto(
         userId,
         row.get(PROFILE.DISPLAY_NAME),
+        row.get(PROFILE.TAG),
         age(row.get(PROFILE.BIRTH_DATE)), // the date itself stays with its owner
         row.get(PROFILE.PRONOUNS),
         row.get(PROFILE.CITY),

@@ -10,6 +10,7 @@ import kz.nuraskhan.hangelo.model.enums.Privilege;
  *
  * <p>Not here on purpose: the e-mail, and the date of birth - others are shown the age only.
  *
+ * @param tag       a word we put by the name ("Team"); null = none
  * @param age       whole years, from the date of birth; null if the person did not give one
  * @param avatarUrl the address of the main photo (the first of {@code photos}); null without photos
  * @param photos    all photos, the main one first
@@ -19,6 +20,7 @@ import kz.nuraskhan.hangelo.model.enums.Privilege;
 public record ProfileDto(
     Long userId,
     String displayName,
+    String tag,
     Integer age,
     String pronouns,
     String city,

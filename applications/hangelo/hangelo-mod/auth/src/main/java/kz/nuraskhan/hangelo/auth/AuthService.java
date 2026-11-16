@@ -33,7 +33,10 @@ public class AuthService {
     this.tokenService = tokenService;
   }
 
-  /** Creates the account and its profile; the new user is logged in at once. */
+  /**
+   * Creates the account and its profile. The token that comes back opens nothing but the
+   * confirmation of the e-mail, until the e-mail is confirmed (EmailVerifiedFilter).
+   */
   @Transactional
   public AuthResponse register(RegisterRequest request) {
     String email = normalizeEmail(request.email());
@@ -56,7 +59,7 @@ public class AuthService {
     profile.updatedAt = now;
     profileRepository.save(profile);
 
-    return new AuthResponse(tokenService.issue(account.id), account.id);
+    return new AuthResponse(tokenService.issue(account.id), account.id, false);
   }
 
   @Transactional(readOnly = true)
@@ -74,7 +77,8 @@ public class AuthService {
     }
 
     Long userAccountId = found.get().id;
-    return new AuthResponse(tokenService.issue(userAccountId), userAccountId);
+    return new AuthResponse(tokenService.issue(userAccountId), userAccountId,
+        found.get().emailVerifiedAt != null);
   }
 
   private static String normalizeEmail(String email) {

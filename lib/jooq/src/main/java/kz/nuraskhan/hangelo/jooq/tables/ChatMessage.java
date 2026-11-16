@@ -82,6 +82,11 @@ public class ChatMessage extends TableImpl<ChatMessageRecord> {
      */
     public final TableField<ChatMessageRecord, Instant> CREATED_AT = createField(DSL.name("created_at"), SQLDataType.INSTANT.nullable(false), this, "");
 
+    /**
+     * The column <code>public.chat_message.reply_to__chat_message_id</code>.
+     */
+    public final TableField<ChatMessageRecord, Long> REPLY_TO__CHAT_MESSAGE_ID = createField(DSL.name("reply_to__chat_message_id"), SQLDataType.BIGINT, this, "");
+
     private ChatMessage(Name alias, Table<ChatMessageRecord> aliased) {
         this(alias, aliased, (Field<?>[]) null, null);
     }
@@ -133,7 +138,7 @@ public class ChatMessage extends TableImpl<ChatMessageRecord> {
 
     @Override
     public List<ForeignKey<ChatMessageRecord, ?>> getReferences() {
-        return Arrays.asList(Keys.CHAT_MESSAGE__CHAT_MESSAGE_AUTHOR__USER_ACCOUNT_ID_FKEY, Keys.CHAT_MESSAGE__CHAT_MESSAGE_CHAT_ID_FKEY);
+        return Arrays.asList(Keys.CHAT_MESSAGE__CHAT_MESSAGE_AUTHOR__USER_ACCOUNT_ID_FKEY, Keys.CHAT_MESSAGE__CHAT_MESSAGE_CHAT_ID_FKEY, Keys.CHAT_MESSAGE__CHAT_MESSAGE_REPLY_TO__CHAT_MESSAGE_ID_FKEY);
     }
 
     @Override
