@@ -1,6 +1,9 @@
 package kz.nuraskhan.hangelo.auth;
 
 import java.security.Principal;
+import jakarta.validation.Valid;
+import kz.nuraskhan.hangelo.auth.dto.ConfirmEmailRequest;
+import org.springframework.web.bind.annotation.RequestBody;
 import kz.nuraskhan.hangelo.mail.EmailNotSentException;
 import kz.nuraskhan.hangelo.web.ApiException;
 import kz.nuraskhan.hangelo.web.CurrentUser;
@@ -18,6 +21,12 @@ public class AccountController {
 
   public AccountController(EmailVerificationService emailVerificationService) {
     this.emailVerificationService = emailVerificationService;
+  }
+
+  /** The six-digit code from the confirmation letter, typed into the page. */
+  @PostMapping("/email-verification/confirm")
+  public void confirmEmail(Principal principal, @Valid @RequestBody ConfirmEmailRequest request) {
+    emailVerificationService.confirmByCode(CurrentUser.id(principal), request.code());
   }
 
   /** "Send the confirmation letter again." At most once a minute. */

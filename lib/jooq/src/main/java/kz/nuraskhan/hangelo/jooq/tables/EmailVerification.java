@@ -87,6 +87,16 @@ public class EmailVerification extends TableImpl<EmailVerificationRecord> {
      */
     public final TableField<EmailVerificationRecord, Instant> USED_AT = createField(DSL.name("used_at"), SQLDataType.INSTANT, this, "");
 
+    /**
+     * The column <code>public.email_verification.code_hash</code>.
+     */
+    public final TableField<EmailVerificationRecord, String> CODE_HASH = createField(DSL.name("code_hash"), SQLDataType.CLOB, this, "");
+
+    /**
+     * The column <code>public.email_verification.failed_attempts</code>.
+     */
+    public final TableField<EmailVerificationRecord, Integer> FAILED_ATTEMPTS = createField(DSL.name("failed_attempts"), SQLDataType.INTEGER.nullable(false).defaultValue(DSL.field(DSL.raw("0"), SQLDataType.INTEGER)), this, "");
+
     private EmailVerification(Name alias, Table<EmailVerificationRecord> aliased) {
         this(alias, aliased, (Field<?>[]) null, null);
     }

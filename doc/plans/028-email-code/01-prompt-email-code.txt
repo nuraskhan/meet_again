@@ -1,0 +1,5 @@
+насчет емейла и верификации - посдле того как эмейл не верифицирован надо его кинуть в авторизвцию вновь и оттуда после логина кинуть верификацию жмейла если не вреифицирован и вновь набрать код для подверждения
+
+(In English: about the e-mail and its verification - when the e-mail is not verified, the person
+must be thrown back to the login; from there, after logging in, to the verification of the e-mail
+if it is not verified, and type the confirmation code again.)

@@ -21,10 +21,11 @@ import org.springframework.web.filter.OncePerRequestFilter;
  * Until a person has confirmed their e-mail, the application is closed to them: every request made
  * with their token is refused with {@code 403 email_not_verified}.
  *
- * <p>Two things stay open, because without them the confirmation could not be finished:
+ * <p>Three things stay open, because without them the confirmation could not be finished:
  * <ul>
  *   <li>{@code GET /profile/me} - the page asks it to learn whether the address is confirmed yet
  *       (the letter may be opened on another device);</li>
+ *   <li>{@code POST /account/email-verification/confirm} - the code from the letter;</li>
  *   <li>{@code POST /account/email-verification/send} - "send the letter again".</li>
  * </ul>
  *
@@ -92,6 +93,7 @@ public class EmailVerifiedFilter extends OncePerRequestFilter {
         || path.startsWith("/public/")
         || path.startsWith("/actuator/health")
         || ("GET".equals(method) && path.equals("/profile/me"))
+        || ("POST".equals(method) && path.equals("/account/email-verification/confirm"))
         || ("POST".equals(method) && path.equals("/account/email-verification/send"));
   }
 }

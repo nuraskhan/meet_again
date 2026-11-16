@@ -178,6 +178,128 @@ class EmailVerificationApiTest extends ApiTestBase {
     assertThat(response.body().get("code").asString()).isEqualTo("already_verified");
   }
 
+  // ------------------------------------------------------------------ the code typed into the page
+
+  @Test
+  void confirmByCode__opensTheApplication_withTheCodeFromTheLetter() {
+    TestUser user = registerUnconfirmed();
+    String code = mail.verificationCode(user.email());
+    assertThat(code).matches("\\d{6}");
+    assertThat(get("/friend/list", user).status()).isEqualTo(403);
+
+    //
+    //
+    Response response = post("/account/email-verification/confirm", user, Map.of("code", code));
+    //
+    //
+
+    assertThat(response.status()).isEqualTo(200);
+    assertThat(get("/profile/me", user).body().get("emailVerified").asBoolean()).isTrue();
+    assertThat(get("/friend/list", user).status()).isEqualTo(200);
+    // The link of the same letter is used up with the code.
+    assertThat(post("/auth/verify-email", null, Map.of("token", mail.verificationToken(user.email()))).status())
+        .isEqualTo(400);
+  }
+
+  @Test
+  void confirmByCode__refusesAWrongCode_andAfterFiveWrongOnesEvenTheRightOne() {
+    TestUser user = registerUnconfirmed();
+    String right = mail.verificationCode(user.email());
+    String wrong = right.equals("000000") ? "000001" : "000000";
+
+    //
+    //
+    Response first = post("/account/email-verification/confirm", user, Map.of("code", wrong));
+    for (int i = 0; i < 4; i++) {
+      post("/account/email-verification/confirm", user, Map.of("code", wrong));
+    }
+    Response rightAfterFiveWrong = post("/account/email-verification/confirm", user, Map.of("code", right));
+    //
+    //
+
+    assertThat(first.status()).isEqualTo(400);
+    assertThat(first.body().get("code").asString()).isEqualTo("wrong_code");
+    assertThat(rightAfterFiveWrong.status()).isEqualTo(429);
+    assertThat(rightAfterFiveWrong.body().get("code").asString()).isEqualTo("too_many_attempts");
+    assertThat(get("/profile/me", user).body().get("emailVerified").asBoolean()).isFalse();
+  }
+
+  @Test
+  void confirmByCode__refusesSomethingThatIsNotSixDigits_andNeedsAToken() {
+    TestUser user = registerUnconfirmed();
+
+    //
+    //
+    Response letters = post("/account/email-verification/confirm", user, Map.of("code", "abcdef"));
+    Response tooShort = post("/account/email-verification/confirm", user, Map.of("code", "123"));
+    Response withoutToken = post("/account/email-verification/confirm", null, Map.of("code", "123456"));
+    //
+    //
+
+    assertThat(letters.status()).isEqualTo(400);
+    assertThat(tooShort.status()).isEqualTo(400);
+    assertThat(withoutToken.status()).isEqualTo(401);
+  }
+
+  @Test
+  void confirmByCode__ofOnePerson_doesNotConfirmAnother() {
+    TestUser owner = registerUnconfirmed();
+    TestUser other = registerUnconfirmed();
+
+    //
+    //
+    Response response = post("/account/email-verification/confirm", other,
+        Map.of("code", mail.verificationCode(owner.email())));
+    //
+    //
+
+    // (One chance in a million that the two codes are the same: then this is a right code.)
+    if (!mail.verificationCode(owner.email()).equals(mail.verificationCode(other.email()))) {
+      assertThat(response.status()).isEqualTo(400);
+      assertThat(get("/profile/me", other).body().get("emailVerified").asBoolean()).isFalse();
+    }
+    assertThat(get("/profile/me", owner).body().get("emailVerified").asBoolean()).isFalse();
+  }
+
+  @Test
+  void login__ofAnUnconfirmedAccount_sendsAFreshLetter_onceTheMinuteHasPassed() {
+    TestUser user = registerUnconfirmed();
+    // The letter of the registration went out a moment ago: move it back past the pause.
+    EmailVerification first = emailVerificationRepository
+        .findFirstByUserAccountIdOrderByCreatedAtDesc(user.id()).orElseThrow();
+    first.createdAt = Instant.now().minus(2, ChronoUnit.MINUTES);
+    emailVerificationRepository.save(first);
+
+    //
+    //
+    Response login = post("/auth/login", null, Map.of("email", user.email(), "password", user.password()));
+    //
+    //
+
+    assertThat(login.status()).isEqualTo(200);
+    assertThat(login.body().get("emailVerified").asBoolean()).isFalse();
+    assertThat(mail.to(user.email())).hasSize(2);
+    // The new code works with the token the login gave.
+    TestUser loggedIn = new TestUser(user.id(), login.body().get("token").asString(), user.email(),
+        user.password(), user.displayName());
+    assertThat(post("/account/email-verification/confirm", loggedIn,
+        Map.of("code", mail.verificationCode(user.email()))).status()).isEqualTo(200);
+  }
+
+  @Test
+  void login__ofAnUnconfirmedAccount_succeedsWithoutALetter_whenOneWasJustSent() {
+    TestUser user = registerUnconfirmed(); // the first letter has just gone out
+
+    //
+    //
+    Response login = post("/auth/login", null, Map.of("email", user.email(), "password", user.password()));
+    //
+    //
+
+    assertThat(login.status()).isEqualTo(200);
+    assertThat(mail.to(user.email())).hasSize(1);
+  }
+
   // ------------------------------------------------------------------ closed until confirmed
 
   @Test
@@ -203,10 +325,12 @@ class EmailVerificationApiTest extends ApiTestBase {
       assertThat(refused.status()).isEqualTo(403);
       assertThat(refused.body().get("code").asString()).isEqualTo("email_not_verified");
     }
-    // What stays open: seeing whether the address is confirmed, and asking for the letter again
-    // (refused here only because one has just been sent).
+    // What stays open: seeing whether the address is confirmed, typing the code (a wrong one here),
+    // and asking for the letter again (refused here only because one has just been sent).
     assertThat(get("/profile/me", user).status()).isEqualTo(200);
     assertThat(post("/account/email-verification/send", user).status()).isEqualTo(429);
+    assertThat(post("/account/email-verification/confirm", user, Map.of("code", "12345")).status())
+        .isEqualTo(400);
     // The refused request really did nothing.
     assertThat(get("/friend/request/incoming", friend).body().size()).isZero();
   }

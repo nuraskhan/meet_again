@@ -45,7 +45,18 @@ public class AuthController {
 
   @PostMapping("/login")
   public AuthResponse login(@Valid @RequestBody LoginRequest request) {
-    return authService.login(request);
+    AuthResponse response = authService.login(request);
+    // Logged in with an e-mail that is not confirmed: the page will ask for the code at once, so
+    // a fresh letter goes out now. If one went out less than a minute ago, or the provider is
+    // down, the login is not spoiled by it: the page has "Send again".
+    if (!response.emailVerified()) {
+      try {
+        emailVerificationService.send(response.userId());
+      } catch (RuntimeException e) {
+        log.info("No new confirmation letter at the login of user {}: {}", response.userId(), e.getMessage());
+      }
+    }
+    return response;
   }
 
   /** The link from the confirmation letter. No token: the link itself is the proof. */

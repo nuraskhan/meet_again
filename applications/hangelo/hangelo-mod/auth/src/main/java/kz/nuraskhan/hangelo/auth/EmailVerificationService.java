@@ -24,7 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Confirming that an e-mail address belongs to the person who registered with it: a letter with a
- * link, and the link coming back.
+ * six-digit code and a link. The person types the code into the page they are on; the link does
+ * the same from wherever the letter is opened.
  *
  * <p>Until an address is confirmed we send it nothing but this letter - otherwise anyone could make
  * us write to a stranger by registering with their address.
@@ -37,6 +38,13 @@ public class EmailVerificationService {
 
   /** How soon another letter may be asked for: keeps the button from flooding a mailbox. */
   static final Duration PAUSE_BETWEEN_LETTERS = Duration.ofSeconds(60);
+
+  /**
+   * How many wrong codes one letter forgives. A code is one of a million: without a limit it could
+   * simply be tried through. After the limit a new letter has to be asked for - and that is allowed
+   * once a minute.
+   */
+  static final int MAX_WRONG_CODES = 5;
 
   /** 32 random bytes: the link cannot be guessed. */
   private static final int TOKEN_BYTES = 32;
@@ -84,10 +92,12 @@ public class EmailVerificationService {
     }
 
     String token = newToken();
+    String code = newCode();
 
     EmailVerification verification = new EmailVerification();
     verification.userAccountId = userAccountId;
     verification.tokenHash = hash(token);
+    verification.codeHash = hashCode(userAccountId, code);
     verification.createdAt = now;
     verification.expiresAt = now.plus(LINK_LIFETIME);
     emailVerificationRepository.save(verification);
@@ -98,9 +108,10 @@ public class EmailVerificationService {
         .subject("Confirm your e-mail for Hangelo")
         .heading("One more step")
         .paragraph("Hi " + name + ", please confirm that this address is yours.")
-        .paragraph("After that we can remind you about your plans.")
+        .paragraph("Your confirmation code: " + code)
+        .paragraph("Type it on the page that asked for it. Or press the button: it does the same.")
         .button("Confirm e-mail", mailProperties.link("/verify-email?token=" + token))
-        .footnote("The link works for 24 hours. If you did not register at Hangelo, ignore this letter.")
+        .footnote("The code and the link work for 24 hours. If you did not register at Hangelo, ignore this letter.")
         .build());
   }
 
@@ -126,6 +137,60 @@ public class EmailVerificationService {
     if (account.emailVerifiedAt == null) {
       account.emailVerifiedAt = now;
     }
+  }
+
+  /**
+   * The code from the newest letter, typed by the person themselves (they are logged in, with a
+   * token that opens nothing else yet).
+   *
+   * <p>WHY a wrong code is counted even though the request fails: the count is the only thing
+   * between a six-digit code and someone trying all of them. So the refusal must not undo it -
+   * hence "noRollbackFor".
+   */
+  @Transactional(noRollbackFor = ApiException.class)
+  public void confirmByCode(Long userAccountId, String code) {
+    UserAccount account = userAccountRepository.findById(userAccountId)
+        .orElseThrow(() -> ApiException.notFound("user_not_found", "User not found"));
+    if (account.emailVerifiedAt != null) {
+      return; // confirmed already (by the link, in another tab): nothing to do, and no error
+    }
+
+    Instant now = Instant.now();
+    EmailVerification verification = emailVerificationRepository
+        .findFirstByUserAccountIdOrderByCreatedAtDesc(userAccountId).orElse(null);
+
+    if (verification == null || verification.codeHash == null || verification.usedAt != null
+        || verification.expiresAt.isBefore(now)) {
+      throw ApiException.badRequest("code_expired", "This code does not work any more. Ask for a new one");
+    }
+    if (verification.failedAttempts >= MAX_WRONG_CODES) {
+      throw new ApiException(HttpStatus.TOO_MANY_REQUESTS, "too_many_attempts",
+          "Too many wrong codes. Ask for a new one");
+    }
+    if (!verification.codeHash.equals(hashCode(userAccountId, code.trim()))) {
+      verification.failedAttempts = verification.failedAttempts + 1;
+      emailVerificationRepository.save(verification);
+      int left = MAX_WRONG_CODES - verification.failedAttempts;
+      throw ApiException.badRequest("wrong_code", left > 0
+          ? "That is not the code from the letter. Check it and try again"
+          : "That is not the code from the letter. Ask for a new one");
+    }
+
+    verification.usedAt = now;
+    account.emailVerifiedAt = now;
+  }
+
+  /** Six digits, every one of the million equally likely; "000042" is a code too. */
+  private static String newCode() {
+    return String.format("%06d", SECURE_RANDOM.nextInt(1_000_000));
+  }
+
+  /**
+   * What is stored instead of the code. The account id is mixed in, so the same code in two
+   * letters does not give the same stored value.
+   */
+  private static String hashCode(Long userAccountId, String code) {
+    return hash(userAccountId + ":" + code);
   }
 
   private static String newToken() {

@@ -104,6 +104,34 @@ public class EmailVerificationRecord extends UpdatableRecordImpl<EmailVerificati
         return (Instant) get(5);
     }
 
+    /**
+     * Setter for <code>public.email_verification.code_hash</code>.
+     */
+    public void setCodeHash(String value) {
+        set(6, value);
+    }
+
+    /**
+     * Getter for <code>public.email_verification.code_hash</code>.
+     */
+    public String getCodeHash() {
+        return (String) get(6);
+    }
+
+    /**
+     * Setter for <code>public.email_verification.failed_attempts</code>.
+     */
+    public void setFailedAttempts(Integer value) {
+        set(7, value);
+    }
+
+    /**
+     * Getter for <code>public.email_verification.failed_attempts</code>.
+     */
+    public Integer getFailedAttempts() {
+        return (Integer) get(7);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -127,7 +155,7 @@ public class EmailVerificationRecord extends UpdatableRecordImpl<EmailVerificati
     /**
      * Create a detached, initialised EmailVerificationRecord
      */
-    public EmailVerificationRecord(Long id, Long userAccountId, String tokenHash, Instant createdAt, Instant expiresAt, Instant usedAt) {
+    public EmailVerificationRecord(Long id, Long userAccountId, String tokenHash, Instant createdAt, Instant expiresAt, Instant usedAt, String codeHash, Integer failedAttempts) {
         super(EmailVerification.EMAIL_VERIFICATION);
 
         setId(id);
@@ -136,6 +164,8 @@ public class EmailVerificationRecord extends UpdatableRecordImpl<EmailVerificati
         setCreatedAt(createdAt);
         setExpiresAt(expiresAt);
         setUsedAt(usedAt);
+        setCodeHash(codeHash);
+        setFailedAttempts(failedAttempts);
         resetTouchedOnNotNull();
     }
 }

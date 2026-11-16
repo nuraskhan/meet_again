@@ -21,6 +21,7 @@ import org.springframework.stereotype.Component;
 @Primary
 public class CapturingEmailSender implements EmailSender {
 
+  private static final Pattern VERIFY_CODE = Pattern.compile("confirmation code: (\\d{6})");
   private static final Pattern VERIFY_TOKEN = Pattern.compile("/verify-email\\?token=([A-Za-z0-9_-]+)");
 
   private final List<Email> sent = new CopyOnWriteArrayList<>();
@@ -47,6 +48,18 @@ public class CapturingEmailSender implements EmailSender {
   /** Every letter sent to this address, oldest first. */
   public List<Email> to(String address) {
     return sent.stream().filter(email -> email.to().equals(address)).toList();
+  }
+
+  /** The six-digit code of the newest confirmation letter sent to this address. */
+  public String verificationCode(String address) {
+    List<Email> letters = to(address);
+    for (int i = letters.size() - 1; i >= 0; i--) {
+      Matcher matcher = VERIFY_CODE.matcher(letters.get(i).text());
+      if (matcher.find()) {
+        return matcher.group(1);
+      }
+    }
+    throw new AssertionError("No confirmation letter with a code was sent to " + address);
   }
 
   /** The token from the link of the newest confirmation letter sent to this address. */
